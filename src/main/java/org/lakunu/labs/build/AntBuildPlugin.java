@@ -2,7 +2,7 @@ package org.lakunu.labs.build;
 
 import com.google.common.base.Strings;
 import org.lakunu.labs.Plugin;
-import org.lakunu.labs.utils.SystemUtils;
+import org.lakunu.labs.utils.SystemCommand;
 
 import java.io.File;
 import java.io.IOException;
@@ -24,8 +24,12 @@ public class AntBuildPlugin implements Plugin {
     @Override
     public boolean execute(File currentDir) {
         try {
-            int status = SystemUtils.runCommand(currentDir, antBinary, buildTarget);
-            return status == 0;
+            SystemCommand command = SystemCommand.newBuilder()
+                    .setCommand(antBinary)
+                    .addArgument(buildTarget)
+                    .setWorkingDir(currentDir)
+                    .build();
+            return command.run() == 0;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
