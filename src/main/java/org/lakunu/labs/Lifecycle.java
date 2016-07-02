@@ -2,6 +2,7 @@ package org.lakunu.labs;
 
 import com.google.common.collect.*;
 
+import java.io.File;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -10,7 +11,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 /**
  * Controls the order of phase execution.
  */
-public class Lifecycle {
+public final class Lifecycle {
 
     protected final ImmutableList<String> phaseOrder;
     protected final ImmutableListMultimap<String,Plugin> plugins;
@@ -28,6 +29,13 @@ public class Lifecycle {
                 checkArgument(phaseOrder.contains(phase), "Unknown phase: %s", phase));
         this.phaseOrder = ImmutableList.copyOf(phaseOrder);
         this.plugins = ImmutableListMultimap.copyOf(plugins);
+    }
+
+    public void run(File currentDir) {
+        phaseOrder.forEach(phase -> {
+            ImmutableList<Plugin> pluginList = plugins.get(phase);
+            pluginList.forEach(plugin -> plugin.execute(currentDir));
+        });
     }
 
     public ImmutableList<String> getPhaseOrder() {

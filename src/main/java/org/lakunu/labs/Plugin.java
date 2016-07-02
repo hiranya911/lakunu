@@ -1,17 +1,11 @@
 package org.lakunu.labs;
 
+import java.io.File;
+
 public interface Plugin {
 
-    default void preExecute() {
-
-    }
-
-    default void execute() {
-
-    }
-
-    default void postExecute() {
-
+    default boolean execute(File currentDir) {
+        return false;
     }
 
 }
