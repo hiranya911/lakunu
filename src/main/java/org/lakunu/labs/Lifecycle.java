@@ -1,9 +1,14 @@
 package org.lakunu.labs;
 
-import java.util.Iterator;
+import java.util.Comparator;
 
+/**
+ * Controls the order of phase execution.
+ */
 public interface Lifecycle {
 
-    Iterator<Phase> getPhases();
+    boolean isSupported(String phase);
+
+    Comparator<Phase> comparator();
 
 }
