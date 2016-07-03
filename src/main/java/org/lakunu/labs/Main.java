@@ -11,7 +11,10 @@ public class Main {
                 .addPlugin("build", new AntBuildPlugin("ant", "compile"))
                 .build();
         File file = new File("/Users/hiranya/academic/cs56/github-grader/target/source/lab00_EdieS");
-        lifecycle.run(file);
+        LabContext context = LabContext.newBuilder()
+                .setWorkingDir(file)
+                .build();
+        lifecycle.run(context);
     }
 
 }

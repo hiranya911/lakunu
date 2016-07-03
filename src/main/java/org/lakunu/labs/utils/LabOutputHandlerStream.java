@@ -18,18 +18,17 @@ public final class LabOutputHandlerStream extends LogOutputStream {
         this.outputHandler = outputHandler;
     }
 
-    public static LabOutputHandlerStream infoLogger(LabOutputHandler outputHandler) {
+    static LabOutputHandlerStream infoLogger(LabOutputHandler outputHandler) {
         return new LabOutputHandlerStream(outputHandler, true);
     }
 
-    public static LabOutputHandlerStream errorLogger(LabOutputHandler outputHandler) {
+    static LabOutputHandlerStream errorLogger(LabOutputHandler outputHandler) {
         return new LabOutputHandlerStream(outputHandler, false);
     }
 
     @Override
     protected void processLine(String line, int level) {
-        LabOutputHandler.Level outputLevel = level == INFO ?
-                LabOutputHandler.Level.INFO : LabOutputHandler.Level.ERROR;
-        outputHandler.processLine(line, outputLevel);
+        outputHandler.processLine(line, level == INFO ?
+                LabOutputHandler.Level.INFO : LabOutputHandler.Level.ERROR);
     }
 }

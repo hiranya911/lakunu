@@ -52,12 +52,14 @@ public final class SystemCommand {
         return new Builder();
     }
 
+    private static final File CURRENT_DIR = new File(".");
+
     public static class Builder {
 
         private String command;
         private final List<String> args = new ArrayList<>();
-        private File workingDir;
-        private LabOutputHandler outputHandler = new LoggingOutputHandler();
+        private File workingDir = CURRENT_DIR;
+        private LabOutputHandler outputHandler;
 
         private Builder() {
         }

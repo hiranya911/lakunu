@@ -31,10 +31,10 @@ public final class Lifecycle {
         this.plugins = ImmutableListMultimap.copyOf(plugins);
     }
 
-    public void run(File currentDir) {
+    public void run(LabContext context) {
         phaseOrder.forEach(phase -> {
             ImmutableList<Plugin> pluginList = plugins.get(phase);
-            pluginList.forEach(plugin -> plugin.execute(currentDir));
+            pluginList.forEach(plugin -> plugin.execute(context));
         });
     }
 

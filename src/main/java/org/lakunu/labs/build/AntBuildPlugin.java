@@ -1,10 +1,10 @@
 package org.lakunu.labs.build;
 
 import com.google.common.base.Strings;
+import org.lakunu.labs.LabContext;
 import org.lakunu.labs.Plugin;
 import org.lakunu.labs.utils.SystemCommand;
 
-import java.io.File;
 import java.io.IOException;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -22,12 +22,13 @@ public class AntBuildPlugin implements Plugin {
     }
 
     @Override
-    public boolean execute(File currentDir) {
+    public boolean execute(LabContext context) {
         try {
             SystemCommand command = SystemCommand.newBuilder()
                     .setCommand(antBinary)
                     .addArgument(buildTarget)
-                    .setWorkingDir(currentDir)
+                    .setWorkingDir(context.getWorkingDir())
+                    .setOutputHandler(context.getOutputHandler())
                     .build();
             return command.run() == 0;
         } catch (IOException e) {

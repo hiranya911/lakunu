@@ -1,10 +1,8 @@
 package org.lakunu.labs;
 
-import java.io.File;
-
 public interface Plugin {
 
-    default boolean execute(File currentDir) {
+    default boolean execute(LabContext context) {
         return false;
     }
 
