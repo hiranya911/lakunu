@@ -1,0 +1,11 @@
+{
+  "_name": "lab00",
+  "_lifecycle": "default",
+  "build": [
+    {
+      "plugin": "ant-build",
+      "binary": "ant",
+      "target": "compile"
+    }
+  ]
+}
