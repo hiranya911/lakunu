@@ -1,8 +1,7 @@
 {
   "build": [
     {
-      "plugin": "ant-build",
-      "binary": "ant",
+      "plugin": "ant",
       "target": "jar"
     }
   ],

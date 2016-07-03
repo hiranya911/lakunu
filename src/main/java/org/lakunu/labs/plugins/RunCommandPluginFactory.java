@@ -1,4 +1,4 @@
-package org.lakunu.labs.run;
+package org.lakunu.labs.plugins;
 
 import com.google.common.collect.ImmutableMap;
 import org.lakunu.labs.PluginFactory;

@@ -1,2 +1,2 @@
-org.lakunu.labs.build.AntBuildPluginFactory
-org.lakunu.labs.run.RunCommandPluginFactory
+org.lakunu.labs.plugins.AntPluginFactory
+org.lakunu.labs.plugins.RunCommandPluginFactory
