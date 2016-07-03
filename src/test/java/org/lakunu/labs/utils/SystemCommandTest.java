@@ -1,6 +1,7 @@
 package org.lakunu.labs.utils;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import junit.framework.Assert;
 import org.apache.commons.exec.ExecuteException;
 import org.apache.commons.lang3.SystemUtils;
@@ -58,6 +59,52 @@ public class SystemCommandTest {
         }
         Assert.assertTrue(handler.entries.size() > 0);
         handler.entries.forEach(e -> Assert.assertEquals(Level.ERROR, e.level));
+    }
+
+    @Test
+    public void testStdoutBuffering() throws Exception {
+        SystemCommand cmd = SystemCommand.newBuilder()
+                .setCommand("date")
+                .setOutputHandler(new TestOutputHandler())
+                .setBufferStdout(true)
+                .build();
+        Assert.assertEquals(0, cmd.run());
+        Assert.assertFalse(cmd.getStdout().isEmpty());
+
+        cmd = SystemCommand.newBuilder()
+                .setCommand("date")
+                .setOutputHandler(new TestOutputHandler())
+                .build();
+        try {
+            cmd.getStdout();
+            Assert.fail("No error thrown for invalid state");
+        } catch (IllegalStateException ignored) {
+        }
+    }
+
+    @Test
+    public void testStderrBuffering() throws Exception {
+        SystemCommand cmd = SystemCommand.newBuilder()
+                .setCommand("ls")
+                .addArgument("*.bogus")
+                .setOutputHandler(new TestOutputHandler())
+                .setBufferStderr(true)
+                .build();
+        try {
+            cmd.run();
+        } catch (IOException ignored) {
+        }
+        Assert.assertFalse(cmd.getStderr().isEmpty());
+
+        cmd = SystemCommand.newBuilder()
+                .setCommand("date")
+                .setOutputHandler(new TestOutputHandler())
+                .build();
+        try {
+            cmd.getStderr();
+            Assert.fail("No error thrown for invalid state");
+        } catch (IllegalStateException ignored) {
+        }
     }
 
     static class LogEntry {

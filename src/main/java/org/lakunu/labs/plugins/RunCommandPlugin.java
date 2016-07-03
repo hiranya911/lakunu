@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.labs.LabContext;
 import org.lakunu.labs.Plugin;
+import org.lakunu.labs.utils.LabUtils;
 import org.lakunu.labs.utils.SystemCommand;
 
 import java.io.IOException;
@@ -16,10 +17,14 @@ public class RunCommandPlugin implements Plugin {
     private final String command;
     private final ImmutableList<String> args;
 
-    public RunCommandPlugin(String command, List<String> args) {
+    public RunCommandPlugin(String command, List<?> args) {
         checkArgument(!Strings.isNullOrEmpty(command), "Command is required");
         this.command = command;
-        this.args = args != null ? ImmutableList.copyOf(args) : null;
+        if (args != null) {
+            this.args = args.stream().map(Object::toString).collect(LabUtils.immutableList());
+        } else {
+            this.args = null;
+        }
     }
 
     @Override
