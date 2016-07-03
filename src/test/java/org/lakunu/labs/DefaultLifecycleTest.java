@@ -9,23 +9,23 @@ public class DefaultLifecycleTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNoPlugins() {
-        DefaultLifecycle.newBuilder().build();
+        Lifecycle.newBuilder(DefaultLifecycle.NAME).build();
     }
 
     @Test
     public void testPhaseOrder() {
-        Lifecycle lifecycle = DefaultLifecycle.newBuilder()
+        Lifecycle lifecycle = Lifecycle.newBuilder(DefaultLifecycle.NAME)
                 .addPlugin(DefaultLifecycle.BUILD_PHASE, new TestPlugin())
                 .build();
         assertThat(lifecycle.getPhaseOrder(), is(DefaultLifecycle.PHASE_ORDER));
 
-        lifecycle = DefaultLifecycle.newBuilder()
+        lifecycle = Lifecycle.newBuilder(DefaultLifecycle.NAME)
                 .addPlugin(DefaultLifecycle.BUILD_PHASE, new TestPlugin())
                 .addPlugin(DefaultLifecycle.RUN_PHASE, new TestPlugin())
                 .build();
         assertThat(lifecycle.getPhaseOrder(), is(DefaultLifecycle.PHASE_ORDER));
 
-        lifecycle = DefaultLifecycle.newBuilder()
+        lifecycle = Lifecycle.newBuilder(DefaultLifecycle.NAME)
                 .addPlugin(DefaultLifecycle.RUN_PHASE, new TestPlugin())
                 .addPlugin(DefaultLifecycle.BUILD_PHASE, new TestPlugin())
                 .build();

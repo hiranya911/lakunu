@@ -1,7 +1,9 @@
 package org.lakunu.labs;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.*;
 
+import java.lang.reflect.Constructor;
 import java.util.*;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -44,6 +46,22 @@ public final class Lifecycle {
 
     public ImmutableList<String> getPhaseOrder() {
         return phaseOrder;
+    }
+
+    public static Builder newBuilder(String type) {
+        checkArgument(!Strings.isNullOrEmpty(type), "Builder type is required");
+        if (DefaultLifecycle.NAME.equals(type)) {
+            return new DefaultLifecycle();
+        } else {
+            try {
+                Class<? extends Builder> clazz = Lifecycle.class.getClassLoader()
+                        .loadClass(type).asSubclass(Builder.class);
+                Constructor<? extends Builder> constructor = clazz.getConstructor();
+                return constructor.newInstance();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 
     public abstract static class Builder {

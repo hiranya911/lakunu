@@ -32,11 +32,10 @@ public final class PluginRegistry {
         return instance;
     }
 
-    public <T extends Plugin> T getPlugin(String name, Class<T> clazz,
-                                          ImmutableMap<String,Object> properties) {
+    public Plugin getPlugin(String name, ImmutableMap<String,Object> properties) {
         PluginFactory factory = factories.get(name);
         checkArgument(factory != null, "Unknown plugin: %s", name);
-        return clazz.cast(factory.build(properties));
+        return factory.build(properties);
     }
 
 }
