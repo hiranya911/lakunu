@@ -2,6 +2,7 @@ package org.lakunu.labs;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
+import org.lakunu.labs.utils.LabUtils;
 
 import java.lang.reflect.Constructor;
 import java.util.*;
@@ -40,7 +41,10 @@ public final class Lifecycle {
     public void run(LabContext context) {
         phaseOrder.forEach(phase -> {
             ImmutableList<Plugin> pluginList = plugins.get(phase);
-            pluginList.forEach(plugin -> plugin.execute(context));
+            if (!pluginList.isEmpty()) {
+                LabUtils.outputTitle("Starting " + phase + " phase", context.getOutputHandler());
+                pluginList.forEach(plugin -> plugin.execute(context));
+            }
         });
     }
 

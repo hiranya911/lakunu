@@ -3,7 +3,14 @@
     {
       "plugin": "ant-build",
       "binary": "ant",
-      "target": "compile"
+      "target": "jar"
+    }
+  ],
+  "run": [
+    {
+      "plugin": "run-command",
+      "command": "java",
+      "args": ["-jar", "build/rational.jar", "1", "2"]
     }
   ]
 }

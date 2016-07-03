@@ -15,4 +15,13 @@ public abstract class PluginFactory<T extends Plugin> {
         }
         return null;
     }
+
+    protected final <U> U getProperty(ImmutableMap<String,Object> properties, String name,
+                                      U def, Class<U> clazz) {
+        U value = getProperty(properties, name, clazz);
+        if (value != null) {
+            return value;
+        }
+        return def;
+    }
 }

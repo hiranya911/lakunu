@@ -30,7 +30,7 @@ public class SystemCommandTest {
         Assert.assertEquals(0, cmd.run());
         Assert.assertEquals(1, handler.entries.size());
         LogEntry entry = handler.entries.get(0);
-        Assert.assertEquals(LabOutputHandler.Level.INFO, entry.level);
+        Assert.assertEquals(Level.INFO, entry.level);
         Assert.assertTrue(!Strings.isNullOrEmpty(entry.line));
     }
 
@@ -57,14 +57,14 @@ public class SystemCommandTest {
         } catch (ExecuteException ignored) {
         }
         Assert.assertTrue(handler.entries.size() > 0);
-        handler.entries.forEach(e -> Assert.assertEquals(LabOutputHandler.Level.ERROR, e.level));
+        handler.entries.forEach(e -> Assert.assertEquals(Level.ERROR, e.level));
     }
 
     static class LogEntry {
         private final String line;
-        private final LabOutputHandler.Level level;
+        private final Level level;
 
-        LogEntry(String line, LabOutputHandler.Level level) {
+        LogEntry(String line, Level level) {
             this.line = line;
             this.level = level;
         }
@@ -74,10 +74,23 @@ public class SystemCommandTest {
 
         private final List<LogEntry> entries = new ArrayList<>();
 
-        @Override
-        public void processLine(String line, Level level) {
-            entries.add(new LogEntry(line, level));
+        public void info(String line) {
+            entries.add(new LogEntry(line, Level.INFO));
         }
+
+        public void warn(String line) {
+            entries.add(new LogEntry(line, Level.WARN));
+        }
+
+        public void error(String line) {
+            entries.add(new LogEntry(line, Level.ERROR));
+        }
+    }
+
+    enum Level {
+        INFO,
+        WARN,
+        ERROR
     }
 
 }

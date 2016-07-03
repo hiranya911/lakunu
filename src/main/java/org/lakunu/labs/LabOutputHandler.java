@@ -2,12 +2,16 @@ package org.lakunu.labs;
 
 public interface LabOutputHandler {
 
-    enum Level {
-        INFO,
-        WARN,
-        ERROR
+    default void info(String msg) {
+
     }
 
-    void processLine(String line, Level level);
+    default void warn(String msg) {
+
+    }
+
+    default void error(String msg) {
+
+    }
 
 }

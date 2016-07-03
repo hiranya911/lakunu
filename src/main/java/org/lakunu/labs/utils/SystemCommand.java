@@ -6,10 +6,11 @@ import org.apache.commons.exec.DefaultExecutor;
 import org.apache.commons.exec.Executor;
 import org.apache.commons.exec.PumpStreamHandler;
 import org.lakunu.labs.LabOutputHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,11 +19,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class SystemCommand {
 
+    private static final Logger logger = LoggerFactory.getLogger(SystemCommand.class);
+
     private final String command;
     private final String[] args;
     private final File workingDir;
-    private final OutputStream inputStreamHandler;
-    private final OutputStream errorStreamHandler;
+    private final LabOutputHandler outputHandler;
 
     private SystemCommand(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.command), "Command is required");
@@ -33,8 +35,7 @@ public final class SystemCommand {
         this.command = builder.command;
         this.args = builder.args.toArray(new String[builder.args.size()]);
         this.workingDir = builder.workingDir;
-        this.inputStreamHandler = LabOutputHandlerStream.infoLogger(builder.outputHandler);
-        this.errorStreamHandler = LabOutputHandlerStream.errorLogger(builder.outputHandler);
+        this.outputHandler = builder.outputHandler;
     }
 
     public int run() throws IOException {
@@ -44,7 +45,11 @@ public final class SystemCommand {
         }
         Executor exec = new DefaultExecutor();
         exec.setWorkingDirectory(workingDir);
-        exec.setStreamHandler(new PumpStreamHandler(inputStreamHandler, errorStreamHandler));
+        exec.setStreamHandler(new PumpStreamHandler(LabOutputStream.captureStdout(outputHandler),
+                LabOutputStream.captureStderr(outputHandler)));
+        if (logger.isDebugEnabled()) {
+            logger.debug("Command: {}; Working dir: {}", cmdLine.toString(), workingDir);
+        }
         return exec.execute(cmdLine);
     }
 

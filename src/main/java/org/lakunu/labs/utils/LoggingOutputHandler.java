@@ -9,17 +9,18 @@ public final class LoggingOutputHandler implements LabOutputHandler {
     private static final Logger logger = LoggerFactory.getLogger("LAB_OUTPUT");
 
     @Override
-    public void processLine(String line, Level level) {
-        switch (level) {
-            case INFO:
-                logger.info(line);
-                break;
-            case WARN:
-                logger.warn(line);
-                break;
-            case ERROR:
-                logger.error(line);
-                break;
-        }
+    public void info(String msg) {
+        logger.info(msg);
     }
+
+    @Override
+    public void warn(String msg) {
+        logger.warn(msg);
+    }
+
+    @Override
+    public void error(String msg) {
+        logger.error(msg);
+    }
+
 }
