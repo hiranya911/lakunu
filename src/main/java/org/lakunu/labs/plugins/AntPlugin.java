@@ -2,7 +2,6 @@ package org.lakunu.labs.plugins;
 
 import com.google.common.base.Strings;
 import org.lakunu.labs.LabContext;
-import org.lakunu.labs.Plugin;
 import org.lakunu.labs.utils.SystemCommand;
 
 import static com.google.common.base.Preconditions.checkArgument;

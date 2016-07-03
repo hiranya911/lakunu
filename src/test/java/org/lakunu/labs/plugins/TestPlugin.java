@@ -1,4 +1,6 @@
-package org.lakunu.labs;
+package org.lakunu.labs.plugins;
+
+import org.lakunu.labs.LabContext;
 
 public final class TestPlugin extends Plugin {
 

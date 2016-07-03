@@ -2,9 +2,8 @@ package org.lakunu.labs;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.utils.LoggingOutputHandler;
-
-import java.io.File;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -26,12 +25,17 @@ public final class Lab {
         return name;
     }
 
-    public void run() {
+    public void run(Submission submission) {
+        run(submission, null);
+    }
+
+    public void run(Submission submission, String phase) {
+        submission.prepare();
         LabContext context = LabContext.newBuilder()
-                .setWorkingDir(new File("/Users/hiranya/academic/cs56/github-grader/target/source/lab00_EdieS"))
+                .setWorkingDir(submission.getDirectory())
                 .setOutputHandler(new LoggingOutputHandler())
                 .build();
-        lifecycle.run(context);
+        lifecycle.run(context, phase);
     }
 
     public static Builder newBuilder() {

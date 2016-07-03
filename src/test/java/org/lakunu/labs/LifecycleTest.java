@@ -3,6 +3,7 @@ package org.lakunu.labs;
 import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
 import org.junit.Test;
+import org.lakunu.labs.plugins.TestPlugin;
 
 import java.util.List;
 

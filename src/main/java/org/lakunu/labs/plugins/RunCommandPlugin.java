@@ -3,7 +3,6 @@ package org.lakunu.labs.plugins;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.labs.LabContext;
-import org.lakunu.labs.Plugin;
 import org.lakunu.labs.utils.SystemCommand;
 
 import java.util.ArrayList;

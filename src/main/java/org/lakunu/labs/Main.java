@@ -2,6 +2,7 @@ package org.lakunu.labs;
 
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.config.JsonLabFactory;
+import org.lakunu.labs.submit.DirectorySubmission;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,7 +42,9 @@ public class Main {
             return;
         }
 
-        lab.run();
+        DirectorySubmission submission = new DirectorySubmission(
+                "/Users/hiranya/academic/cs56/github-grader/target/source/lab00_EdieS");
+        lab.run(submission);
     }
 
 }

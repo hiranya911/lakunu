@@ -2,6 +2,7 @@ package org.lakunu.labs;
 
 import junit.framework.Assert;
 import org.junit.Test;
+import org.lakunu.labs.plugins.TestPlugin;
 
 public class LabTest {
 

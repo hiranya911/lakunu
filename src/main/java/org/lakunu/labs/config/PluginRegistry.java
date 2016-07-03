@@ -2,8 +2,8 @@ package org.lakunu.labs.config;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import org.lakunu.labs.Plugin;
-import org.lakunu.labs.PluginFactory;
+import org.lakunu.labs.plugins.Plugin;
+import org.lakunu.labs.plugins.PluginFactory;
 
 import java.util.*;
 import java.util.stream.Collectors;

@@ -1,5 +1,6 @@
-package org.lakunu.labs;
+package org.lakunu.labs.plugins;
 
+import org.lakunu.labs.LabContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

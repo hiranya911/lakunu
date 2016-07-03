@@ -2,6 +2,7 @@ package org.lakunu.labs;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
+import org.lakunu.labs.plugins.Plugin;
 import org.lakunu.labs.utils.LabUtils;
 
 import java.lang.reflect.Constructor;
@@ -38,14 +39,28 @@ public final class Lifecycle {
         this.plugins = ImmutableListMultimap.copyOf(plugins);
     }
 
-    public void run(LabContext context) {
-        phaseOrder.forEach(phase -> {
-            ImmutableList<Plugin> pluginList = plugins.get(phase);
-            if (!pluginList.isEmpty()) {
-                LabUtils.outputTitle("Starting " + phase + " phase", context.getOutputHandler());
-                pluginList.forEach(plugin -> plugin.execute(context));
+    public void run(LabContext context, String finalPhase) {
+        for (String phase : phaseOrder) {
+            boolean proceed = runPhase(phase, context);
+            if (!proceed || phase.equals(finalPhase)) {
+                break;
             }
-        });
+        }
+    }
+
+    private boolean runPhase(String phase, LabContext context) {
+        ImmutableList<Plugin> pluginList = plugins.get(phase);
+        if (pluginList.isEmpty()) {
+            return true;
+        }
+
+        LabUtils.outputTitle("Starting " + phase + " phase", context.getOutputHandler());
+        for (Plugin plugin : pluginList) {
+            if (!plugin.execute(context)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public ImmutableList<String> getPhaseOrder() {

@@ -1,6 +1,7 @@
 package org.lakunu.labs;
 
 import org.junit.Test;
+import org.lakunu.labs.plugins.TestPlugin;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
