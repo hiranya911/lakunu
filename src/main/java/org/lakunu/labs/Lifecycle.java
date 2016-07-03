@@ -2,8 +2,8 @@ package org.lakunu.labs;
 
 import com.google.common.collect.*;
 
-import java.io.File;
 import java.util.*;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -13,16 +13,20 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 public final class Lifecycle {
 
-    protected final ImmutableList<String> phaseOrder;
-    protected final ImmutableListMultimap<String,Plugin> plugins;
+    private static final Pattern PHASE_NAME = Pattern.compile("^[A-Za-z][\\-A-Za-z0-9]*$");
+
+    private final ImmutableList<String> phaseOrder;
+    private final ImmutableListMultimap<String,Plugin> plugins;
 
     protected Lifecycle(List<String> phaseOrder, ListMultimap<String,Plugin> plugins) {
         checkArgument(phaseOrder != null && !phaseOrder.isEmpty(),
                 "Phase order must not be null or empty");
         Map<String,Long> counts = phaseOrder.stream().collect(
                 Collectors.groupingBy(p -> p, Collectors.counting()));
-        checkArgument(counts.keySet().stream().allMatch(p -> counts.get(p) == 1),
-                "One or more duplicate phases");
+        counts.keySet().forEach(phase -> {
+            checkArgument(PHASE_NAME.matcher(phase).matches(), "Invalid phase name: %s", phase);
+            checkArgument(counts.get(phase) == 1, "Duplicate phase: %s", phase);
+        });
         checkArgument(plugins != null && !plugins.isEmpty(),
                 "Plugins map must not be null or empty");
         plugins.keySet().forEach(phase ->

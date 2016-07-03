@@ -15,19 +15,19 @@ public class DefaultLifecycleTest {
     @Test
     public void testPhaseOrder() {
         Lifecycle lifecycle = DefaultLifecycle.newBuilder()
-                .addPlugin(DefaultLifecycle.BUILD_PHASE, new Plugin(){})
+                .addPlugin(DefaultLifecycle.BUILD_PHASE, new TestPlugin())
                 .build();
         assertThat(lifecycle.getPhaseOrder(), is(DefaultLifecycle.PHASE_ORDER));
 
         lifecycle = DefaultLifecycle.newBuilder()
-                .addPlugin(DefaultLifecycle.BUILD_PHASE, new Plugin(){})
-                .addPlugin(DefaultLifecycle.RUN_PHASE, new Plugin(){})
+                .addPlugin(DefaultLifecycle.BUILD_PHASE, new TestPlugin())
+                .addPlugin(DefaultLifecycle.RUN_PHASE, new TestPlugin())
                 .build();
         assertThat(lifecycle.getPhaseOrder(), is(DefaultLifecycle.PHASE_ORDER));
 
         lifecycle = DefaultLifecycle.newBuilder()
-                .addPlugin(DefaultLifecycle.RUN_PHASE, new Plugin(){})
-                .addPlugin(DefaultLifecycle.BUILD_PHASE, new Plugin(){})
+                .addPlugin(DefaultLifecycle.RUN_PHASE, new TestPlugin())
+                .addPlugin(DefaultLifecycle.BUILD_PHASE, new TestPlugin())
                 .build();
         assertThat(lifecycle.getPhaseOrder(), is(DefaultLifecycle.PHASE_ORDER));
     }
