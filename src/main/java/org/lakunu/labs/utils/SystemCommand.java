@@ -49,6 +49,7 @@ public final class SystemCommand {
             cmdLine.addArgument(arg);
         }
         Executor exec = new DefaultExecutor();
+        exec.setExitValues(null);
         exec.setWorkingDirectory(workingDir);
         exec.setStreamHandler(new PumpStreamHandler(new CommandOutputStream(true),
                 new CommandOutputStream(false)));

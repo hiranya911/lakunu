@@ -4,43 +4,74 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.labs.LabContext;
 import org.lakunu.labs.Plugin;
-import org.lakunu.labs.utils.LabUtils;
 import org.lakunu.labs.utils.SystemCommand;
 
-import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-public class RunCommandPlugin implements Plugin {
+public final class RunCommandPlugin extends Plugin {
 
     private final String command;
     private final ImmutableList<String> args;
+    private final int status;
 
-    public RunCommandPlugin(String command, List<?> args) {
-        checkArgument(!Strings.isNullOrEmpty(command), "Command is required");
-        this.command = command;
-        if (args != null) {
-            this.args = args.stream().map(Object::toString).collect(LabUtils.immutableList());
-        } else {
-            this.args = null;
-        }
+    private RunCommandPlugin(Builder builder) {
+        super(builder);
+        checkArgument(!Strings.isNullOrEmpty(builder.command), "Command is required");
+        checkArgument(builder.status >= 0, "Invalid status: %s", builder.status);
+        this.command = builder.command;
+        this.args = ImmutableList.copyOf(builder.args);
+        this.status = builder.status;
     }
 
     @Override
-    public boolean execute(LabContext context) {
+    protected boolean doExecute(LabContext context) throws Exception {
         SystemCommand.Builder builder = SystemCommand.newBuilder()
                 .setCommand(command)
                 .setOutputHandler(context.getOutputHandler())
                 .setWorkingDir(context.getWorkingDir());
-        if (args != null) {
-            args.forEach(builder::addArgument);
-        }
+        args.forEach(builder::addArgument);
         SystemCommand command = builder.build();
-        try {
-            return command.run() == 0;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        return command.run() == status;
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static class Builder extends Plugin.Builder<RunCommandPlugin,Builder> {
+        private String command;
+        private final List<String> args = new ArrayList<>();
+        private int status = 0;
+
+        private Builder() {
+        }
+
+        public Builder setCommand(String command) {
+            this.command = command;
+            return this;
+        }
+
+        public Builder addArgument(String arg) {
+            this.args.add(arg);
+            return this;
+        }
+
+        public Builder setStatus(int status) {
+            this.status = status;
+            return this;
+        }
+
+        @Override
+        protected Builder getThisObj() {
+            return this;
+        }
+
+        @Override
+        public RunCommandPlugin build() {
+            return new RunCommandPlugin(this);
         }
     }
 }

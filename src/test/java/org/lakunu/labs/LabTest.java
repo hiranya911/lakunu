@@ -7,7 +7,7 @@ public class LabTest {
 
     private Lifecycle getLifecycle() {
         return Lifecycle.newBuilder(DefaultLifecycle.NAME)
-                .addPlugin(DefaultLifecycle.BUILD_PHASE, new TestPlugin())
+                .addPlugin(DefaultLifecycle.BUILD_PHASE, TestPlugin.newInstance())
                 .build();
     }
 

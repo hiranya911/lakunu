@@ -24,4 +24,8 @@ public abstract class PluginFactory<T extends Plugin> {
         }
         return def;
     }
+
+    protected final boolean isFailOnError(ImmutableMap<String,Object> properties) {
+        return getProperty(properties, "failOnError", true, Boolean.class);
+    }
 }

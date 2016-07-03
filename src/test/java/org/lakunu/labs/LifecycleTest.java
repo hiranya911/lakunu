@@ -28,21 +28,21 @@ public class LifecycleTest {
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidPhaseName1() {
         new TestLifecycle(ImmutableList.of("foo", "_bar"))
-                .addPlugin("foo", new TestPlugin())
+                .addPlugin("foo", TestPlugin.newInstance())
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidPhaseName2() {
         new TestLifecycle(ImmutableList.of("foo", "bar_1"))
-                .addPlugin("foo", new TestPlugin())
+                .addPlugin("foo", TestPlugin.newInstance())
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidPhaseName3() {
         new TestLifecycle(ImmutableList.of("foo", "b@r"))
-                .addPlugin("foo", new TestPlugin())
+                .addPlugin("foo", TestPlugin.newInstance())
                 .build();
     }
 
@@ -50,7 +50,7 @@ public class LifecycleTest {
     public void testValidPhaseNames() {
         ImmutableList<String> phases = ImmutableList.of("foo", "bar", "more-complex");
         Lifecycle lifecycle = new TestLifecycle(phases)
-                .addPlugin("foo", new TestPlugin())
+                .addPlugin("foo", TestPlugin.newInstance())
                 .build();
         Assert.assertThat(phases, is(lifecycle.getPhaseOrder()));
     }
@@ -59,7 +59,7 @@ public class LifecycleTest {
     public void testDuplicatePhaseNames() {
         ImmutableList<String> phases = ImmutableList.of("foo", "bar", "foo");
         Lifecycle lifecycle = new TestLifecycle(phases)
-                .addPlugin("foo", new TestPlugin())
+                .addPlugin("foo", TestPlugin.newInstance())
                 .build();
         Assert.assertThat(phases, is(lifecycle.getPhaseOrder()));
     }

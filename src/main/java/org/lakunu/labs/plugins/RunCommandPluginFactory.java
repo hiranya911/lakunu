@@ -14,8 +14,13 @@ public final class RunCommandPluginFactory extends PluginFactory<RunCommandPlugi
 
     @Override
     public RunCommandPlugin build(ImmutableMap<String, Object> properties) {
-        String command = getProperty(properties, "command", String.class);
-        List args = getProperty(properties, "args", List.class);
-        return new RunCommandPlugin(command, args);
+        RunCommandPlugin.Builder builder = RunCommandPlugin.newBuilder()
+                .setCommand(getProperty(properties, "command", String.class))
+                .setStatus(getProperty(properties, "status", 0, Integer.class));
+        List<?> args = getProperty(properties, "args", List.class);
+        if (args != null) {
+            args.forEach(arg -> builder.addArgument(arg.toString()));
+        }
+        return builder.build();
     }
 }
