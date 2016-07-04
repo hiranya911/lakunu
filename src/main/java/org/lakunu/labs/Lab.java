@@ -1,7 +1,9 @@
 package org.lakunu.labs;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.FileUtils;
+import org.lakunu.labs.resources.Resource;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.utils.LoggingOutputHandler;
 
@@ -15,6 +17,7 @@ public final class Lab {
     private final String name;
     private final Lifecycle lifecycle;
     private final String targetDir;
+    private final ImmutableSet<Resource> resources;
 
     private Lab(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.name), "Name is required");
@@ -23,6 +26,7 @@ public final class Lab {
         this.name = builder.name;
         this.lifecycle = builder.lifecycle;
         this.targetDir = builder.targetDir;
+        this.resources = builder.resources.build();
     }
 
     public String getName() {
@@ -58,9 +62,11 @@ public final class Lab {
     }
 
     public static class Builder {
+
         private String name;
         private Lifecycle lifecycle;
         private String targetDir = "target";
+        private ImmutableSet.Builder<Resource> resources = ImmutableSet.builder();
 
         private Builder() {
         }
@@ -77,6 +83,11 @@ public final class Lab {
 
         public Builder setTargetDir(String targetDir) {
             this.targetDir = targetDir;
+            return this;
+        }
+
+        public Builder addResource(Resource resource) {
+            this.resources.add(resource);
             return this;
         }
 
