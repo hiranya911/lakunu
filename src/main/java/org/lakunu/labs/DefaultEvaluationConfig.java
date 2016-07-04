@@ -2,7 +2,7 @@ package org.lakunu.labs;
 
 import com.google.common.collect.ImmutableList;
 
-public final class DefaultLifecycle extends Lifecycle.Builder {
+public final class DefaultEvaluationConfig extends EvaluationConfig.Builder {
 
     public static final String NAME = "default";
 
@@ -11,7 +11,7 @@ public final class DefaultLifecycle extends Lifecycle.Builder {
 
     public static final ImmutableList<String> PHASE_ORDER = ImmutableList.of(BUILD_PHASE, RUN_PHASE);
 
-    public DefaultLifecycle() {
+    public DefaultEvaluationConfig() {
         super(PHASE_ORDER);
     }
 

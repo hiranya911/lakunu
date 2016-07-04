@@ -15,14 +15,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 /**
  * Controls the order of phase execution.
  */
-public final class Lifecycle {
+public final class EvaluationConfig {
 
     private static final Pattern PHASE_NAME = Pattern.compile("^[A-Za-z][\\-A-Za-z0-9]*$");
 
     private final ImmutableList<String> phaseOrder;
     private final ImmutableListMultimap<String,Plugin> plugins;
 
-    protected Lifecycle(List<String> phaseOrder, ListMultimap<String,Plugin> plugins) {
+    protected EvaluationConfig(List<String> phaseOrder, ListMultimap<String,Plugin> plugins) {
         checkArgument(phaseOrder != null && !phaseOrder.isEmpty(),
                 "Phase order must not be null or empty");
         Map<String,Long> counts = phaseOrder.stream().collect(
@@ -69,11 +69,11 @@ public final class Lifecycle {
 
     public static Builder newBuilder(String type) {
         checkArgument(!Strings.isNullOrEmpty(type), "Builder type is required");
-        if (DefaultLifecycle.NAME.equals(type)) {
-            return new DefaultLifecycle();
+        if (DefaultEvaluationConfig.NAME.equals(type)) {
+            return new DefaultEvaluationConfig();
         } else {
             try {
-                Class<? extends Builder> clazz = Lifecycle.class.getClassLoader()
+                Class<? extends Builder> clazz = EvaluationConfig.class.getClassLoader()
                         .loadClass(type).asSubclass(Builder.class);
                 Constructor<? extends Builder> constructor = clazz.getConstructor();
                 return constructor.newInstance();
@@ -97,8 +97,8 @@ public final class Lifecycle {
             return this;
         }
 
-        public final Lifecycle build() {
-            return new Lifecycle(phases, plugins);
+        public final EvaluationConfig build() {
+            return new EvaluationConfig(phases, plugins);
         }
 
     }

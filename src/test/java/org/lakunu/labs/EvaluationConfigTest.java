@@ -9,7 +9,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.is;
 
-public class LifecycleTest {
+public class EvaluationConfigTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNullPhases() {
@@ -50,22 +50,22 @@ public class LifecycleTest {
     @Test
     public void testValidPhaseNames() {
         ImmutableList<String> phases = ImmutableList.of("foo", "bar", "more-complex");
-        Lifecycle lifecycle = new TestLifecycle(phases)
+        EvaluationConfig evaluationConfig = new TestLifecycle(phases)
                 .addPlugin("foo", TestPlugin.newInstance())
                 .build();
-        Assert.assertThat(phases, is(lifecycle.getPhaseOrder()));
+        Assert.assertThat(phases, is(evaluationConfig.getPhaseOrder()));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testDuplicatePhaseNames() {
         ImmutableList<String> phases = ImmutableList.of("foo", "bar", "foo");
-        Lifecycle lifecycle = new TestLifecycle(phases)
+        EvaluationConfig evaluationConfig = new TestLifecycle(phases)
                 .addPlugin("foo", TestPlugin.newInstance())
                 .build();
-        Assert.assertThat(phases, is(lifecycle.getPhaseOrder()));
+        Assert.assertThat(phases, is(evaluationConfig.getPhaseOrder()));
     }
 
-    static class TestLifecycle extends Lifecycle.Builder {
+    static class TestLifecycle extends EvaluationConfig.Builder {
         private TestLifecycle(List<String> phases) {
             super(phases);
         }

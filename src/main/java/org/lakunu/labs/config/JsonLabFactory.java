@@ -29,8 +29,8 @@ public final class JsonLabFactory implements LabFactory {
 
     @Override
     public Lab build() {
-        String lifecycle = getField(json, "_lifecycle", DefaultLifecycle.NAME);
-        Lifecycle.Builder builder = Lifecycle.newBuilder(lifecycle);
+        String lifecycle = getField(json, "_lifecycle", DefaultEvaluationConfig.NAME);
+        EvaluationConfig.Builder builder = EvaluationConfig.newBuilder(lifecycle);
         Iterator<Map.Entry<String,JsonNode>> fields = json.fields();
         while (fields.hasNext()) {
             Map.Entry<String,JsonNode> entry = fields.next();
@@ -52,7 +52,7 @@ public final class JsonLabFactory implements LabFactory {
         String name = getField(json, "_name", "anonymous");
         return Lab.newBuilder()
                 .setName(name)
-                .setLifecycle(builder.build())
+                .setEvaluationConfig(builder.build())
                 .build();
     }
 
