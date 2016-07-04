@@ -8,9 +8,9 @@ public abstract class Submission {
 
     private boolean prepared;
 
-    public final void prepare() {
+    public final void prepare(File targetDir) {
         checkState(!prepared, "Submission is already prepared");
-        doPrepare();
+        doPrepare(targetDir);
         prepared = true;
     }
 
@@ -19,7 +19,7 @@ public abstract class Submission {
         return doGetDirectory();
     }
 
-    protected void doPrepare() {
+    protected void doPrepare(File targetDir) {
 
     }
 

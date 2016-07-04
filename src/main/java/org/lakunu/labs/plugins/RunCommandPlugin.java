@@ -30,7 +30,7 @@ public final class RunCommandPlugin extends Plugin {
         SystemCommand.Builder builder = SystemCommand.newBuilder()
                 .setCommand(command)
                 .setOutputHandler(context.getOutputHandler())
-                .setWorkingDir(context.getWorkingDir());
+                .setWorkingDir(context.getSubmissionDir());
         args.forEach(builder::addArgument);
         SystemCommand command = builder.build();
         return command.run() == status;

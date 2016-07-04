@@ -24,7 +24,7 @@ public final class AntPlugin extends Plugin {
         SystemCommand command = SystemCommand.newBuilder()
                 .setCommand(antBinary)
                 .addArgument(buildTarget)
-                .setWorkingDir(context.getWorkingDir())
+                .setWorkingDir(context.getSubmissionDir())
                 .setOutputHandler(context.getOutputHandler())
                 .build();
         return command.run() == 0;

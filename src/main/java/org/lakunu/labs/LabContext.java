@@ -9,20 +9,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class LabContext {
 
-    private final File workingDir;
+    private final File submissionDir;
     private final LabOutputHandler outputHandler;
 
     private LabContext(Builder builder) {
-        checkNotNull(builder.workingDir, "Working directory is required");
-        checkArgument(builder.workingDir.isDirectory() && builder.workingDir.exists(),
+        checkNotNull(builder.submissionDir, "Working directory is required");
+        checkArgument(builder.submissionDir.isDirectory() && builder.submissionDir.exists(),
                 "Working directory path is not a directory or does not exist");
         checkNotNull(builder.outputHandler, "Output handler is required");
-        this.workingDir = builder.workingDir;
+        this.submissionDir = builder.submissionDir;
         this.outputHandler = builder.outputHandler;
     }
 
-    public File getWorkingDir() {
-        return workingDir;
+    public File getSubmissionDir() {
+        return submissionDir;
     }
 
     public LabOutputHandler getOutputHandler() {
@@ -34,14 +34,14 @@ public final class LabContext {
     }
 
     public static class Builder {
-        private File workingDir;
+        private File submissionDir;
         private LabOutputHandler outputHandler = new LoggingOutputHandler();
 
         private Builder() {
         }
 
-        public Builder setWorkingDir(File workingDir) {
-            this.workingDir = workingDir;
+        public Builder setSubmissionDir(File submissionDir) {
+            this.submissionDir = submissionDir;
             return this;
         }
 
