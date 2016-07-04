@@ -55,16 +55,14 @@ public class Main {
             return;
         }
 
-        Lab lab;
         DirectorySubmission submission = new DirectorySubmission(remaining[0]);
         try (FileInputStream in = FileUtils.openInputStream(labConfig)) {
             JsonLabFactory factory = new JsonLabFactory(in);
-            lab = factory.build();
+            SubmissionEvaluator evaluator = new SubmissionEvaluator(submission, factory.build());
+            evaluator.evaluate(FileUtils.getTempDirectory());
         } catch (IOException e) {
-            logger.error("Error while loading configuration", e);
-            return;
+            logger.error("Error while evaluating lab", e);
         }
-        submission.evaluate(lab);
     }
 
 }

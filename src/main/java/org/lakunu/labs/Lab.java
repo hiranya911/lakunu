@@ -2,13 +2,11 @@ package org.lakunu.labs;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
-import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.plugins.Plugin;
 import org.lakunu.labs.resources.Resource;
 import org.lakunu.labs.resources.Resources;
 import org.lakunu.labs.utils.LabUtils;
 
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Map;
@@ -16,7 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class Lab {
 
@@ -25,7 +22,6 @@ public final class Lab {
     private final String name;
     private final ImmutableList<String> phases;
     private final ImmutableListMultimap<String,Plugin> plugins;
-    private final File workingDirectory;
     private final Resources resources;
 
     private Lab(Builder builder) {
@@ -46,14 +42,9 @@ public final class Lab {
         builder.plugins.keySet().forEach(phase ->
                 checkArgument(phases.contains(phase), "Unknown phase: %s", phase));
 
-        checkNotNull(builder.workingDirectory, "Working directory is required");
-        checkArgument(builder.workingDirectory.isDirectory() && builder.workingDirectory.exists(),
-                "Working directory path is not a directory or does not exist");
-
         this.phases = phases;
         this.plugins = ImmutableListMultimap.copyOf(builder.plugins);
         this.name = builder.name;
-        this.workingDirectory = builder.workingDirectory;
         this.resources = new Resources(builder.resources.build());
     }
 
@@ -65,16 +56,8 @@ public final class Lab {
         return phases;
     }
 
-    public File getWorkingDirectory() {
-        return workingDirectory;
-    }
-
-    public void execute(EvaluationContext context, String finalPhase) {
-        try {
-            resources.init(context);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+    public void execute(EvaluationContext context, String finalPhase) throws IOException {
+        resources.init(context);
         for (String phase : phases) {
             boolean proceed = runPhase(context, phase);
             if (!proceed || phase.equals(finalPhase)) {
@@ -101,7 +84,6 @@ public final class Lab {
     public abstract static class Builder {
         private String name;
         private final ListMultimap<String,Plugin> plugins = ArrayListMultimap.create();
-        private File workingDirectory = FileUtils.getTempDirectory();
         private ImmutableSet.Builder<Resource> resources = ImmutableSet.builder();
 
         protected Builder() {
@@ -114,11 +96,6 @@ public final class Lab {
 
         public final Builder setName(String name) {
             this.name = name;
-            return this;
-        }
-
-        public final Builder setWorkingDirectory(File workingDirectory) {
-            this.workingDirectory = workingDirectory;
             return this;
         }
 
