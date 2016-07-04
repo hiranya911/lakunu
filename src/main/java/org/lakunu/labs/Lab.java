@@ -55,13 +55,34 @@ public final class Lab {
         this.resources = builder.resources.build();
     }
 
-    private void run(EvaluationContext context, String finalPhase) {
-        for (String phase : phases) {
-            boolean proceed = runPhase(phase, context);
-            if (!proceed || phase.equals(finalPhase)) {
-                break;
+    public ImmutableList<String> getPhases() {
+        return phases;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void evaluate(Submission submission, String finalPhase) {
+        EvaluationContext context = EvaluationContext.newBuilder()
+                .setSubmission(submission)
+                .setWorkingDirectory(workingDirectory)
+                .setOutputHandler(new LoggingOutputHandler())
+                .build();
+        try {
+            for (String phase : phases) {
+                boolean proceed = runPhase(phase, context);
+                if (!proceed || phase.equals(finalPhase)) {
+                    break;
+                }
             }
+        } finally {
+            context.cleanup();
         }
+    }
+
+    public void evaluate(Submission submission) {
+        evaluate(submission, null);
     }
 
     private boolean runPhase(String phase, EvaluationContext context) {
@@ -77,31 +98,6 @@ public final class Lab {
             }
         }
         return true;
-    }
-
-    public ImmutableList<String> getPhases() {
-        return phases;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void evaluate(Submission submission, String phase) {
-        EvaluationContext context = EvaluationContext.newBuilder()
-                .setSubmission(submission)
-                .setWorkingDirectory(workingDirectory)
-                .setOutputHandler(new LoggingOutputHandler())
-                .build();
-        try {
-            run(context, phase);
-        } finally {
-            context.cleanup();
-        }
-    }
-
-    public void evaluate(Submission submission) {
-        evaluate(submission, null);
     }
 
     public abstract static class Builder {

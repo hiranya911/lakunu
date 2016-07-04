@@ -27,7 +27,7 @@ public final class EvaluationContext {
         checkNotNull(builder.outputHandler, "Output handler is required");
         this.workingDirectory = builder.workingDirectory;
         this.outputHandler = builder.outputHandler;
-        this.submissionDirectory = builder.submission.getSubmissionDirectory(this);
+        this.submissionDirectory = builder.submission.initSubmissionDirectory(this);
     }
 
     public synchronized File getEvaluationDirectory() {
