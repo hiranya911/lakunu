@@ -21,11 +21,9 @@ public final class SubmissionEvaluator {
     }
 
     public void evaluate(File workingDirectory, String finalPhase) throws IOException {
-        EvaluationContext context = new EvaluationContext(workingDirectory,
+        EvaluationContext context = new EvaluationContext(submission, workingDirectory,
                 new LoggingOutputHandler());
         try {
-            File submissionDirectory = submission.prepare(context);
-            context.setSubmissionDirectory(submissionDirectory);
             lab.execute(context, finalPhase);
         } finally {
             context.cleanup();

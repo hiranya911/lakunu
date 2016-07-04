@@ -19,7 +19,7 @@ public final class DirectorySubmission extends Submission {
     }
 
     @Override
-    public File prepare(EvaluationContext context) {
+    public File initDirectory(EvaluationContext context) {
         return directory;
     }
 }

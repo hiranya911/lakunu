@@ -10,6 +10,6 @@ public abstract class Submission {
      * Create and initialize the submission directory for the given EvaluationContext.
      * Returns a File representing the prepared submission directory.
      */
-    public abstract File prepare(EvaluationContext context);
+    public abstract File initDirectory(EvaluationContext context);
 
 }
