@@ -1,6 +1,6 @@
 package org.lakunu.labs.plugins;
 
-import org.lakunu.labs.EvaluationContext;
+import org.lakunu.labs.Evaluation;
 
 public final class TestPlugin extends Plugin {
 
@@ -9,7 +9,7 @@ public final class TestPlugin extends Plugin {
     }
 
     @Override
-    protected boolean doExecute(EvaluationContext context) {
+    protected boolean doExecute(Evaluation.Context context) {
         return false;
     }
 

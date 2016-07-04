@@ -88,4 +88,8 @@ public final class JsonLabFactory implements LabFactory {
             return def;
         }
     }
+
+    public static Lab newLab(InputStream in) throws IOException {
+        return new JsonLabFactory(in).build();
+    }
 }

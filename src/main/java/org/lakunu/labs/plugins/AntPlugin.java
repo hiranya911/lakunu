@@ -1,7 +1,7 @@
 package org.lakunu.labs.plugins;
 
 import com.google.common.base.Strings;
-import org.lakunu.labs.EvaluationContext;
+import org.lakunu.labs.Evaluation;
 import org.lakunu.labs.utils.SystemCommand;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -20,7 +20,7 @@ public final class AntPlugin extends Plugin {
     }
 
     @Override
-    protected boolean doExecute(EvaluationContext context) throws Exception {
+    protected boolean doExecute(Evaluation.Context context) throws Exception {
         SystemCommand command = SystemCommand.newBuilder()
                 .setCommand(antBinary)
                 .addArgument(buildTarget)

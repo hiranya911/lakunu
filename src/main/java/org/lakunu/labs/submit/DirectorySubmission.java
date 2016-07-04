@@ -1,7 +1,7 @@
 package org.lakunu.labs.submit;
 
 import com.google.common.base.Strings;
-import org.lakunu.labs.EvaluationContext;
+import org.lakunu.labs.Evaluation;
 
 import java.io.File;
 
@@ -19,7 +19,7 @@ public final class DirectorySubmission extends Submission {
     }
 
     @Override
-    public File initDirectory(EvaluationContext context) {
+    public File prepare(Evaluation.Context context) {
         return directory;
     }
 }

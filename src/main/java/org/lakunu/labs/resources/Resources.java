@@ -2,7 +2,7 @@ package org.lakunu.labs.resources;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.io.FileUtils;
-import org.lakunu.labs.EvaluationContext;
+import org.lakunu.labs.Evaluation;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,15 +18,16 @@ public final class Resources {
         this.resources = resources;
     }
 
-    public void init(EvaluationContext context) throws IOException {
+    public File prepare(Evaluation.Context context) throws IOException {
         if (resources.isEmpty()) {
-            return;
+            return null;
         }
         File resourcesDir = new File(context.getEvaluationDirectory(), "_resources");
         FileUtils.forceMkdir(resourcesDir);
         for (Resource resource : resources) {
             resource.copyTo(resourcesDir);
         }
+        return resourcesDir;
     }
 
 }

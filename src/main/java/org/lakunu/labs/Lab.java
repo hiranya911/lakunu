@@ -7,6 +7,7 @@ import org.lakunu.labs.resources.Resource;
 import org.lakunu.labs.resources.Resources;
 import org.lakunu.labs.utils.LabUtils;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Map;
@@ -56,8 +57,11 @@ public final class Lab {
         return phases;
     }
 
-    public void execute(EvaluationContext context, String finalPhase) throws IOException {
-        resources.init(context);
+    File prepareResources(Evaluation.Context context) throws IOException {
+        return resources.prepare(context);
+    }
+
+    public void execute(Evaluation.Context context, String finalPhase) {
         for (String phase : phases) {
             boolean proceed = runPhase(context, phase);
             if (!proceed || phase.equals(finalPhase)) {
@@ -67,7 +71,7 @@ public final class Lab {
         LabUtils.outputBreak(context.getOutputHandler());
     }
 
-    private boolean runPhase(EvaluationContext context, String phase) {
+    private boolean runPhase(Evaluation.Context context, String phase) {
         ImmutableList<Plugin> pluginList = plugins.get(phase);
         if (pluginList.isEmpty()) {
             return true;

@@ -57,9 +57,11 @@ public class Main {
 
         DirectorySubmission submission = new DirectorySubmission(remaining[0]);
         try (FileInputStream in = FileUtils.openInputStream(labConfig)) {
-            JsonLabFactory factory = new JsonLabFactory(in);
-            SubmissionEvaluator evaluator = new SubmissionEvaluator(submission, factory.build());
-            evaluator.evaluate(FileUtils.getTempDirectory());
+            Evaluation evaluation = Evaluation.newBuilder().setSubmission(submission)
+                    .setLab(JsonLabFactory.newLab(in))
+                    .setWorkingDirectory(FileUtils.getTempDirectory())
+                    .build();
+            evaluation.run();
         } catch (IOException e) {
             logger.error("Error while evaluating lab", e);
         }

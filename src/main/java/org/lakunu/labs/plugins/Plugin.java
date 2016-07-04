@@ -1,6 +1,6 @@
 package org.lakunu.labs.plugins;
 
-import org.lakunu.labs.EvaluationContext;
+import org.lakunu.labs.Evaluation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,7 +14,7 @@ public abstract class Plugin {
         this.failOnError = builder.failOnError;
     }
 
-    public final boolean execute(EvaluationContext context) {
+    public final boolean execute(Evaluation.Context context) {
         try {
             return doExecute(context);
         } catch (Exception e) {
@@ -27,7 +27,7 @@ public abstract class Plugin {
         }
     }
 
-    protected abstract boolean doExecute(EvaluationContext context) throws Exception;
+    protected abstract boolean doExecute(Evaluation.Context context) throws Exception;
 
     public static abstract class Builder<T extends Plugin,B extends Builder<T,B>> {
         private final B thisObj;
