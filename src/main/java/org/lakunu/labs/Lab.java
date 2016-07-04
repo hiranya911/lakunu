@@ -5,10 +5,6 @@ import com.google.common.collect.*;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.plugins.Plugin;
 import org.lakunu.labs.resources.Resource;
-import org.lakunu.labs.submit.Submission;
-import org.lakunu.labs.utils.LabUtils;
-import org.lakunu.labs.utils.LoggingOutputHandler;
-
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -31,6 +27,7 @@ public final class Lab {
 
     private Lab(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.name), "Name is required");
+
         ImmutableList<String> phases = builder.getPhases();
         checkArgument(phases != null && !phases.isEmpty(),
                 "Phase order must not be null or empty");
@@ -40,10 +37,12 @@ public final class Lab {
             checkArgument(PHASE_NAME.matcher(phase).matches(), "Invalid phase name: %s", phase);
             checkArgument(counts.get(phase) == 1, "Duplicate phase: %s", phase);
         });
+
         checkArgument(builder.plugins != null && !builder.plugins.isEmpty(),
                 "Plugins map must not be null or empty");
         builder.plugins.keySet().forEach(phase ->
                 checkArgument(phases.contains(phase), "Unknown phase: %s", phase));
+
         checkNotNull(builder.workingDirectory, "Working directory is required");
         checkArgument(builder.workingDirectory.isDirectory() && builder.workingDirectory.exists(),
                 "Working directory path is not a directory or does not exist");
@@ -55,49 +54,20 @@ public final class Lab {
         this.resources = builder.resources.build();
     }
 
-    public ImmutableList<String> getPhases() {
-        return phases;
-    }
-
     public String getName() {
         return name;
     }
 
-    public void evaluate(Submission submission, String finalPhase) {
-        EvaluationContext context = EvaluationContext.newBuilder()
-                .setSubmission(submission)
-                .setWorkingDirectory(workingDirectory)
-                .setOutputHandler(new LoggingOutputHandler())
-                .build();
-        try {
-            for (String phase : phases) {
-                boolean proceed = runPhase(phase, context);
-                if (!proceed || phase.equals(finalPhase)) {
-                    break;
-                }
-            }
-        } finally {
-            context.cleanup();
-        }
+    public ImmutableList<String> getPhases() {
+        return phases;
     }
 
-    public void evaluate(Submission submission) {
-        evaluate(submission, null);
+    public ImmutableList<Plugin> getPlugins(String phase) {
+        return plugins.get(phase);
     }
 
-    private boolean runPhase(String phase, EvaluationContext context) {
-        ImmutableList<Plugin> pluginList = plugins.get(phase);
-        if (pluginList.isEmpty()) {
-            return true;
-        }
-
-        LabUtils.outputTitle("Starting " + phase + " phase", context.getOutputHandler());
-        for (Plugin plugin : pluginList) {
-            if (!plugin.execute(context)) {
-                return false;
-            }
-        }
-        return true;
+    public File getWorkingDirectory() {
+        return workingDirectory;
     }
 
     public abstract static class Builder {

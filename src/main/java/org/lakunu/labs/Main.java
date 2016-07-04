@@ -64,7 +64,7 @@ public class Main {
             logger.error("Error while loading configuration", e);
             return;
         }
-        lab.evaluate(submission);
+        submission.evaluate(lab);
     }
 
 }
