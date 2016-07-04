@@ -5,6 +5,7 @@ import com.google.common.collect.*;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.plugins.Plugin;
 import org.lakunu.labs.resources.Resource;
+import org.lakunu.labs.resources.Resources;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -23,7 +24,7 @@ public final class Lab {
     private final ImmutableList<String> phases;
     private final ImmutableListMultimap<String,Plugin> plugins;
     private final File workingDirectory;
-    private final ImmutableSet<Resource> resources;
+    private final Resources resources;
 
     private Lab(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.name), "Name is required");
@@ -51,7 +52,7 @@ public final class Lab {
         this.plugins = ImmutableListMultimap.copyOf(builder.plugins);
         this.name = builder.name;
         this.workingDirectory = builder.workingDirectory;
-        this.resources = builder.resources.build();
+        this.resources = new Resources(builder.resources.build());
     }
 
     public String getName() {
