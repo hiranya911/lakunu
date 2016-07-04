@@ -11,7 +11,7 @@ public class DefaultLabBuilderTest {
 
     @Test
     public void testDefaultLab() {
-        Lab lab = new DefaultLabBuilder()
+        Lab lab = DefaultLabBuilder.newBuilder()
                 .setName("foo")
                 .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance())
                 .build();
@@ -21,34 +21,34 @@ public class DefaultLabBuilderTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testNoName() {
-        new DefaultLabBuilder()
+        DefaultLabBuilder.newBuilder()
                 .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance())
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testNoPlugins() {
-        new DefaultLabBuilder()
+        DefaultLabBuilder.newBuilder()
                 .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance())
                 .build();
     }
 
     @Test
     public void testPhaseOrder() {
-        Lab lab = new DefaultLabBuilder()
+        Lab lab = DefaultLabBuilder.newBuilder()
                 .setName("foo")
                 .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance())
                 .build();
         assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
 
-        lab = new DefaultLabBuilder()
+        lab = DefaultLabBuilder.newBuilder()
                 .setName("foo")
                 .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance())
                 .addPlugin(DefaultLabBuilder.RUN_PHASE, TestPlugin.newInstance())
                 .build();
         assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
 
-        lab = new DefaultLabBuilder()
+        lab = DefaultLabBuilder.newBuilder()
                 .setName("foo")
                 .addPlugin(DefaultLabBuilder.RUN_PHASE, TestPlugin.newInstance())
                 .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance())

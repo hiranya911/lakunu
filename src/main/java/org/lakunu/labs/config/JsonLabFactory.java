@@ -32,7 +32,7 @@ public final class JsonLabFactory implements LabFactory {
         String builderType = getField(json, "_builder", "default");
         Lab.Builder builder;
         if ("default".equals(builderType)) {
-            builder = new DefaultLabBuilder();
+            builder = DefaultLabBuilder.newBuilder();
         } else {
             builder = Lab.newLabBuilder(builderType);
         }

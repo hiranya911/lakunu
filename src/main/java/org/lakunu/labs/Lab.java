@@ -12,7 +12,6 @@ import org.lakunu.labs.utils.LoggingOutputHandler;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -32,9 +31,10 @@ public final class Lab {
 
     private Lab(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.name), "Name is required");
-        checkArgument(builder.phases != null && !builder.phases.isEmpty(),
+        ImmutableList<String> phases = builder.getPhases();
+        checkArgument(phases != null && !phases.isEmpty(),
                 "Phase order must not be null or empty");
-        Map<String,Long> counts = builder.phases.stream().collect(
+        Map<String,Long> counts = phases.stream().collect(
                 Collectors.groupingBy(p -> p, Collectors.counting()));
         counts.keySet().forEach(phase -> {
             checkArgument(PHASE_NAME.matcher(phase).matches(), "Invalid phase name: %s", phase);
@@ -43,11 +43,12 @@ public final class Lab {
         checkArgument(builder.plugins != null && !builder.plugins.isEmpty(),
                 "Plugins map must not be null or empty");
         builder.plugins.keySet().forEach(phase ->
-                checkArgument(builder.phases.contains(phase), "Unknown phase: %s", phase));
+                checkArgument(phases.contains(phase), "Unknown phase: %s", phase));
         checkNotNull(builder.workingDirectory, "Working directory is required");
         checkArgument(builder.workingDirectory.isDirectory() && builder.workingDirectory.exists(),
                 "Working directory path is not a directory or does not exist");
-        this.phases = ImmutableList.copyOf(builder.phases);
+
+        this.phases = phases;
         this.plugins = ImmutableListMultimap.copyOf(builder.plugins);
         this.name = builder.name;
         this.workingDirectory = builder.workingDirectory;
@@ -105,13 +106,11 @@ public final class Lab {
 
     public abstract static class Builder {
         private String name;
-        protected final List<String> phases;
         private final ListMultimap<String,Plugin> plugins = ArrayListMultimap.create();
         private File workingDirectory = FileUtils.getTempDirectory();
         private ImmutableSet.Builder<Resource> resources = ImmutableSet.builder();
 
-        protected Builder(List<String> phases) {
-            this.phases = phases;
+        protected Builder() {
         }
 
         public final Builder addPlugin(String phase, Plugin plugin) {
@@ -133,6 +132,8 @@ public final class Lab {
             this.resources.add(resource);
             return this;
         }
+
+        protected abstract ImmutableList<String> getPhases();
 
         public final Lab build() {
             return new Lab(this);

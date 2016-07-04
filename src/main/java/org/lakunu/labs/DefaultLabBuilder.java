@@ -9,7 +9,15 @@ public class DefaultLabBuilder extends Lab.Builder {
 
     public static final ImmutableList<String> PHASE_ORDER = ImmutableList.of(BUILD_PHASE, RUN_PHASE);
 
-    public DefaultLabBuilder() {
-        super(PHASE_ORDER);
+    private DefaultLabBuilder() {
+    }
+
+    @Override
+    protected ImmutableList<String> getPhases() {
+        return PHASE_ORDER;
+    }
+
+    public static DefaultLabBuilder newBuilder() {
+        return new DefaultLabBuilder();
     }
 }

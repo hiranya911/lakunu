@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.lakunu.labs.plugins.TestPlugin;
 
-import java.util.List;
-
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -63,8 +61,16 @@ public class LabTest {
     }
 
     static class TestLabBuilder extends Lab.Builder {
-        private TestLabBuilder(List<String> phases) {
-            super(phases);
+
+        private ImmutableList<String> phases;
+
+        private TestLabBuilder(ImmutableList<String> phases) {
+            this.phases = phases;
+        }
+
+        @Override
+        protected ImmutableList<String> getPhases() {
+            return phases;
         }
     }
 
