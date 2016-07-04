@@ -2,7 +2,7 @@ package org.lakunu.labs.plugins;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import org.lakunu.labs.LabContext;
+import org.lakunu.labs.EvaluationContext;
 import org.lakunu.labs.utils.SystemCommand;
 
 import java.util.ArrayList;
@@ -26,11 +26,11 @@ public final class RunCommandPlugin extends Plugin {
     }
 
     @Override
-    protected boolean doExecute(LabContext context) throws Exception {
+    protected boolean doExecute(EvaluationContext context) throws Exception {
         SystemCommand.Builder builder = SystemCommand.newBuilder()
                 .setCommand(command)
                 .setOutputHandler(context.getOutputHandler())
-                .setWorkingDir(context.getSubmissionDir());
+                .setWorkingDir(context.getSubmissionDirectory());
         args.forEach(builder::addArgument);
         SystemCommand command = builder.build();
         return command.run() == status;

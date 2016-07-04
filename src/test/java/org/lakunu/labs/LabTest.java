@@ -17,7 +17,7 @@ public class LabTest {
         Lab.newBuilder().setLifecycle(getLifecycle()).build();
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = NullPointerException.class)
     public void testNoLifecycle() {
         Lab.newBuilder().setName("foo").build();
     }

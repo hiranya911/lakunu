@@ -39,7 +39,7 @@ public final class Lifecycle {
         this.plugins = ImmutableListMultimap.copyOf(plugins);
     }
 
-    public void run(LabContext context, String finalPhase) {
+    public void run(EvaluationContext context, String finalPhase) {
         for (String phase : phaseOrder) {
             boolean proceed = runPhase(phase, context);
             if (!proceed || phase.equals(finalPhase)) {
@@ -48,7 +48,7 @@ public final class Lifecycle {
         }
     }
 
-    private boolean runPhase(String phase, LabContext context) {
+    private boolean runPhase(String phase, EvaluationContext context) {
         ImmutableList<Plugin> pluginList = plugins.get(phase);
         if (pluginList.isEmpty()) {
             return true;

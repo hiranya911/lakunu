@@ -7,25 +7,28 @@ import org.lakunu.labs.resources.Resource;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.utils.LoggingOutputHandler;
 
+
 import java.io.File;
-import java.io.IOException;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class Lab {
 
     private final String name;
     private final Lifecycle lifecycle;
-    private final String targetDir;
+    private final File workingDirectory;
     private final ImmutableSet<Resource> resources;
 
     private Lab(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.name), "Name is required");
-        checkArgument(builder.lifecycle != null, "Lifecycle is required");
-        checkArgument(!Strings.isNullOrEmpty(builder.targetDir), "Target directory is required");
+        checkNotNull(builder.lifecycle, "Lifecycle is required");
+        checkNotNull(builder.workingDirectory, "Working directory is required");
+        checkArgument(builder.workingDirectory.isDirectory() && builder.workingDirectory.exists(),
+                "Working directory path is not a directory or does not exist");
         this.name = builder.name;
         this.lifecycle = builder.lifecycle;
-        this.targetDir = builder.targetDir;
+        this.workingDirectory = builder.workingDirectory;
         this.resources = builder.resources.build();
     }
 
@@ -33,24 +36,17 @@ public final class Lab {
         return name;
     }
 
-    private synchronized File createTargetDirectory() {
-        File target = new File(this.targetDir).getAbsoluteFile();
-        try {
-            FileUtils.forceMkdir(target);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return target;
-    }
-
     public void run(Submission submission, String phase) {
-        File target = createTargetDirectory();
-        submission.prepare(target);
-        LabContext context = LabContext.newBuilder()
-                .setSubmissionDir(submission.getDirectory())
+        EvaluationContext context = EvaluationContext.newBuilder()
+                .setSubmission(submission)
+                .setWorkingDirectory(workingDirectory)
                 .setOutputHandler(new LoggingOutputHandler())
                 .build();
-        lifecycle.run(context, phase);
+        try {
+            lifecycle.run(context, phase);
+        } finally {
+            context.cleanup();
+        }
     }
 
     public void run(Submission submission) {
@@ -65,7 +61,7 @@ public final class Lab {
 
         private String name;
         private Lifecycle lifecycle;
-        private String targetDir = "target";
+        private File workingDirectory = FileUtils.getTempDirectory();
         private ImmutableSet.Builder<Resource> resources = ImmutableSet.builder();
 
         private Builder() {
@@ -81,8 +77,8 @@ public final class Lab {
             return this;
         }
 
-        public Builder setTargetDir(String targetDir) {
-            this.targetDir = targetDir;
+        public Builder setWorkingDirectory(File workingDirectory) {
+            this.workingDirectory = workingDirectory;
             return this;
         }
 
