@@ -18,16 +18,15 @@ public final class Resources {
         this.resources = resources;
     }
 
-    public File getDirectory(EvaluationContext context) throws IOException {
+    public void init(EvaluationContext context) throws IOException {
         if (resources.isEmpty()) {
-            return null;
+            return;
         }
         File resourcesDir = new File(context.getEvaluationDirectory(), "_resources");
         FileUtils.forceMkdir(resourcesDir);
         for (Resource resource : resources) {
             resource.copyTo(resourcesDir);
         }
-        return resourcesDir;
     }
 
 }

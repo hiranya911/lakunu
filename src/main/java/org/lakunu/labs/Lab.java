@@ -6,8 +6,10 @@ import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.plugins.Plugin;
 import org.lakunu.labs.resources.Resource;
 import org.lakunu.labs.resources.Resources;
+import org.lakunu.labs.utils.LabUtils;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -63,12 +65,37 @@ public final class Lab {
         return phases;
     }
 
-    public ImmutableList<Plugin> getPlugins(String phase) {
-        return plugins.get(phase);
-    }
-
     public File getWorkingDirectory() {
         return workingDirectory;
+    }
+
+    public void execute(EvaluationContext context, String finalPhase) {
+        try {
+            resources.init(context);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        for (String phase : phases) {
+            boolean proceed = runPhase(context, phase);
+            if (!proceed || phase.equals(finalPhase)) {
+                break;
+            }
+        }
+    }
+
+    private boolean runPhase(EvaluationContext context, String phase) {
+        ImmutableList<Plugin> pluginList = plugins.get(phase);
+        if (pluginList.isEmpty()) {
+            return true;
+        }
+
+        LabUtils.outputTitle("Starting " + phase + " phase", context.getOutputHandler());
+        for (Plugin plugin : pluginList) {
+            if (!plugin.execute(context)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public abstract static class Builder {
