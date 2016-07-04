@@ -16,10 +16,15 @@ public final class LocalFileResource extends Resource {
         checkArgument(!Strings.isNullOrEmpty(path), "File path is required");
         this.file = new File(path).getAbsoluteFile();
         checkArgument(this.file.exists(), "File %s does not exist", path);
+        logger.info("Initialized resource from path: {}", path);
     }
 
     @Override
     public void copyTo(File resourcesDir) throws IOException {
+        if (logger.isDebugEnabled()) {
+            logger.info("Copying resource {} to {}", file.getAbsolutePath(),
+                    resourcesDir.getAbsolutePath());
+        }
         if (file.isDirectory()) {
             FileUtils.copyDirectoryToDirectory(file, resourcesDir);
         } else {

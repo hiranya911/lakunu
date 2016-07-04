@@ -6,6 +6,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import org.lakunu.labs.*;
 import org.lakunu.labs.plugins.Plugin;
+import org.lakunu.labs.resources.LocalFileResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +30,23 @@ public final class JsonLabFactory implements LabFactory {
 
     @Override
     public Lab build() {
-        String builderType = getField(json, "_builder", "default");
+        String builderType = getStringField(json, "_builder", "default");
         Lab.Builder builder;
         if ("default".equals(builderType)) {
             builder = DefaultLabBuilder.newBuilder();
         } else {
             builder = Lab.newLabBuilder(builderType);
+        }
+
+        JsonNode resources = json.get("_resources");
+        if (resources != null) {
+            if (resources.isArray()) {
+                for (int i = 0; i < resources.size(); i++) {
+                    builder.addResource(new LocalFileResource(resources.get(i).asText()));
+                }
+            } else {
+                builder.addResource(new LocalFileResource(resources.asText()));
+            }
         }
 
         Iterator<Map.Entry<String,JsonNode>> fields = json.fields();
@@ -55,12 +67,12 @@ public final class JsonLabFactory implements LabFactory {
             }
         }
 
-        String name = getField(json, "_name", "anonymous");
+        String name = getStringField(json, "_name", "anonymous");
         return builder.setName(name).build();
     }
 
     private Plugin newPlugin(JsonNode node) {
-        String plugin = getField(node, "plugin", null);
+        String plugin = getStringField(node, "plugin", null);
         checkArgument(!Strings.isNullOrEmpty(plugin), "Plugin name is required");
         logger.info("Setting up plugin: {}", plugin);
         ObjectMapper mapper = new ObjectMapper();
@@ -68,7 +80,7 @@ public final class JsonLabFactory implements LabFactory {
         return PluginRegistry.getInstance().getPlugin(plugin, ImmutableMap.copyOf(properties));
     }
 
-    private String getField(JsonNode node, String name, String def) {
+    private String getStringField(JsonNode node, String name, String def) {
         JsonNode field = node.get(name);
         if (field != null) {
             return field.asText(def);

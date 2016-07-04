@@ -7,11 +7,15 @@ import java.util.stream.Collector;
 
 public class LabUtils {
 
+    public static void outputBreak(LabOutputHandler outputHandler) {
+        outputHandler.info("------------------------------------------------------------------------");
+    }
+
     public static void outputTitle(String title, LabOutputHandler outputHandler) {
         outputHandler.info("");
-        outputHandler.info("------------------------------------------------------------------------");
+        outputBreak(outputHandler);
         outputHandler.info(title);
-        outputHandler.info("------------------------------------------------------------------------");
+        outputBreak(outputHandler);
         outputHandler.info("");
     }
 
