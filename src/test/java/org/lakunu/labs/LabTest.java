@@ -1,11 +1,11 @@
 package org.lakunu.labs;
 
 import com.google.common.collect.ImmutableList;
+import org.junit.Assert;
 import org.junit.Test;
 import org.lakunu.labs.plugins.TestPlugin;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 public class LabTest {
 
@@ -47,7 +47,7 @@ public class LabTest {
                 .setName("lab")
                 .addPlugin("foo", TestPlugin.newInstance())
                 .build();
-        assertThat(phases, is(lab.getPhases()));
+        Assert.assertThat(phases, is(lab.getPhases()));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -57,7 +57,7 @@ public class LabTest {
                 .setName("lab")
                 .addPlugin("foo", TestPlugin.newInstance())
                 .build();
-        assertThat(phases, is(lab.getPhases()));
+        Assert.assertThat(phases, is(lab.getPhases()));
     }
 
     static class TestLabBuilder extends Lab.Builder {

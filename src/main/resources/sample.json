@@ -1,5 +1,4 @@
 {
-  "_resources": "pom.xml",
   "build": [
     {
       "plugin": "ant",

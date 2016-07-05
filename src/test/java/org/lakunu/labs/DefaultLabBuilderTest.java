@@ -1,11 +1,10 @@
 package org.lakunu.labs;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 import org.junit.Test;
 import org.lakunu.labs.plugins.TestPlugin;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
 
 public class DefaultLabBuilderTest {
 
@@ -16,7 +15,7 @@ public class DefaultLabBuilderTest {
                 .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance())
                 .build();
         Assert.assertEquals("foo", lab.getName());
-        assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
+        Assert.assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -39,20 +38,20 @@ public class DefaultLabBuilderTest {
                 .setName("foo")
                 .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance())
                 .build();
-        assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
+        Assert.assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
 
         lab = DefaultLabBuilder.newBuilder()
                 .setName("foo")
                 .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance())
                 .addPlugin(DefaultLabBuilder.RUN_PHASE, TestPlugin.newInstance())
                 .build();
-        assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
+        Assert.assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
 
         lab = DefaultLabBuilder.newBuilder()
                 .setName("foo")
                 .addPlugin(DefaultLabBuilder.RUN_PHASE, TestPlugin.newInstance())
                 .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance())
                 .build();
-        assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
+        Assert.assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
     }
 }

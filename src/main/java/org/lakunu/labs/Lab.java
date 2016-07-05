@@ -57,6 +57,11 @@ public final class Lab {
         return phases;
     }
 
+    public ImmutableList<String> getActivePhases() {
+        return phases.stream().filter(p -> !plugins.get(p).isEmpty())
+                .collect(LabUtils.immutableList());
+    }
+
     File prepareResources(Evaluation.Context context) throws IOException {
         return resources.prepare(context);
     }
