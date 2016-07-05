@@ -1,33 +1,57 @@
 package org.lakunu.labs;
 
+import com.google.common.base.Strings;
+
+import java.util.Collection;
+
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class Score {
 
-    private final int score;
-    private final int maxScore;
+    private final String name;
+    private final double value;
+    private final double limit;
 
-    public Score(int score) {
-        this(score, score);
+    private Score(String name, double value, double limit) {
+        checkArgument(!Strings.isNullOrEmpty(name), "Name is required");
+        this.name = name;
+        this.value = value;
+        this.limit = limit;
     }
 
-    public Score(int score, int maxScore) {
-        checkArgument(score >= 0, "score must not be negative");
-        checkArgument(maxScore >= 0, "maxScore must not be negative");
-        checkArgument(score <= maxScore, "score must not exceed maxScore");
-        this.score = score;
-        this.maxScore = maxScore;
+    public String getName() {
+        return name;
     }
 
-    public int getScore() {
-        return score;
+    public double getValue() {
+        return value;
     }
 
-    public int getMaxScore() {
-        return maxScore;
+    public double getLimit() {
+        return limit;
     }
 
-    public Score add(Score score) {
-        return new Score(this.score + score.score, this.maxScore + score.maxScore);
+    public Score add(String name, Score score) {
+        checkNotNull(score, "argument must not be null");
+        return new Score(name, this.value + score.value, this.limit + score.limit);
     }
+
+    public static Score total(Collection<Score> scores) {
+        return scores.stream().reduce((s1,s2) -> s1.add("total", s2)).get();
+    }
+
+    public static Score newPoints(String name, double value, double limit) {
+        checkArgument(value >= 0, "value must not be negative");
+        checkArgument(limit >= 0, "limit must not be negative");
+        checkArgument(value <= limit, "value must not exceed limit");
+        return new Score(name, value, limit);
+    }
+
+    public static Score newPenalty(String name, double value) {
+        checkArgument(value <= 0, "value must not be positive");
+        return new Score(name, value, 0D);
+    }
+
+
 }
