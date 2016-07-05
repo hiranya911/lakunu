@@ -39,7 +39,7 @@ public final class Evaluation {
     }
 
     public void run(String finalPhase) throws IOException {
-        Context context = new Context(this);
+        Context context = new EvaluationContext(this);
         try {
             lab.execute(context, finalPhase);
         } finally {
@@ -57,11 +57,14 @@ public final class Evaluation {
         return new Builder();
     }
 
-    public static Context newTestContext() {
-        return new Context();
+    public static abstract class Context {
+        public abstract File getEvaluationDirectory() throws IOException;
+        public abstract LabOutputHandler getOutputHandler();
+        public abstract File getSubmissionDirectory();
+        protected abstract void cleanup();
     }
 
-    public static final class Context {
+    public static final class EvaluationContext extends Context {
 
         private final File workingDirectory;
         private final LabOutputHandler outputHandler;
@@ -69,14 +72,7 @@ public final class Evaluation {
         private final File resourcesDirectory;
         private File evaluationDirectory;
 
-        private Context() {
-            this.workingDirectory = null;
-            this.outputHandler = null;
-            this.submissionDirectory = null;
-            this.resourcesDirectory = null;
-        }
-
-        private Context(Evaluation eval) throws IOException {
+        private EvaluationContext(Evaluation eval) throws IOException {
             this.workingDirectory = eval.workingDirectory;
             this.outputHandler = eval.outputHandler;
             this.resourcesDirectory = eval.lab.prepareResources(this);
@@ -103,7 +99,7 @@ public final class Evaluation {
             return submissionDirectory;
         }
 
-        private synchronized void cleanup() {
+        protected synchronized void cleanup() {
             logger.info("Cleaning up...");
             FileUtils.deleteQuietly(evaluationDirectory);
             evaluationDirectory = null;

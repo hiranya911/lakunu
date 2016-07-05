@@ -9,6 +9,9 @@ import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.submit.TestSubmission;
 import org.lakunu.labs.utils.LabUtils;
 
+import java.io.File;
+import java.io.IOException;
+
 import static org.hamcrest.CoreMatchers.is;
 
 public class EvaluationTest {
@@ -98,5 +101,71 @@ public class EvaluationTest {
         }
         return builder.build();
     }
+
+    public static final class TestContext extends Evaluation.Context {
+
+        private final File evaluationDirectory;
+        private final LabOutputHandler outputHandler;
+        private final File submissionDirectory;
+
+        private TestContext(TestContextBuilder builder) {
+            this.evaluationDirectory = builder.evaluationDirectory;
+            this.outputHandler = builder.outputHandler;
+            this.submissionDirectory = builder.submissionDirectory;
+        }
+
+        @Override
+        public File getEvaluationDirectory() throws IOException {
+            return evaluationDirectory;
+        }
+
+        @Override
+        public LabOutputHandler getOutputHandler() {
+            return outputHandler;
+        }
+
+        @Override
+        public File getSubmissionDirectory() {
+            return submissionDirectory;
+        }
+
+        @Override
+        protected void cleanup() {
+
+        }
+    }
+
+    public static class TestContextBuilder {
+        private File evaluationDirectory;
+        private LabOutputHandler outputHandler;
+        private File submissionDirectory;
+
+        private TestContextBuilder() {
+        }
+
+        public TestContextBuilder setEvaluationDirectory(File evaluationDirectory) {
+            this.evaluationDirectory = evaluationDirectory;
+            return this;
+        }
+
+        public TestContextBuilder setOutputHandler(LabOutputHandler outputHandler) {
+            this.outputHandler = outputHandler;
+            return this;
+        }
+
+        public TestContextBuilder setSubmissionDirectory(File submissionDirectory) {
+            this.submissionDirectory = submissionDirectory;
+            return this;
+        }
+
+        public TestContext build() {
+            return new TestContext(this);
+        }
+    }
+
+    public static TestContextBuilder testContextBuilder() {
+        return new TestContextBuilder();
+    }
+
 
 }
