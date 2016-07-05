@@ -66,7 +66,7 @@ public final class Lab {
         return resources.prepare(context);
     }
 
-    public void execute(Evaluation.Context context, String finalPhase) {
+    void execute(Evaluation.Context context, String finalPhase) {
         for (String phase : phases) {
             boolean proceed = runPhase(context, phase);
             if (!proceed || phase.equals(finalPhase)) {

@@ -3,7 +3,7 @@ package org.lakunu.labs;
 import com.google.common.collect.ImmutableList;
 import org.junit.Assert;
 import org.junit.Test;
-import org.lakunu.labs.plugins.TestPlugin;
+import org.lakunu.labs.plugins.CustomTestPlugin;
 
 import static org.hamcrest.CoreMatchers.is;
 
@@ -22,21 +22,21 @@ public class LabTest {
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidPhaseName1() {
         new TestLabBuilder(ImmutableList.of("foo", "_bar"))
-                .addPlugin("foo", TestPlugin.newInstance())
+                .addPlugin("foo", CustomTestPlugin.newInstance())
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidPhaseName2() {
         new TestLabBuilder(ImmutableList.of("foo", "bar_1"))
-                .addPlugin("foo", TestPlugin.newInstance())
+                .addPlugin("foo", CustomTestPlugin.newInstance())
                 .build();
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidPhaseName3() {
         new TestLabBuilder(ImmutableList.of("foo", "b@r"))
-                .addPlugin("foo", TestPlugin.newInstance())
+                .addPlugin("foo", CustomTestPlugin.newInstance())
                 .build();
     }
 
@@ -45,7 +45,7 @@ public class LabTest {
         ImmutableList<String> phases = ImmutableList.of("foo", "bar", "more-complex");
         Lab lab = new TestLabBuilder(phases)
                 .setName("lab")
-                .addPlugin("foo", TestPlugin.newInstance())
+                .addPlugin("foo", CustomTestPlugin.newInstance())
                 .build();
         Assert.assertThat(phases, is(lab.getPhases()));
     }
@@ -55,7 +55,7 @@ public class LabTest {
         ImmutableList<String> phases = ImmutableList.of("foo", "bar", "foo");
         Lab lab = new TestLabBuilder(phases)
                 .setName("lab")
-                .addPlugin("foo", TestPlugin.newInstance())
+                .addPlugin("foo", CustomTestPlugin.newInstance())
                 .build();
         Assert.assertThat(phases, is(lab.getPhases()));
     }

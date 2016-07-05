@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.lakunu.labs.plugins.TestPlugin;
+import org.lakunu.labs.plugins.CustomTestPlugin;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.submit.TestSubmission;
 import org.lakunu.labs.utils.LabUtils;
@@ -17,7 +17,7 @@ public class EvaluationTest {
     public void testSinglePluginEvaluation() throws Exception {
         Lab lab = DefaultLabBuilder.newBuilder()
                 .setName("test")
-                .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance(context -> {
+                .addPlugin(DefaultLabBuilder.BUILD_PHASE, CustomTestPlugin.newInstance(context -> {
                     context.getOutputHandler().info("Hello world");
                     return true;
                 }))
@@ -51,11 +51,11 @@ public class EvaluationTest {
     public void testMultiplePluginEvaluation() throws Exception {
         Lab lab = DefaultLabBuilder.newBuilder()
                 .setName("test")
-                .addPlugin(DefaultLabBuilder.BUILD_PHASE, TestPlugin.newInstance(context -> {
+                .addPlugin(DefaultLabBuilder.BUILD_PHASE, CustomTestPlugin.newInstance(context -> {
                     context.getOutputHandler().info("Hello world");
                     return true;
                 }))
-                .addPlugin(DefaultLabBuilder.RUN_PHASE, TestPlugin.newInstance(context -> {
+                .addPlugin(DefaultLabBuilder.RUN_PHASE, CustomTestPlugin.newInstance(context -> {
                     context.getOutputHandler().info("Bye world");
                     return true;
                 }))

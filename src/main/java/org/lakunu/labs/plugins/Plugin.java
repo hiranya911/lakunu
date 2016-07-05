@@ -16,7 +16,7 @@ public abstract class Plugin {
 
     public final boolean execute(Evaluation.Context context) {
         try {
-            return doExecute(context);
+            return doExecute(context) || !failOnError;
         } catch (Exception e) {
             if (failOnError) {
                 throw new RuntimeException(e);
