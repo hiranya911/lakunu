@@ -77,7 +77,7 @@ public final class JsonLabFactory implements LabFactory {
         logger.info("Setting up plugin: {}", plugin);
         ObjectMapper mapper = new ObjectMapper();
         Map<String,Object> properties = mapper.convertValue(node, Map.class);
-        return PluginRegistry.getInstance().getPlugin(plugin, ImmutableMap.copyOf(properties));
+        return PluginRegistry.getInstance().getObject(plugin, ImmutableMap.copyOf(properties));
     }
 
     private String getStringField(JsonNode node, String name, String def) {

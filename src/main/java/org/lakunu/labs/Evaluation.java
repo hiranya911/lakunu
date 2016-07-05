@@ -1,5 +1,6 @@
 package org.lakunu.labs;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.utils.LoggingOutputHandler;
@@ -10,6 +11,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -43,6 +46,9 @@ public final class Evaluation {
         try {
             lab.execute(context, finalPhase);
         } finally {
+            for (Score score : context.getScores()) {
+                logger.info("Item score: {}", score.toString());
+            }
             if (cleanUpAfterFinish) {
                 context.cleanup();
             }
@@ -58,10 +64,21 @@ public final class Evaluation {
     }
 
     public static abstract class Context {
+
+        private final Queue<Score> scores = new ConcurrentLinkedQueue<>();
+
         public abstract File getEvaluationDirectory() throws IOException;
         public abstract LabOutputHandler getOutputHandler();
         public abstract File getSubmissionDirectory();
         protected abstract void cleanup();
+
+        public final void addScore(Score score) {
+            scores.offer(score);
+        }
+
+        public ImmutableList<Score> getScores() {
+            return ImmutableList.copyOf(scores);
+        }
     }
 
     public static final class EvaluationContext extends Context {

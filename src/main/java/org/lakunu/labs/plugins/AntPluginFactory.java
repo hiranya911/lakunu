@@ -10,11 +10,10 @@ public final class AntPluginFactory extends PluginFactory<AntPlugin> {
     }
 
     @Override
-    public AntPlugin build(ImmutableMap<String, Object> properties) {
+    public Plugin.Builder<AntPlugin, ?> doBuild(ImmutableMap<String, Object> properties) {
         return AntPlugin.newBuilder()
                 .setAntBinary(getProperty(properties, "binary", "ant", String.class))
                 .setBuildTarget(getProperty(properties, "target", "compile", String.class))
-                .setFailOnError(isFailOnError(properties))
-                .build();
+                .setFailOnError(isFailOnError(properties));
     }
 }

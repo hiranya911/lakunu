@@ -1,41 +1,28 @@
 package org.lakunu.labs.config;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.lakunu.labs.plugins.Plugin;
 import org.lakunu.labs.plugins.PluginFactory;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.google.common.base.Preconditions.checkArgument;
-
-public final class PluginRegistry {
+public final class PluginRegistry extends ObjectFactoryRegistry<PluginFactory,Plugin> {
 
     private static final PluginRegistry instance = new PluginRegistry();
 
-    private final ImmutableMap<String,PluginFactory> factories;
-
     private PluginRegistry() {
-        ImmutableList<PluginFactory> factories = ImmutableList.<PluginFactory>builder()
-                .addAll(ServiceLoader.load(PluginFactory.class))
-                .build();
-        Map<String,Long> counts = factories.stream().collect(
-                Collectors.groupingBy(PluginFactory::getName, Collectors.counting()));
-        ImmutableMap.Builder<String,PluginFactory> builder = ImmutableMap.builder();
-        counts.keySet().forEach(p -> checkArgument(counts.get(p) == 1, "Duplicate plugin: %s", p));
-        factories.forEach(f -> builder.put(f.getName(), f));
-        this.factories = builder.build();
+        super(PluginFactory.class);
     }
 
     public static PluginRegistry getInstance() {
         return instance;
     }
 
-    public Plugin getPlugin(String name, ImmutableMap<String,Object> properties) {
-        PluginFactory factory = factories.get(name);
-        checkArgument(factory != null, "Unknown plugin: %s", name);
-        return factory.build(properties);
+    @Override
+    protected String getName(PluginFactory factory) {
+        return factory.getName();
     }
 
+    @Override
+    protected Plugin newInstance(PluginFactory factory, ImmutableMap<String, Object> properties) {
+        return factory.build(properties);
+    }
 }

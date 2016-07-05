@@ -53,5 +53,12 @@ public final class Score {
         return new Score(name, value, 0D);
     }
 
-
+    @Override
+    public String toString() {
+        String str = name + ": " + value;
+        if (limit > 0) {
+            str += " / " + limit;
+        }
+        return str;
+    }
 }

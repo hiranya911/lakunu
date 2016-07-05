@@ -12,7 +12,7 @@ public final class RunCommandPluginFactory extends PluginFactory<RunCommandPlugi
     }
 
     @Override
-    public RunCommandPlugin build(ImmutableMap<String, Object> properties) {
+    protected Plugin.Builder<RunCommandPlugin, ?> doBuild(ImmutableMap<String, Object> properties) {
         RunCommandPlugin.Builder builder = RunCommandPlugin.newBuilder()
                 .setCommand(getProperty(properties, "command", String.class))
                 .setStatus(getProperty(properties, "status", 0, Integer.class));
@@ -20,6 +20,6 @@ public final class RunCommandPluginFactory extends PluginFactory<RunCommandPlugi
         if (args != null) {
             args.forEach(arg -> builder.addArgument(arg.toString()));
         }
-        return builder.build();
+        return builder;
     }
 }
