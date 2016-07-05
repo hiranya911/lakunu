@@ -1,7 +1,5 @@
 package org.lakunu.labs.plugins;
 
-import org.lakunu.labs.Evaluation;
-
 public final class CustomTestPlugin extends Plugin {
 
     private final TestPluginFunction function;
@@ -12,11 +10,8 @@ public final class CustomTestPlugin extends Plugin {
     }
 
     @Override
-    protected boolean doExecute(Evaluation.Context context) {
-        if (function != null) {
-            return function.run(context);
-        }
-        return false;
+    protected boolean doExecute(Context context) {
+        return function != null && function.run(context);
     }
 
     public static CustomTestPlugin newInstance() {
@@ -55,6 +50,6 @@ public final class CustomTestPlugin extends Plugin {
     }
 
     public interface TestPluginFunction {
-        boolean run(Evaluation.Context context);
+        boolean run(Context context);
     }
 }

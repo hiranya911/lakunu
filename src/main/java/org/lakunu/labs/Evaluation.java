@@ -57,6 +57,10 @@ public final class Evaluation {
         return new Builder();
     }
 
+    public static Context newTestContext() {
+        return new Context();
+    }
+
     public static final class Context {
 
         private final File workingDirectory;
@@ -64,6 +68,13 @@ public final class Evaluation {
         private final File submissionDirectory;
         private final File resourcesDirectory;
         private File evaluationDirectory;
+
+        private Context() {
+            this.workingDirectory = null;
+            this.outputHandler = null;
+            this.submissionDirectory = null;
+            this.resourcesDirectory = null;
+        }
 
         private Context(Evaluation eval) throws IOException {
             this.workingDirectory = eval.workingDirectory;

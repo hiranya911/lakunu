@@ -1,8 +1,11 @@
 package org.lakunu.labs.plugins;
 
 import org.lakunu.labs.Evaluation;
+import org.lakunu.labs.LabOutputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
 
 public abstract class Plugin {
 
@@ -15,8 +18,9 @@ public abstract class Plugin {
     }
 
     public final boolean execute(Evaluation.Context context) {
+        Context pluginContext = new Context(context);
         try {
-            return doExecute(context) || !failOnError;
+            return doExecute(pluginContext) || !failOnError;
         } catch (Exception e) {
             if (failOnError) {
                 throw new RuntimeException(e);
@@ -27,7 +31,26 @@ public abstract class Plugin {
         }
     }
 
-    protected abstract boolean doExecute(Evaluation.Context context) throws Exception;
+    protected abstract boolean doExecute(Context context) throws Exception;
+
+    public static class Context {
+
+        private final LabOutputHandler outputHandler;
+        private final File submissionDirectory;
+
+        private Context(Evaluation.Context context) {
+            this.outputHandler = context.getOutputHandler();
+            this.submissionDirectory = context.getSubmissionDirectory();
+        }
+
+        public LabOutputHandler getOutputHandler() {
+            return outputHandler;
+        }
+
+        public File getSubmissionDirectory() {
+            return submissionDirectory;
+        }
+    }
 
     public static abstract class Builder<T extends Plugin,B extends Builder<T,B>> {
         private final B thisObj;
