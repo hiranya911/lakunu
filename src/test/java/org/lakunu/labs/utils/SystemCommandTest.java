@@ -8,11 +8,9 @@ import org.apache.commons.lang3.SystemUtils;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
-import org.lakunu.labs.LabOutputHandler;
+import org.lakunu.labs.TestOutputHandler;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SystemCommandTest {
 
@@ -29,9 +27,10 @@ public class SystemCommandTest {
                 .setOutputHandler(handler)
                 .build();
         Assert.assertEquals(0, cmd.run());
-        Assert.assertEquals(1, handler.entries.size());
-        LogEntry entry = handler.entries.get(0);
-        Assert.assertEquals(Level.INFO, entry.level);
+        ImmutableList<TestOutputHandler.LogEntry> entries = handler.entries();
+        Assert.assertEquals(1, entries.size());
+        TestOutputHandler.LogEntry entry = entries.get(0);
+        Assert.assertEquals(TestOutputHandler.Level.INFO, entry.level);
         Assert.assertTrue(!Strings.isNullOrEmpty(entry.line));
     }
 
@@ -57,8 +56,9 @@ public class SystemCommandTest {
             cmd.run();
         } catch (ExecuteException ignored) {
         }
-        Assert.assertTrue(handler.entries.size() > 0);
-        handler.entries.forEach(e -> Assert.assertEquals(Level.ERROR, e.level));
+        ImmutableList<TestOutputHandler.LogEntry> entries = handler.entries();
+        Assert.assertTrue(entries.size() > 0);
+        entries.forEach(e -> Assert.assertEquals(TestOutputHandler.Level.ERROR, e.level));
     }
 
     @Test
@@ -105,39 +105,6 @@ public class SystemCommandTest {
             Assert.fail("No error thrown for invalid state");
         } catch (IllegalStateException ignored) {
         }
-    }
-
-    static class LogEntry {
-        private final String line;
-        private final Level level;
-
-        LogEntry(String line, Level level) {
-            this.line = line;
-            this.level = level;
-        }
-    }
-
-    static class TestOutputHandler implements LabOutputHandler {
-
-        private final List<LogEntry> entries = new ArrayList<>();
-
-        public void info(String line) {
-            entries.add(new LogEntry(line, Level.INFO));
-        }
-
-        public void warn(String line) {
-            entries.add(new LogEntry(line, Level.WARN));
-        }
-
-        public void error(String line) {
-            entries.add(new LogEntry(line, Level.ERROR));
-        }
-    }
-
-    enum Level {
-        INFO,
-        WARN,
-        ERROR
     }
 
 }

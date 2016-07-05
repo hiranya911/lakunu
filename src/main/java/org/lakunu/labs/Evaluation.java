@@ -18,11 +18,11 @@ public final class Evaluation {
 
     private static final Logger logger = LoggerFactory.getLogger(Evaluation.class);
 
-    final Submission submission;
-    final Lab lab;
-    final File workingDirectory;
-    final LabOutputHandler outputHandler;
-    final boolean cleanUpAfterFinish;
+    private final Submission submission;
+    private final Lab lab;
+    private final File workingDirectory;
+    private final LabOutputHandler outputHandler;
+    private final boolean cleanUpAfterFinish;
 
     private Evaluation(Builder builder) {
         checkNotNull(builder.submission, "Submission is required");
@@ -35,7 +35,7 @@ public final class Evaluation {
         this.lab = builder.lab;
         this.workingDirectory = builder.workingDirectory;
         this.cleanUpAfterFinish = builder.cleanUpAfterFinish;
-        this.outputHandler = new LoggingOutputHandler();
+        this.outputHandler = builder.outputHandler;
     }
 
     public void run(String finalPhase) throws IOException {

@@ -10,7 +10,7 @@ public abstract class Plugin {
 
     private final boolean failOnError;
 
-    public Plugin(Builder builder) {
+    protected Plugin(Builder builder) {
         this.failOnError = builder.failOnError;
     }
 
