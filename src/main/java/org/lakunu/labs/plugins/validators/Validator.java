@@ -6,7 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 public abstract class Validator<T> {
 
-    private final int maxScore;
+    protected final int maxScore;
 
     protected Validator(int maxScore) {
         checkArgument(maxScore >= 0, "maxScore must not be negative");
