@@ -1,7 +1,6 @@
 package org.lakunu.labs.utils;
 
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import org.apache.commons.exec.*;
 import org.lakunu.labs.LabOutputHandler;
 import org.slf4j.Logger;
@@ -11,8 +10,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -26,8 +23,8 @@ public final class SystemCommand {
     private final String[] args;
     private final File workingDir;
     private final LabOutputHandler outputHandler;
-    private final Queue<String> stdoutBuffer;
-    private final Queue<String> stderrBuffer;
+    private final StringBuffer stdoutBuffer;
+    private final StringBuffer stderrBuffer;
 
     private SystemCommand(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.command), "Command is required");
@@ -39,8 +36,8 @@ public final class SystemCommand {
         this.args = builder.args.toArray(new String[builder.args.size()]);
         this.workingDir = builder.workingDir;
         this.outputHandler = builder.outputHandler;
-        this.stdoutBuffer = builder.bufferStdout ? new ConcurrentLinkedQueue<>() : null;
-        this.stderrBuffer = builder.bufferStderr ? new ConcurrentLinkedQueue<>() : null;
+        this.stdoutBuffer = builder.bufferStdout ? new StringBuffer() : null;
+        this.stderrBuffer = builder.bufferStderr ? new StringBuffer() : null;
     }
 
     public int run() throws IOException {
@@ -59,14 +56,14 @@ public final class SystemCommand {
         return exec.execute(cmdLine);
     }
 
-    public ImmutableList<String> getStdout() {
+    public String getStdout() {
         checkState(stdoutBuffer != null, "Buffering not enabled for stdout");
-        return ImmutableList.copyOf(stdoutBuffer);
+        return stdoutBuffer.toString();
     }
 
-    public ImmutableList<String> getStderr() {
+    public String getStderr() {
         checkState(stderrBuffer != null, "Buffering not enabled for stderr");
-        return ImmutableList.copyOf(stderrBuffer);
+        return stderrBuffer.toString();
     }
 
     public static Builder newBuilder() {
@@ -86,12 +83,12 @@ public final class SystemCommand {
         protected void processLine(String line, int level) {
             if (stdout) {
                 if (stdoutBuffer != null) {
-                    stdoutBuffer.offer(line);
+                    stdoutBuffer.append(line).append('\n');
                 }
                 outputHandler.info(line);
             } else {
                 if (stderrBuffer != null) {
-                    stderrBuffer.offer(line);
+                    stderrBuffer.append(line).append('\n');
                 }
                 outputHandler.error(line);
             }

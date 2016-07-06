@@ -48,7 +48,7 @@ public abstract class Plugin {
 
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
-        private ImmutableList<String> output;
+        private String output;
         private Exception exception;
         private boolean success;
 
@@ -65,11 +65,11 @@ public abstract class Plugin {
             return submissionDirectory;
         }
 
-        public ImmutableList<String> getOutput() {
+        public String getOutput() {
             return output;
         }
 
-        public Context setOutput(ImmutableList<String> output) {
+        public Context setOutput(String output) {
             this.output = output;
             return this;
         }

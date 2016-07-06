@@ -25,8 +25,11 @@ public final class AntPlugin extends Plugin {
                 .addArgument(buildTarget)
                 .setWorkingDir(context.getSubmissionDirectory())
                 .setOutputHandler(context.getOutputHandler())
+                .setBufferStdout(true)
                 .build();
-        return command.run() == 0;
+        int status = command.run();
+        context.setOutput(command.getStdout());
+        return status == 0;
     }
 
     public static Builder newBuilder() {

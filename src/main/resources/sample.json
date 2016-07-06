@@ -2,7 +2,14 @@
   "build": [
     {
       "plugin": "ant",
-      "target": "jar"
+      "target": "jar",
+      "validators": [
+        {
+          "name": "build-success",
+          "type": "success",
+          "score": 5
+        }
+      ]
     }
   ],
   "run": [

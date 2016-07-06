@@ -47,7 +47,7 @@ public final class Evaluation {
             lab.execute(context, finalPhase);
         } finally {
             for (Score score : context.getScores()) {
-                logger.info("Item score: {}", score.toString());
+                logger.info("Item score... {}", score.toString());
             }
             if (cleanUpAfterFinish) {
                 context.cleanup();

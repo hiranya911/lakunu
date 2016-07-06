@@ -26,6 +26,7 @@ public abstract class PluginFactory<T extends Plugin> {
     protected abstract Plugin.Builder<T,?> doBuild(ImmutableMap<String,Object> properties);
 
     private Validator newValidator(Object obj) {
+        checkArgument(obj instanceof Map, "invalid validator configuration");
         Map<String,Object> properties = (Map) obj;
         String type = getProperty(properties, "type", String.class);
         checkArgument(!Strings.isNullOrEmpty(type), "validator type is required");

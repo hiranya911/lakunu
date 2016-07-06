@@ -90,16 +90,15 @@ public class SystemCommandTest {
                 .setOutputHandler(new TestOutputHandler())
                 .setBufferStderr(true)
                 .build();
-        try {
-            cmd.run();
-        } catch (IOException ignored) {
-        }
+        Assert.assertTrue(cmd.run() != 0);
         Assert.assertFalse(cmd.getStderr().isEmpty());
 
         cmd = SystemCommand.newBuilder()
-                .setCommand("date")
+                .setCommand("ls")
+                .addArgument("*.bogus")
                 .setOutputHandler(new TestOutputHandler())
                 .build();
+        Assert.assertTrue(cmd.run() != 0);
         try {
             cmd.getStderr();
             Assert.fail("No error thrown for invalid state");
