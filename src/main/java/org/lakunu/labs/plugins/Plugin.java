@@ -44,7 +44,7 @@ public abstract class Plugin {
 
     protected abstract boolean doExecute(Context context) throws Exception;
 
-    public static class Context {
+    public final static class Context {
 
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
