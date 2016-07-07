@@ -2,7 +2,7 @@
   "build": [
     {
       "plugin": "ant",
-      "target": "compile",
+      "target": "jar",
       "validators": [
         {
           "name": "build-success",
@@ -16,7 +16,15 @@
     {
       "plugin": "run-command",
       "command": "java",
-      "args": ["-jar", "build/rational.jar", "1", "2"]
+      "args": ["-jar", "build/rational.jar", "1", "2"],
+      "validators": [
+        {
+          "name": "run-jar",
+          "type": "output-match",
+          "pattern": "(?s).+",
+          "score": 5
+        }
+      ]
     }
   ],
   "test": [

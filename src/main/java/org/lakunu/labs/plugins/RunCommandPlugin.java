@@ -29,10 +29,14 @@ public final class RunCommandPlugin extends Plugin {
         SystemCommand.Builder builder = SystemCommand.newBuilder()
                 .setCommand(command)
                 .setOutputHandler(context.getOutputHandler())
+                .setBufferStdout(true)
+                .setBufferStderr(true)
                 .setWorkingDir(context.getSubmissionDirectory());
         args.forEach(builder::addArgument);
-        SystemCommand command = builder.build();
-        return command.run().getStatus() == status;
+        SystemCommand.Output output = builder.build().run();
+        context.setOutput(output.getStdout());
+        context.setErrors(output.getStderr());
+        return output.getStatus() == status;
     }
 
     public static Builder newBuilder() {

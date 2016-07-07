@@ -49,6 +49,7 @@ public abstract class Plugin {
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
         private String output;
+        private String errors;
         private Exception exception;
         private boolean success;
 
@@ -71,6 +72,15 @@ public abstract class Plugin {
 
         public Context setOutput(String output) {
             this.output = output;
+            return this;
+        }
+
+        public String getErrors() {
+            return errors;
+        }
+
+        public Context setErrors(String errors) {
+            this.errors = errors;
             return this;
         }
 
