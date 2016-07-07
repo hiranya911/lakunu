@@ -12,7 +12,9 @@ public final class AntPlugin extends Plugin {
                 .setCommand(builder.antBinary)
                 .addArgument(builder.buildTarget)
                 .setBufferStdout(true)
-                .setStdoutBufferLimit(builder.outputBufferLimit)
+                .setStdoutBufferLimit(builder.stdoutBufferLimit)
+                .setBufferStderr(builder.processStderr)
+                .setStderrBufferLimit(builder.stderrBufferLimit)
                 .build();
     }
 
@@ -31,7 +33,9 @@ public final class AntPlugin extends Plugin {
     public static class Builder extends Plugin.Builder<AntPlugin,Builder> {
         private String antBinary;
         private String buildTarget;
-        private int outputBufferLimit = SystemCommand.DEFAULT_BUFFER_SIZE;
+        private boolean processStderr;
+        private int stdoutBufferLimit = SystemCommand.DEFAULT_BUFFER_SIZE;
+        private int stderrBufferLimit = SystemCommand.DEFAULT_BUFFER_SIZE;
 
         private Builder() {
         }
@@ -46,8 +50,18 @@ public final class AntPlugin extends Plugin {
             return this;
         }
 
-        public Builder setOutputBufferLimit(int outputBufferLimit) {
-            this.outputBufferLimit = outputBufferLimit;
+        public Builder setProcessStderr(boolean processStderr) {
+            this.processStderr = processStderr;
+            return this;
+        }
+
+        public Builder setStdoutBufferLimit(int stdoutBufferLimit) {
+            this.stdoutBufferLimit = stdoutBufferLimit;
+            return this;
+        }
+
+        public Builder setStderrBufferLimit(int stderrBufferLimit) {
+            this.stderrBufferLimit = stderrBufferLimit;
             return this;
         }
 

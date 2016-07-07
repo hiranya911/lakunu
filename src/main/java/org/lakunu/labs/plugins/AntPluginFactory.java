@@ -13,10 +13,15 @@ public final class AntPluginFactory extends PluginFactory<AntPlugin> {
     public Plugin.Builder<AntPlugin, ?> doBuild(ImmutableMap<String, Object> properties) {
         AntPlugin.Builder builder = AntPlugin.newBuilder()
                 .setAntBinary(getProperty(properties, "binary", "ant", String.class))
-                .setBuildTarget(getProperty(properties, "target", "compile", String.class));
-        Integer bufferLimit = getProperty(properties, "bufferLimit", Integer.class);
+                .setBuildTarget(getProperty(properties, "target", "compile", String.class))
+                .setProcessStderr(getProperty(properties, "stderr", false, Boolean.class));
+        Integer bufferLimit = getProperty(properties, "stdoutBuffer", Integer.class);
         if (bufferLimit != null) {
-            builder.setOutputBufferLimit(bufferLimit);
+            builder.setStdoutBufferLimit(bufferLimit);
+        }
+        bufferLimit = getProperty(properties, "stderrBuffer", Integer.class);
+        if (bufferLimit != null) {
+            builder.setStderrBufferLimit(bufferLimit);
         }
         return builder;
     }
