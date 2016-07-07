@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -21,28 +22,31 @@ public final class SystemCommand {
     public static final int DEFAULT_BUFFER_SIZE = 64 * 1024;
 
     private final CommandLine cmdLine;
-    private final File workingDir;
     private final CommandOutputStream.Factory stdoutFactory;
     private final CommandOutputStream.Factory stderrFactory;
 
-
     private SystemCommand(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.command), "Command is required");
-        checkNotNull(builder.workingDir, "Working directory is required");
-        checkArgument(builder.workingDir.isDirectory() && builder.workingDir.exists(),
-                "Working directory path is not a directory or does not exist");
         this.cmdLine = CommandLine.parse(builder.command);
-        builder.args.forEach(this.cmdLine::addArgument);
-        this.workingDir = builder.workingDir;
-        this.stdoutFactory = newStreamFactory(true, builder.outputHandler, builder.bufferStdout,
-                builder.stdoutBufferLimit);
-        this.stderrFactory = newStreamFactory(false, builder.outputHandler, builder.bufferStderr,
-                builder.stderrBufferLimit);
+        builder.args.forEach(arg -> {
+            checkArgument(!Strings.isNullOrEmpty(arg), "args cannot be null or empty");
+            this.cmdLine.addArgument(arg);
+
+        });
+        this.stdoutFactory = newStreamFactory(true, builder.bufferStdout, builder.stdoutBufferLimit);
+        this.stderrFactory = newStreamFactory(false, builder.bufferStderr, builder.stderrBufferLimit);
     }
 
-    public Output run() throws IOException {
-        final CommandOutputStream stdout = stdoutFactory.build();
-        final CommandOutputStream stderr = stderrFactory.build();
+    public Output run(LabOutputHandler outputHandler) throws IOException {
+        return run(new File("."), outputHandler);
+    }
+
+    public Output run(File workingDir, LabOutputHandler outputHandler) throws IOException {
+        checkNotNull(workingDir, "workingDirectory is required");
+        checkArgument(workingDir.exists() && workingDir.isDirectory(),
+                "working directory does not exist or is not a directory");
+        final CommandOutputStream stdout = stdoutFactory.build(outputHandler);
+        final CommandOutputStream stderr = stderrFactory.build(outputHandler);
         Executor exec = new DefaultExecutor();
         exec.setExitValues(null);
         exec.setWorkingDirectory(workingDir);
@@ -53,12 +57,11 @@ public final class SystemCommand {
         return new Output(exec.execute(cmdLine), stdout, stderr);
     }
 
-    private CommandOutputStream.Factory newStreamFactory(boolean stdout, LabOutputHandler outputHandler,
-                                          boolean buffering, int threshold) {
+    private CommandOutputStream.Factory newStreamFactory(boolean stdout, boolean buffering, int threshold) {
         if (buffering) {
-            return CommandOutputStream.withBuffering(stdout, outputHandler, threshold);
+            return CommandOutputStream.withBuffering(stdout, threshold);
         } else {
-            return CommandOutputStream.withoutBuffering(stdout, outputHandler);
+            return CommandOutputStream.withoutBuffering(stdout);
         }
     }
 
@@ -90,14 +93,10 @@ public final class SystemCommand {
         return new Builder();
     }
 
-    private static final File CURRENT_DIR = new File(".");
-
     public static class Builder {
 
         private String command;
         private final List<String> args = new ArrayList<>();
-        private File workingDir = CURRENT_DIR;
-        private LabOutputHandler outputHandler;
         private boolean bufferStdout;
         private boolean bufferStderr;
         private int stdoutBufferLimit = DEFAULT_BUFFER_SIZE;
@@ -116,13 +115,8 @@ public final class SystemCommand {
             return this;
         }
 
-        public Builder setWorkingDir(File workingDir) {
-            this.workingDir = workingDir;
-            return this;
-        }
-
-        public Builder setOutputHandler(LabOutputHandler outputHandler) {
-            this.outputHandler = outputHandler;
+        public Builder addArguments(Collection<String> args) {
+            this.args.addAll(args);
             return this;
         }
 

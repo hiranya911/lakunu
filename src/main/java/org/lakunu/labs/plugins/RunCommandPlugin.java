@@ -1,7 +1,5 @@
 package org.lakunu.labs.plugins;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import org.lakunu.labs.utils.SystemCommand;
 
 import java.util.ArrayList;
@@ -11,29 +9,27 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 public final class RunCommandPlugin extends Plugin {
 
-    private final String command;
-    private final ImmutableList<String> args;
     private final int status;
+    private final SystemCommand command;
 
     private RunCommandPlugin(Builder builder) {
         super(builder);
-        checkArgument(!Strings.isNullOrEmpty(builder.command), "Command is required");
         checkArgument(builder.status >= 0, "Invalid status: %s", builder.status);
-        this.command = builder.command;
-        this.args = ImmutableList.copyOf(builder.args);
+        this.command = SystemCommand.newBuilder()
+                .setCommand(builder.command)
+                .addArguments(builder.args)
+                .setBufferStdout(true)
+                .setStdoutBufferLimit(builder.stdoutBufferLimit)
+                .setBufferStderr(true)
+                .setStderrBufferLimit(builder.stderrBufferLimit)
+                .build();
         this.status = builder.status;
     }
 
     @Override
     protected boolean doExecute(Context context) throws Exception {
-        SystemCommand.Builder builder = SystemCommand.newBuilder()
-                .setCommand(command)
-                .setOutputHandler(context.getOutputHandler())
-                .setBufferStdout(true)
-                .setBufferStderr(true)
-                .setWorkingDir(context.getSubmissionDirectory());
-        args.forEach(builder::addArgument);
-        SystemCommand.Output output = builder.build().run();
+        SystemCommand.Output output = command.run(context.getSubmissionDirectory(),
+                context.getOutputHandler());
         context.setOutput(output.getStdout());
         context.setErrors(output.getStderr());
         return output.getStatus() == status;
@@ -47,6 +43,8 @@ public final class RunCommandPlugin extends Plugin {
         private String command;
         private final List<String> args = new ArrayList<>();
         private int status = 0;
+        private int stdoutBufferLimit = SystemCommand.DEFAULT_BUFFER_SIZE;
+        private int stderrBufferLimit = SystemCommand.DEFAULT_BUFFER_SIZE;
 
         private Builder() {
         }
@@ -63,6 +61,16 @@ public final class RunCommandPlugin extends Plugin {
 
         public Builder setStatus(int status) {
             this.status = status;
+            return this;
+        }
+
+        public Builder setStdoutBufferLimit(int stdoutBufferLimit) {
+            this.stdoutBufferLimit = stdoutBufferLimit;
+            return this;
+        }
+
+        public Builder setStderrBufferLimit(int stderrBufferLimit) {
+            this.stderrBufferLimit = stderrBufferLimit;
             return this;
         }
 

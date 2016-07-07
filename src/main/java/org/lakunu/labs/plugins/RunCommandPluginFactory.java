@@ -20,6 +20,14 @@ public final class RunCommandPluginFactory extends PluginFactory<RunCommandPlugi
         if (args != null) {
             args.forEach(arg -> builder.addArgument(arg.toString()));
         }
+        Integer bufferLimit = getProperty(properties, "stdoutBuffer", Integer.class);
+        if (bufferLimit != null) {
+            builder.setStdoutBufferLimit(bufferLimit);
+        }
+        bufferLimit = getProperty(properties, "stderrBuffer", Integer.class);
+        if (bufferLimit != null) {
+            builder.setStderrBufferLimit(bufferLimit);
+        }
         return builder;
     }
 }

@@ -15,8 +15,8 @@ public class CommandOutputStreamTest {
     @Test
     public void testNoBuffering() throws IOException {
         TestOutputHandler outputHandler = new TestOutputHandler();
-        CommandOutputStream outputStream = CommandOutputStream.withoutBuffering(
-                true, outputHandler).build();
+        CommandOutputStream outputStream = CommandOutputStream.withoutBuffering(true)
+                .build(outputHandler);
         writeLines(outputStream);
 
         ImmutableList<TestOutputHandler.LogEntry> entries = outputHandler.entries();
@@ -35,8 +35,8 @@ public class CommandOutputStreamTest {
     @Test
     public void testNoBufferingWithErrors() throws IOException {
         TestOutputHandler outputHandler = new TestOutputHandler();
-        CommandOutputStream outputStream = CommandOutputStream.withoutBuffering(
-                false, outputHandler).build();
+        CommandOutputStream outputStream = CommandOutputStream.withoutBuffering(false)
+                .build(outputHandler);
         writeLines(outputStream);
 
         ImmutableList<TestOutputHandler.LogEntry> entries = outputHandler.entries();
@@ -55,8 +55,8 @@ public class CommandOutputStreamTest {
     @Test
     public void testBuffering() throws IOException {
         TestOutputHandler outputHandler = new TestOutputHandler();
-        CommandOutputStream outputStream = CommandOutputStream.withBuffering(
-                true, outputHandler, LINES[0].length()).build();
+        CommandOutputStream outputStream = CommandOutputStream
+                .withBuffering(true, LINES[0].length()).build(outputHandler);
         writeLines(outputStream);
 
         ImmutableList<TestOutputHandler.LogEntry> entries = outputHandler.entries();
@@ -72,8 +72,8 @@ public class CommandOutputStreamTest {
     @Test
     public void testBufferingWithErrors() throws IOException {
         TestOutputHandler outputHandler = new TestOutputHandler();
-        CommandOutputStream outputStream = CommandOutputStream.withBuffering(
-                false, outputHandler, LINES[0].length()).build();
+        CommandOutputStream outputStream = CommandOutputStream
+                .withBuffering(false, LINES[0].length()).build(outputHandler);
         writeLines(outputStream);
 
         ImmutableList<TestOutputHandler.LogEntry> entries = outputHandler.entries();

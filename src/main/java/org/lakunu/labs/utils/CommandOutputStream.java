@@ -28,31 +28,28 @@ final class CommandOutputStream extends TeeOutputStream {
         return ((StringBufferOutputStream) branch).buffer.toString();
     }
 
-    public static Factory withoutBuffering(boolean stdout, LabOutputHandler outputHandler) {
-        return new Factory(stdout, outputHandler, false, 0);
+    public static Factory withoutBuffering(boolean stdout) {
+        return new Factory(stdout, false, 0);
     }
 
-    public static Factory withBuffering(boolean stdout, LabOutputHandler outputHandler,
-                                                    int threshold) {
-        return new Factory(stdout, outputHandler, true, threshold);
+    public static Factory withBuffering(boolean stdout, int threshold) {
+        return new Factory(stdout, true, threshold);
     }
 
     static final class Factory {
         private final int level;
-        private final LabOutputHandler outputHandler;
         private final boolean buffering;
         private final int bufferLimit;
 
-        private Factory(boolean stdout, LabOutputHandler outputHandler, boolean buffering, int bufferLimit) {
-            checkNotNull(outputHandler, "Output handler is required");
+        private Factory(boolean stdout, boolean buffering, int bufferLimit) {
             checkArgument(bufferLimit >= 0, "Buffer limit cannot be negative");
             this.level = stdout ? LEVEL_STDOUT : LEVEL_STDERR;
-            this.outputHandler = outputHandler;
             this.buffering = buffering;
             this.bufferLimit = bufferLimit;
         }
 
-        CommandOutputStream build() {
+        CommandOutputStream build(LabOutputHandler outputHandler) {
+            checkNotNull(outputHandler, "Output handler is required");
             LabOutputHandlerStream primary = new LabOutputHandlerStream(level, outputHandler);
             OutputStream secondary;
             if (buffering) {

@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import junit.framework.Assert;
 import org.apache.commons.exec.ExecuteException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.SystemUtils;
 import org.junit.Assume;
 import org.junit.Before;
@@ -24,15 +25,38 @@ public class SystemCommandTest {
         TestOutputHandler handler = new TestOutputHandler();
         SystemCommand cmd = SystemCommand.newBuilder()
                 .setCommand("date")
-                .setOutputHandler(handler)
                 .build();
-        SystemCommand.Output output = cmd.run();
+        SystemCommand.Output output = cmd.run(handler);
         Assert.assertEquals(0, output.getStatus());
         ImmutableList<TestOutputHandler.LogEntry> entries = handler.entries();
         Assert.assertEquals(1, entries.size());
         TestOutputHandler.LogEntry entry = entries.get(0);
         Assert.assertEquals(TestOutputHandler.Level.INFO, entry.level);
         Assert.assertTrue(!Strings.isNullOrEmpty(entry.line));
+
+        // check rerun
+        output = cmd.run(handler);
+        Assert.assertEquals(0, output.getStatus());
+        entries = handler.entries();
+        Assert.assertEquals(2, entries.size());
+        entry = entries.get(1);
+        Assert.assertEquals(TestOutputHandler.Level.INFO, entry.level);
+        Assert.assertTrue(!Strings.isNullOrEmpty(entry.line));
+    }
+
+    @Test
+    public void testWorkingDirectory() throws Exception {
+        TestOutputHandler handler = new TestOutputHandler();
+        SystemCommand cmd = SystemCommand.newBuilder()
+                .setCommand("pwd")
+                .build();
+        SystemCommand.Output output = cmd.run(FileUtils.getUserDirectory(), handler);
+        Assert.assertEquals(0, output.getStatus());
+        ImmutableList<TestOutputHandler.LogEntry> entries = handler.entries();
+        Assert.assertEquals(1, entries.size());
+        TestOutputHandler.LogEntry entry = entries.get(0);
+        Assert.assertEquals(TestOutputHandler.Level.INFO, entry.level);
+        Assert.assertEquals(FileUtils.getUserDirectory().getAbsolutePath(), entry.line);
     }
 
     @Test(expected = IOException.class)
@@ -40,9 +64,8 @@ public class SystemCommandTest {
         TestOutputHandler handler = new TestOutputHandler();
         SystemCommand cmd = SystemCommand.newBuilder()
                 .setCommand("bogus_as_hell")
-                .setOutputHandler(handler)
                 .build();
-        cmd.run();
+        cmd.run(handler);
     }
 
     @Test
@@ -51,10 +74,9 @@ public class SystemCommandTest {
         SystemCommand cmd = SystemCommand.newBuilder()
                 .setCommand("date")
                 .addArgument("-k")
-                .setOutputHandler(handler)
                 .build();
         try {
-            cmd.run();
+            cmd.run(handler);
         } catch (ExecuteException ignored) {
         }
         ImmutableList<TestOutputHandler.LogEntry> entries = handler.entries();
@@ -66,19 +88,17 @@ public class SystemCommandTest {
     public void testStdoutBuffering() throws Exception {
         SystemCommand cmd = SystemCommand.newBuilder()
                 .setCommand("date")
-                .setOutputHandler(new TestOutputHandler())
                 .setBufferStdout(true)
                 .build();
-        SystemCommand.Output output = cmd.run();
+        SystemCommand.Output output = cmd.run(new TestOutputHandler());
         Assert.assertEquals(0, output.getStatus());
         Assert.assertFalse(output.getStdout().isEmpty());
 
         cmd = SystemCommand.newBuilder()
                 .setCommand("date")
-                .setOutputHandler(new TestOutputHandler())
                 .build();
         try {
-            cmd.run().getStdout();
+            cmd.run(new TestOutputHandler()).getStdout();
             Assert.fail("No error thrown for invalid state");
         } catch (IllegalStateException ignored) {
         }
@@ -89,19 +109,17 @@ public class SystemCommandTest {
         SystemCommand cmd = SystemCommand.newBuilder()
                 .setCommand("ls")
                 .addArgument("*.bogus")
-                .setOutputHandler(new TestOutputHandler())
                 .setBufferStderr(true)
                 .build();
-        SystemCommand.Output output = cmd.run();
+        SystemCommand.Output output = cmd.run(new TestOutputHandler());
         Assert.assertTrue(output.getStatus() != 0);
         Assert.assertFalse(output.getStderr().isEmpty());
 
         cmd = SystemCommand.newBuilder()
                 .setCommand("ls")
                 .addArgument("*.bogus")
-                .setOutputHandler(new TestOutputHandler())
                 .build();
-        output = cmd.run();
+        output = cmd.run(new TestOutputHandler());
         Assert.assertTrue(output.getStatus() != 0);
         try {
             output.getStderr();
