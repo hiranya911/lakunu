@@ -1,5 +1,6 @@
 package org.lakunu.labs.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
@@ -76,7 +77,8 @@ public final class JsonLabFactory implements LabFactory {
         checkArgument(!Strings.isNullOrEmpty(plugin), "Plugin name is required");
         logger.info("Setting up plugin: {}", plugin);
         ObjectMapper mapper = new ObjectMapper();
-        Map<String,Object> properties = mapper.convertValue(node, Map.class);
+        Map<String,Object> properties = mapper.convertValue(node,
+                new TypeReference<Map<String,Object>>(){});
         return PluginRegistry.getInstance().getObject(plugin, ImmutableMap.copyOf(properties));
     }
 
