@@ -10,6 +10,7 @@ import org.lakunu.labs.LabOutputHandler;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
@@ -27,17 +28,40 @@ final class CommandOutputStream extends TeeOutputStream {
         return ((StringBufferOutputStream) branch).buffer.toString();
     }
 
-    public static CommandOutputStream withoutBuffering(boolean stdout, LabOutputHandler outputHandler) {
-        int level = stdout ? LEVEL_STDOUT : LEVEL_STDERR;
-        return new CommandOutputStream(new LabOutputHandlerStream(level, outputHandler),
-                NullOutputStream.NULL_OUTPUT_STREAM);
+    public static Factory withoutBuffering(boolean stdout, LabOutputHandler outputHandler) {
+        return new Factory(stdout, outputHandler, false, 0);
     }
 
-    public static CommandOutputStream withBuffering(boolean stdout, LabOutputHandler outputHandler,
+    public static Factory withBuffering(boolean stdout, LabOutputHandler outputHandler,
                                                     int threshold) {
-        int level = stdout ? LEVEL_STDOUT : LEVEL_STDERR;
-        return new CommandOutputStream(new LabOutputHandlerStream(level, outputHandler),
-                new StringBufferOutputStream(threshold));
+        return new Factory(stdout, outputHandler, true, threshold);
+    }
+
+    static final class Factory {
+        private final int level;
+        private final LabOutputHandler outputHandler;
+        private final boolean buffering;
+        private final int bufferLimit;
+
+        private Factory(boolean stdout, LabOutputHandler outputHandler, boolean buffering, int bufferLimit) {
+            checkNotNull(outputHandler, "Output handler is required");
+            checkArgument(bufferLimit >= 0, "Buffer limit cannot be negative");
+            this.level = stdout ? LEVEL_STDOUT : LEVEL_STDERR;
+            this.outputHandler = outputHandler;
+            this.buffering = buffering;
+            this.bufferLimit = bufferLimit;
+        }
+
+        CommandOutputStream build() {
+            LabOutputHandlerStream primary = new LabOutputHandlerStream(level, outputHandler);
+            OutputStream secondary;
+            if (buffering) {
+                secondary = new StringBufferOutputStream(bufferLimit);
+            } else {
+                secondary = NullOutputStream.NULL_OUTPUT_STREAM;
+            }
+            return new CommandOutputStream(primary, secondary);
+        }
     }
 
     private static final class LabOutputHandlerStream extends LogOutputStream {

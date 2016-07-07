@@ -22,35 +22,27 @@ public final class SystemCommand {
 
     private final CommandLine cmdLine;
     private final File workingDir;
-    private final LabOutputHandler outputHandler;
-    private final boolean bufferStdout;
-    private final boolean bufferStderr;
-    private final int stdoutBufferLimit;
-    private final int stderrBufferLimit;
+    private final CommandOutputStream.Factory stdoutFactory;
+    private final CommandOutputStream.Factory stderrFactory;
+
 
     private SystemCommand(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.command), "Command is required");
         checkNotNull(builder.workingDir, "Working directory is required");
         checkArgument(builder.workingDir.isDirectory() && builder.workingDir.exists(),
                 "Working directory path is not a directory or does not exist");
-        checkNotNull(builder.outputHandler, "Output handler is required");
-        checkArgument(builder.stdoutBufferLimit >= 0, "Buffer limit cannot be negative");
-        checkArgument(builder.stderrBufferLimit >= 0, "Buffer limit cannot be negative");
         this.cmdLine = CommandLine.parse(builder.command);
         builder.args.forEach(this.cmdLine::addArgument);
         this.workingDir = builder.workingDir;
-        this.outputHandler = builder.outputHandler;
-        this.bufferStdout = builder.bufferStdout;
-        this.bufferStderr = builder.bufferStderr;
-        this.stdoutBufferLimit = builder.stdoutBufferLimit;
-        this.stderrBufferLimit = builder.stderrBufferLimit;
+        this.stdoutFactory = newStreamFactory(true, builder.outputHandler, builder.bufferStdout,
+                builder.stdoutBufferLimit);
+        this.stderrFactory = newStreamFactory(false, builder.outputHandler, builder.bufferStderr,
+                builder.stderrBufferLimit);
     }
 
     public Output run() throws IOException {
-        final CommandOutputStream stdout = newStream(true, outputHandler, bufferStdout,
-                stdoutBufferLimit);
-        final CommandOutputStream stderr = newStream(false, outputHandler, bufferStderr,
-                stderrBufferLimit);
+        final CommandOutputStream stdout = stdoutFactory.build();
+        final CommandOutputStream stderr = stderrFactory.build();
         Executor exec = new DefaultExecutor();
         exec.setExitValues(null);
         exec.setWorkingDirectory(workingDir);
@@ -61,7 +53,7 @@ public final class SystemCommand {
         return new Output(exec.execute(cmdLine), stdout, stderr);
     }
 
-    private CommandOutputStream newStream(boolean stdout, LabOutputHandler outputHandler,
+    private CommandOutputStream.Factory newStreamFactory(boolean stdout, LabOutputHandler outputHandler,
                                           boolean buffering, int threshold) {
         if (buffering) {
             return CommandOutputStream.withBuffering(stdout, outputHandler, threshold);

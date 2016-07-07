@@ -15,7 +15,8 @@ public class CommandOutputStreamTest {
     @Test
     public void testNoBuffering() throws IOException {
         TestOutputHandler outputHandler = new TestOutputHandler();
-        CommandOutputStream outputStream = CommandOutputStream.withoutBuffering(true, outputHandler);
+        CommandOutputStream outputStream = CommandOutputStream.withoutBuffering(
+                true, outputHandler).build();
         writeLines(outputStream);
 
         ImmutableList<TestOutputHandler.LogEntry> entries = outputHandler.entries();
@@ -34,7 +35,8 @@ public class CommandOutputStreamTest {
     @Test
     public void testNoBufferingWithErrors() throws IOException {
         TestOutputHandler outputHandler = new TestOutputHandler();
-        CommandOutputStream outputStream = CommandOutputStream.withoutBuffering(false, outputHandler);
+        CommandOutputStream outputStream = CommandOutputStream.withoutBuffering(
+                false, outputHandler).build();
         writeLines(outputStream);
 
         ImmutableList<TestOutputHandler.LogEntry> entries = outputHandler.entries();
@@ -54,7 +56,7 @@ public class CommandOutputStreamTest {
     public void testBuffering() throws IOException {
         TestOutputHandler outputHandler = new TestOutputHandler();
         CommandOutputStream outputStream = CommandOutputStream.withBuffering(
-                true, outputHandler, LINES[0].length());
+                true, outputHandler, LINES[0].length()).build();
         writeLines(outputStream);
 
         ImmutableList<TestOutputHandler.LogEntry> entries = outputHandler.entries();
@@ -71,7 +73,7 @@ public class CommandOutputStreamTest {
     public void testBufferingWithErrors() throws IOException {
         TestOutputHandler outputHandler = new TestOutputHandler();
         CommandOutputStream outputStream = CommandOutputStream.withBuffering(
-                false, outputHandler, LINES[0].length());
+                false, outputHandler, LINES[0].length()).build();
         writeLines(outputStream);
 
         ImmutableList<TestOutputHandler.LogEntry> entries = outputHandler.entries();
