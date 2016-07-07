@@ -26,7 +26,8 @@ public class SystemCommandTest {
                 .setCommand("date")
                 .setOutputHandler(handler)
                 .build();
-        Assert.assertEquals(0, cmd.run());
+        SystemCommand.Output output = cmd.run();
+        Assert.assertEquals(0, output.getStatus());
         ImmutableList<TestOutputHandler.LogEntry> entries = handler.entries();
         Assert.assertEquals(1, entries.size());
         TestOutputHandler.LogEntry entry = entries.get(0);
@@ -68,15 +69,16 @@ public class SystemCommandTest {
                 .setOutputHandler(new TestOutputHandler())
                 .setBufferStdout(true)
                 .build();
-        Assert.assertEquals(0, cmd.run());
-        Assert.assertFalse(cmd.getStdout().isEmpty());
+        SystemCommand.Output output = cmd.run();
+        Assert.assertEquals(0, output.getStatus());
+        Assert.assertFalse(output.getStdout().isEmpty());
 
         cmd = SystemCommand.newBuilder()
                 .setCommand("date")
                 .setOutputHandler(new TestOutputHandler())
                 .build();
         try {
-            cmd.getStdout();
+            cmd.run().getStdout();
             Assert.fail("No error thrown for invalid state");
         } catch (IllegalStateException ignored) {
         }
@@ -90,17 +92,19 @@ public class SystemCommandTest {
                 .setOutputHandler(new TestOutputHandler())
                 .setBufferStderr(true)
                 .build();
-        Assert.assertTrue(cmd.run() != 0);
-        Assert.assertFalse(cmd.getStderr().isEmpty());
+        SystemCommand.Output output = cmd.run();
+        Assert.assertTrue(output.getStatus() != 0);
+        Assert.assertFalse(output.getStderr().isEmpty());
 
         cmd = SystemCommand.newBuilder()
                 .setCommand("ls")
                 .addArgument("*.bogus")
                 .setOutputHandler(new TestOutputHandler())
                 .build();
-        Assert.assertTrue(cmd.run() != 0);
+        output = cmd.run();
+        Assert.assertTrue(output.getStatus() != 0);
         try {
-            cmd.getStderr();
+            output.getStderr();
             Assert.fail("No error thrown for invalid state");
         } catch (IllegalStateException ignored) {
         }

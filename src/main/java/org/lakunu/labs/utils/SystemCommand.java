@@ -20,11 +20,13 @@ public final class SystemCommand {
 
     public static final int DEFAULT_BUFFER_SIZE = 64 * 1024;
 
-    private final String command;
-    private final String[] args;
+    private final CommandLine cmdLine;
     private final File workingDir;
-    private final CommandOutputStream stdout;
-    private final CommandOutputStream stderr;
+    private final LabOutputHandler outputHandler;
+    private final boolean bufferStdout;
+    private final boolean bufferStderr;
+    private final int stdoutBufferLimit;
+    private final int stderrBufferLimit;
 
     private SystemCommand(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.command), "Command is required");
@@ -34,20 +36,21 @@ public final class SystemCommand {
         checkNotNull(builder.outputHandler, "Output handler is required");
         checkArgument(builder.stdoutBufferLimit >= 0, "Buffer limit cannot be negative");
         checkArgument(builder.stderrBufferLimit >= 0, "Buffer limit cannot be negative");
-        this.command = builder.command;
-        this.args = builder.args.toArray(new String[builder.args.size()]);
+        this.cmdLine = CommandLine.parse(builder.command);
+        builder.args.forEach(this.cmdLine::addArgument);
         this.workingDir = builder.workingDir;
-        this.stdout = newStream(true, builder.outputHandler, builder.bufferStdout,
-                builder.stdoutBufferLimit);
-        this.stderr = newStream(false, builder.outputHandler, builder.bufferStderr,
-                builder.stderrBufferLimit);
+        this.outputHandler = builder.outputHandler;
+        this.bufferStdout = builder.bufferStdout;
+        this.bufferStderr = builder.bufferStderr;
+        this.stdoutBufferLimit = builder.stdoutBufferLimit;
+        this.stderrBufferLimit = builder.stderrBufferLimit;
     }
 
-    public int run() throws IOException {
-        CommandLine cmdLine = CommandLine.parse(command);
-        for (String arg : args) {
-            cmdLine.addArgument(arg);
-        }
+    public Output run() throws IOException {
+        final CommandOutputStream stdout = newStream(true, outputHandler, bufferStdout,
+                stdoutBufferLimit);
+        final CommandOutputStream stderr = newStream(false, outputHandler, bufferStderr,
+                stderrBufferLimit);
         Executor exec = new DefaultExecutor();
         exec.setExitValues(null);
         exec.setWorkingDirectory(workingDir);
@@ -55,15 +58,7 @@ public final class SystemCommand {
         if (logger.isDebugEnabled()) {
             logger.debug("Command: {}; Working dir: {}", cmdLine.toString(), workingDir);
         }
-        return exec.execute(cmdLine);
-    }
-
-    public String getStdout() {
-        return stdout.getContent();
-    }
-
-    public String getStderr() {
-        return stderr.getContent();
+        return new Output(exec.execute(cmdLine), stdout, stderr);
     }
 
     private CommandOutputStream newStream(boolean stdout, LabOutputHandler outputHandler,
@@ -72,6 +67,30 @@ public final class SystemCommand {
             return CommandOutputStream.withBuffering(stdout, outputHandler, threshold);
         } else {
             return CommandOutputStream.withoutBuffering(stdout, outputHandler);
+        }
+    }
+
+    public static final class Output {
+        private final int status;
+        private final CommandOutputStream stdout;
+        private final CommandOutputStream stderr;
+
+        private Output(int status, CommandOutputStream stdout, CommandOutputStream stderr) {
+            this.status = status;
+            this.stdout = stdout;
+            this.stderr = stderr;
+        }
+
+        public int getStatus() {
+            return status;
+        }
+
+        public String getStdout() {
+            return stdout.getContent();
+        }
+
+        public String getStderr() {
+            return stderr.getContent();
         }
     }
 

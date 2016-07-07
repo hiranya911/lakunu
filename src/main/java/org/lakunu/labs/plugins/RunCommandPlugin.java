@@ -32,7 +32,7 @@ public final class RunCommandPlugin extends Plugin {
                 .setWorkingDir(context.getSubmissionDirectory());
         args.forEach(builder::addArgument);
         SystemCommand command = builder.build();
-        return command.run() == status;
+        return command.run().getStatus() == status;
     }
 
     public static Builder newBuilder() {

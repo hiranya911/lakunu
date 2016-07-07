@@ -30,9 +30,9 @@ public final class AntPlugin extends Plugin {
                 .setBufferStdout(true)
                 .setStdoutBufferLimit(outputBufferLimit)
                 .build();
-        int status = command.run();
-        context.setOutput(command.getStdout());
-        return status == 0;
+        SystemCommand.Output output = command.run();
+        context.setOutput(output.getStdout());
+        return output.getStatus() == 0;
     }
 
     public static Builder newBuilder() {

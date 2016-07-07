@@ -11,9 +11,14 @@ public final class AntPluginFactory extends PluginFactory<AntPlugin> {
 
     @Override
     public Plugin.Builder<AntPlugin, ?> doBuild(ImmutableMap<String, Object> properties) {
-        return AntPlugin.newBuilder()
+        AntPlugin.Builder builder = AntPlugin.newBuilder()
                 .setAntBinary(getProperty(properties, "binary", "ant", String.class))
                 .setBuildTarget(getProperty(properties, "target", "compile", String.class))
                 .setFailOnError(isFailOnError(properties));
+        Integer bufferLimit = getProperty(properties, "bufferLimit", Integer.class);
+        if (bufferLimit != null) {
+            builder.setOutputBufferLimit(bufferLimit);
+        }
+        return builder;
     }
 }
