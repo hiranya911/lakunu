@@ -18,7 +18,7 @@ final class CommandOutputStream extends TeeOutputStream {
     private static final int LEVEL_STDOUT = 0;
     private static final int LEVEL_STDERR = 1;
 
-    private CommandOutputStream(OutputStream out, OutputStream branch) {
+    private CommandOutputStream(LabOutputHandlerStream out, OutputStream branch) {
         super(out, branch);
     }
 

@@ -9,6 +9,7 @@ public final class AntPlugin extends Plugin {
 
     private final String antBinary;
     private final String buildTarget;
+    private final int outputBufferLimit;
 
     private AntPlugin(Builder builder) {
         super(builder);
@@ -16,6 +17,7 @@ public final class AntPlugin extends Plugin {
         checkArgument(!Strings.isNullOrEmpty(builder.buildTarget), "Ant build target is required");
         this.antBinary = builder.antBinary;
         this.buildTarget = builder.buildTarget;
+        this.outputBufferLimit = builder.outputBufferLimit;
     }
 
     @Override
@@ -26,6 +28,7 @@ public final class AntPlugin extends Plugin {
                 .setWorkingDir(context.getSubmissionDirectory())
                 .setOutputHandler(context.getOutputHandler())
                 .setBufferStdout(true)
+                .setStdoutBufferLimit(outputBufferLimit)
                 .build();
         int status = command.run();
         context.setOutput(command.getStdout());
@@ -39,6 +42,7 @@ public final class AntPlugin extends Plugin {
     public static class Builder extends Plugin.Builder<AntPlugin,Builder> {
         private String antBinary;
         private String buildTarget;
+        private int outputBufferLimit = SystemCommand.DEFAULT_BUFFER_SIZE;
 
         private Builder() {
         }
@@ -50,6 +54,11 @@ public final class AntPlugin extends Plugin {
 
         public Builder setBuildTarget(String buildTarget) {
             this.buildTarget = buildTarget;
+            return this;
+        }
+
+        public Builder setOutputBufferLimit(int outputBufferLimit) {
+            this.outputBufferLimit = outputBufferLimit;
             return this;
         }
 
