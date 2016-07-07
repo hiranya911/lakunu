@@ -16,6 +16,7 @@ public abstract class PluginFactory<T extends Plugin> {
 
     public final T build(ImmutableMap<String,Object> properties) {
         Plugin.Builder<T,?> builder = doBuild(properties);
+        builder.setFailOnError(isFailOnError(properties));
         List<?> validators = (List) properties.get("validators");
         if (validators != null) {
             validators.forEach(obj -> builder.addValidator(newValidator(obj)));
@@ -50,7 +51,7 @@ public abstract class PluginFactory<T extends Plugin> {
         return def;
     }
 
-    protected final boolean isFailOnError(Map<String,Object> properties) {
+    private boolean isFailOnError(Map<String,Object> properties) {
         return getProperty(properties, "failOnError", true, Boolean.class);
     }
 }

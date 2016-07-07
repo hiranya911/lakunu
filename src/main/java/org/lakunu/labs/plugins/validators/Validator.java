@@ -35,4 +35,14 @@ public abstract class Validator {
         }
     }
 
+    protected final Score reportScore(double value) {
+        if (score >= 0) {
+            checkArgument(0 <= value && value <= score, "invalid score: %s", value);
+            return Score.newPoints(name, value, score);
+        } else {
+            checkArgument(value <= 0 && value >= score, "invalid score: %s", value);
+            return Score.newPenalty(name, value);
+        }
+    }
+
 }
