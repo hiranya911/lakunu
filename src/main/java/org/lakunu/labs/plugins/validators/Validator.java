@@ -11,10 +11,10 @@ public abstract class Validator {
     protected final String name;
     protected final double score;
 
-    protected Validator(String name, double score) {
-        checkArgument(!Strings.isNullOrEmpty(name), "name is required");
-        this.name = name;
-        this.score = score;
+    protected Validator(Builder builder) {
+        checkArgument(!Strings.isNullOrEmpty(builder.name), "name is required");
+        this.name = builder.name;
+        this.score = builder.score;
     }
 
     public abstract Score validate(Plugin.Context context);
@@ -43,6 +43,31 @@ public abstract class Validator {
             checkArgument(value <= 0 && value >= score, "invalid score: %s", value);
             return Score.newPenalty(name, value);
         }
+    }
+
+    public abstract static class Builder<T extends Validator,B extends Builder> {
+
+        protected String name;
+        protected double score;
+
+        private final B thisObj;
+
+        protected Builder() {
+            this.thisObj = getThisObj();
+        }
+
+        public final B setName(String name) {
+            this.name = name;
+            return thisObj;
+        }
+
+        public final B setScore(double score) {
+            this.score = score;
+            return thisObj;
+        }
+
+        protected abstract B getThisObj();
+        public abstract T build();
     }
 
 }

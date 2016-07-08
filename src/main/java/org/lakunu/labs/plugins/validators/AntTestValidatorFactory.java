@@ -2,6 +2,8 @@ package org.lakunu.labs.plugins.validators;
 
 import com.google.common.collect.ImmutableMap;
 
+import java.util.List;
+
 public class AntTestValidatorFactory extends ValidatorFactory<AntTestValidator> {
 
     @Override
@@ -11,9 +13,14 @@ public class AntTestValidatorFactory extends ValidatorFactory<AntTestValidator> 
 
     @Override
     public AntTestValidator build(ImmutableMap<String, Object> properties) {
-        String name = getProperty(properties, "name", String.class);
-        double maxScore = getNumericProperty(properties, "score");
-        double scorePerTest = getNumericProperty(properties, "scorePerTest");
-        return new AntTestValidator(name, maxScore, scorePerTest);
+        AntTestValidator.Builder builder = AntTestValidator.newBuilder()
+                .setName(getProperty(properties, "name", String.class))
+                .setScore(getNumericProperty(properties, "score"))
+                .setScorePerTest(getNumericProperty(properties, "scorePerTest"));
+        List<?> suites = getProperty(properties, "suites", List.class);
+        if (suites != null) {
+            suites.forEach(s -> builder.addTestSuite(s.toString()));
+        }
+        return builder.build();
     }
 }

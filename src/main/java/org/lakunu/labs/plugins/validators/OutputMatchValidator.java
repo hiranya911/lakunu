@@ -12,15 +12,42 @@ public final class OutputMatchValidator extends Validator {
 
     private final Pattern pattern;
 
-    public OutputMatchValidator(String name, double score, String pattern) {
-        super(name, score);
-        checkArgument(!Strings.isNullOrEmpty(pattern), "Pattern is required");
-        this.pattern = Pattern.compile(pattern);
+    private OutputMatchValidator(Builder builder) {
+        super(builder);
+        checkArgument(!Strings.isNullOrEmpty(builder.pattern), "Pattern is required");
+        this.pattern = Pattern.compile(builder.pattern);
     }
 
     @Override
     public Score validate(Plugin.Context context) {
         String output = context.getOutput();
         return reportScore(output != null && pattern.matcher(output).matches());
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static class Builder extends Validator.Builder<OutputMatchValidator,Builder> {
+
+        private String pattern;
+
+        private Builder() {
+        }
+
+        public Builder setPattern(String pattern) {
+            this.pattern = pattern;
+            return this;
+        }
+
+        @Override
+        protected Builder getThisObj() {
+            return this;
+        }
+
+        @Override
+        public OutputMatchValidator build() {
+            return new OutputMatchValidator(this);
+        }
     }
 }

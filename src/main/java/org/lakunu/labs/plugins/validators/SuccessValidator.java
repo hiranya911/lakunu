@@ -5,12 +5,32 @@ import org.lakunu.labs.plugins.Plugin;
 
 public final class SuccessValidator extends Validator {
 
-    public SuccessValidator(String name, double score) {
-        super(name, score);
+    private SuccessValidator(Builder builder) {
+        super(builder);
     }
 
     @Override
     public Score validate(Plugin.Context context) {
         return reportScore(context.isSuccess());
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static class Builder extends Validator.Builder<SuccessValidator,Builder> {
+
+        private Builder() {
+        }
+
+        @Override
+        protected Builder getThisObj() {
+            return this;
+        }
+
+        @Override
+        public SuccessValidator build() {
+            return new SuccessValidator(this);
+        }
     }
 }

@@ -11,8 +11,9 @@ public final class SuccessValidatorFactory extends ValidatorFactory<SuccessValid
 
     @Override
     public SuccessValidator build(ImmutableMap<String,Object> properties) {
-        String name = getProperty(properties, "name", String.class);
-        double score = getNumericProperty(properties, "score");
-        return new SuccessValidator(name, score);
+        return SuccessValidator.newBuilder()
+                .setName(getProperty(properties, "name", String.class))
+                .setScore(getNumericProperty(properties, "score"))
+                .build();
     }
 }

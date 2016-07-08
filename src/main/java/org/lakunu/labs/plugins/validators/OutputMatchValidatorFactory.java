@@ -11,9 +11,10 @@ public final class OutputMatchValidatorFactory extends ValidatorFactory<OutputMa
 
     @Override
     public OutputMatchValidator build(ImmutableMap<String, Object> properties) {
-        String name = getProperty(properties, "name", String.class);
-        double score = getNumericProperty(properties, "score");
-        String pattern = getProperty(properties, "pattern", String.class);
-        return new OutputMatchValidator(name, score, pattern);
+        return OutputMatchValidator.newBuilder()
+                .setName(getProperty(properties, "name", String.class))
+                .setScore(getNumericProperty(properties, "score"))
+                .setPattern(getProperty(properties, "pattern", String.class))
+                .build();
     }
 }

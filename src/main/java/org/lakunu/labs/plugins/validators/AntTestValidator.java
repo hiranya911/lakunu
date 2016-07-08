@@ -1,10 +1,13 @@
 package org.lakunu.labs.plugins.validators;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.lang3.SystemUtils;
 import org.lakunu.labs.Score;
 import org.lakunu.labs.plugins.Plugin;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -12,11 +15,14 @@ import static com.google.common.base.Preconditions.checkArgument;
 public final class AntTestValidator extends Validator {
 
     private final double scorePerTest;
+    private final ImmutableList<String> testSuites;
 
-    public AntTestValidator(String name, double limit, double scorePerTest) {
-        super(name, limit);
-        checkArgument(limit < 0 == scorePerTest < 0, "scorePerTest must have same sign as limit");
-        this.scorePerTest = scorePerTest;
+    public AntTestValidator(Builder builder) {
+        super(builder);
+        checkArgument(builder.score < 0 == builder.scorePerTest < 0,
+                "scorePerTest must have same sign as score");
+        this.scorePerTest = builder.scorePerTest;
+        this.testSuites = ImmutableList.copyOf(builder.testSuites);
     }
 
     @Override
@@ -38,7 +44,10 @@ public final class AntTestValidator extends Validator {
             }
         }
 
-        int passed = results.values().stream().mapToInt(r -> r.passed).sum();
+        int passed = results.keySet().stream()
+                .filter(k -> testSuites.isEmpty() || testSuites.contains(k))
+                .mapToInt(k -> results.get(k).passed)
+                .sum();
         if (score >= 0) {
             return reportScore(Math.min(score, scorePerTest * passed));
         } else {
@@ -55,6 +64,39 @@ public final class AntTestValidator extends Validator {
             this.total = Integer.parseInt(segments[3]);
             int failed = Integer.parseInt(segments[5]) + Integer.parseInt(segments[7]);
             this.passed = total - failed;
+        }
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static class Builder extends Validator.Builder<AntTestValidator,Builder> {
+
+        private double scorePerTest;
+        private List<String> testSuites = new ArrayList<>();
+
+        private Builder() {
+        }
+
+        public Builder setScorePerTest(double scorePerTest) {
+            this.scorePerTest = scorePerTest;
+            return this;
+        }
+
+        public Builder addTestSuite(String testsuite) {
+            this.testSuites.add(testsuite);
+            return this;
+        }
+
+        @Override
+        protected Builder getThisObj() {
+            return this;
+        }
+
+        @Override
+        public AntTestValidator build() {
+            return new AntTestValidator(this);
         }
     }
 }
