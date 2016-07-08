@@ -1,5 +1,8 @@
 package org.lakunu.labs.plugins;
 
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import org.lakunu.labs.utils.CommandOutputStream;
 import org.lakunu.labs.utils.SystemCommand;
 
 import java.util.ArrayList;
@@ -10,29 +13,38 @@ import static com.google.common.base.Preconditions.checkArgument;
 public final class RunCommandPlugin extends Plugin {
 
     private final int status;
-    private final SystemCommand command;
+    private final String command;
+    private final ImmutableList<String> args;
+    private final CommandOutputStream.Factory stdoutFactory;
+    private final CommandOutputStream.Factory stderrFactory;
 
     private RunCommandPlugin(Builder builder) {
         super(builder);
+        checkArgument(!Strings.isNullOrEmpty(builder.command), "Command is required");
         checkArgument(builder.status >= 0, "Invalid status: %s", builder.status);
-        this.command = SystemCommand.newBuilder()
-                .setCommand(builder.command)
-                .addArguments(builder.args)
-                .setBufferStdout(true)
-                .setStdoutBufferLimit(builder.stdoutBufferLimit)
-                .setBufferStderr(true)
-                .setStderrBufferLimit(builder.stderrBufferLimit)
-                .build();
+        this.command = builder.command;
+        this.args = ImmutableList.copyOf(builder.args);
         this.status = builder.status;
+        this.stdoutFactory = CommandOutputStream.newStreamFactory(
+                true, true, builder.stdoutBufferLimit);
+        this.stderrFactory = CommandOutputStream.newStreamFactory(
+                false, true, builder.stderrBufferLimit);
     }
 
     @Override
     protected boolean doExecute(Context context) throws Exception {
-        SystemCommand.Output output = command.run(context.getSubmissionDirectory(),
-                context.getOutputHandler());
-        context.setOutput(output.getStdout());
-        context.setErrors(output.getStderr());
-        return output.getStatus() == status;
+        SystemCommand cmd = SystemCommand.newBuilder()
+                .setCommand(command)
+                .addArguments(args)
+                .setWorkingDirectory(context.getSubmissionDirectory())
+                .build();
+
+        CommandOutputStream stdout = stdoutFactory.build(context.getOutputHandler());
+        CommandOutputStream stderr = stderrFactory.build(context.getOutputHandler());
+        int status = cmd.run(stdout, stderr);
+        context.setOutput(stdout.getContent());
+        context.setErrors(stderr.getContent());
+        return status == this.status;
     }
 
     public static Builder newBuilder() {

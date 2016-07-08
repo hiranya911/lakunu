@@ -30,10 +30,6 @@ public final class CopyPlugin extends Plugin {
     @Override
     protected boolean doExecute(Context context) throws Exception {
         File source = new File(context.replaceProperties(file));
-        if (!source.exists()) {
-            return false;
-        }
-
         if (toFile != null) {
             File dest = getDestination(context, toFile);
             if (source.isDirectory()) {

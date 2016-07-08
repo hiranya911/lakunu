@@ -14,7 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-final class CommandOutputStream extends TeeOutputStream {
+public final class CommandOutputStream extends TeeOutputStream {
 
     private static final int LEVEL_STDOUT = 0;
     private static final int LEVEL_STDERR = 1;
@@ -36,7 +36,7 @@ final class CommandOutputStream extends TeeOutputStream {
         return new Factory(stdout, true, threshold);
     }
 
-    static final class Factory {
+    public static final class Factory {
         private final int level;
         private final boolean buffering;
         private final int bufferLimit;
@@ -48,7 +48,7 @@ final class CommandOutputStream extends TeeOutputStream {
             this.bufferLimit = bufferLimit;
         }
 
-        CommandOutputStream build(LabOutputHandler outputHandler) {
+        public CommandOutputStream build(LabOutputHandler outputHandler) {
             checkNotNull(outputHandler, "Output handler is required");
             LabOutputHandlerStream primary = new LabOutputHandlerStream(level, outputHandler);
             OutputStream secondary;
@@ -58,6 +58,15 @@ final class CommandOutputStream extends TeeOutputStream {
                 secondary = NullOutputStream.NULL_OUTPUT_STREAM;
             }
             return new CommandOutputStream(primary, secondary);
+        }
+    }
+
+    public static CommandOutputStream.Factory newStreamFactory(boolean stdout,
+                                                               boolean buffering, int threshold) {
+        if (buffering) {
+            return CommandOutputStream.withBuffering(stdout, threshold);
+        } else {
+            return CommandOutputStream.withoutBuffering(stdout);
         }
     }
 
