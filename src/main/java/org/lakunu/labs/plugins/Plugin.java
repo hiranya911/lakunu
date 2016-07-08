@@ -1,6 +1,8 @@
 package org.lakunu.labs.plugins;
 
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.text.StrLookup;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.lakunu.labs.Evaluation;
 import org.lakunu.labs.LabOutputHandler;
 import org.lakunu.labs.plugins.validators.Validator;
@@ -12,6 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public abstract class Plugin {
+
+    public static final String RESOURCE_DIR_PROPERTY = "_res";
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -48,6 +52,7 @@ public abstract class Plugin {
 
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
+        private final StrSubstitutor substitutor;
         private String output;
         private String errors;
         private Exception exception;
@@ -56,6 +61,7 @@ public abstract class Plugin {
         private Context(Evaluation.Context context) {
             this.outputHandler = context.getOutputHandler();
             this.submissionDirectory = context.getSubmissionDirectory();
+            this.substitutor = new StrSubstitutor(new ContextPropertyLookup(context));
         }
 
         public LabOutputHandler getOutputHandler() {
@@ -90,6 +96,34 @@ public abstract class Plugin {
 
         public boolean isSuccess() {
             return success;
+        }
+
+        public String replaceProperties(String str) {
+            return substitutor.replace(str);
+        }
+    }
+
+    private static class ContextPropertyLookup extends StrLookup {
+
+        private final StrLookup<Object> properties;
+        private final File resourceDirectory;
+
+        private ContextPropertyLookup(Evaluation.Context context) {
+            this.properties = StrLookup.mapLookup(context.getProperties());
+            this.resourceDirectory = context.getResourcesDirectory();
+        }
+
+        @Override
+        public String lookup(String key) {
+            if (RESOURCE_DIR_PROPERTY.equals(key)) {
+                if (resourceDirectory != null) {
+                    return resourceDirectory.getAbsolutePath();
+                } else {
+                    return null;
+                }
+            } else {
+                return properties.lookup(key);
+            }
         }
     }
 

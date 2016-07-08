@@ -1,6 +1,7 @@
 package org.lakunu.labs;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -107,11 +108,15 @@ public class EvaluationTest {
         private final File evaluationDirectory;
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
+        private final File resourceDirectory;
+        private final ImmutableMap<String,Object> properties;
 
         private TestContext(TestContextBuilder builder) {
             this.evaluationDirectory = builder.evaluationDirectory;
             this.outputHandler = builder.outputHandler;
             this.submissionDirectory = builder.submissionDirectory;
+            this.resourceDirectory = builder.resourceDirectory;
+            this.properties = builder.properties.build();
         }
 
         @Override
@@ -130,6 +135,16 @@ public class EvaluationTest {
         }
 
         @Override
+        public File getResourcesDirectory() {
+            return resourceDirectory;
+        }
+
+        @Override
+        public ImmutableMap<String, Object> getProperties() {
+            return properties;
+        }
+
+        @Override
         protected void cleanup() {
 
         }
@@ -139,6 +154,8 @@ public class EvaluationTest {
         private File evaluationDirectory;
         private LabOutputHandler outputHandler;
         private File submissionDirectory;
+        private File resourceDirectory;
+        private final ImmutableMap.Builder<String,Object> properties = ImmutableMap.builder();
 
         private TestContextBuilder() {
         }
@@ -155,6 +172,16 @@ public class EvaluationTest {
 
         public TestContextBuilder setSubmissionDirectory(File submissionDirectory) {
             this.submissionDirectory = submissionDirectory;
+            return this;
+        }
+
+        public TestContextBuilder setResourceDirectory(File resourceDirectory) {
+            this.resourceDirectory = resourceDirectory;
+            return this;
+        }
+
+        public TestContextBuilder addProperty(String key, Object value) {
+            this.properties.put(key, value);
             return this;
         }
 

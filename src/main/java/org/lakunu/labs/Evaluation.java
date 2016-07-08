@@ -1,6 +1,7 @@
 package org.lakunu.labs;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.utils.LoggingOutputHandler;
@@ -26,6 +27,7 @@ public final class Evaluation {
     private final File workingDirectory;
     private final LabOutputHandler outputHandler;
     private final boolean cleanUpAfterFinish;
+    private final ImmutableMap<String,Object> properties;
 
     private Evaluation(Builder builder) {
         checkNotNull(builder.submission, "Submission is required");
@@ -39,6 +41,7 @@ public final class Evaluation {
         this.workingDirectory = builder.workingDirectory;
         this.cleanUpAfterFinish = builder.cleanUpAfterFinish;
         this.outputHandler = builder.outputHandler;
+        this.properties = builder.properties.build();
     }
 
     public void run(String finalPhase) throws IOException {
@@ -70,6 +73,8 @@ public final class Evaluation {
         public abstract File getEvaluationDirectory() throws IOException;
         public abstract LabOutputHandler getOutputHandler();
         public abstract File getSubmissionDirectory();
+        public abstract File getResourcesDirectory();
+        public abstract ImmutableMap<String,Object> getProperties();
         protected abstract void cleanup();
 
         public final void addScore(Score score) {
@@ -87,6 +92,7 @@ public final class Evaluation {
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
         private final File resourcesDirectory;
+        private final ImmutableMap<String,Object> properties;
         private File evaluationDirectory;
 
         private EvaluationContext(Evaluation eval) throws IOException {
@@ -94,11 +100,13 @@ public final class Evaluation {
             this.outputHandler = eval.outputHandler;
             this.resourcesDirectory = eval.lab.prepareResources(this);
             this.submissionDirectory = eval.submission.prepare(this);
+            this.properties = eval.properties;
             checkNotNull(submissionDirectory, "Submission directory is required");
             checkArgument(submissionDirectory.isDirectory() && submissionDirectory.exists(),
                     "Submission directory path is not a directory or does not exist");
         }
 
+        @Override
         public synchronized File getEvaluationDirectory() throws IOException {
             if (evaluationDirectory == null) {
                 Path workingDirPath = Files.createTempDirectory(workingDirectory.toPath(), "lakunu");
@@ -108,12 +116,24 @@ public final class Evaluation {
             return evaluationDirectory;
         }
 
+        @Override
         public LabOutputHandler getOutputHandler() {
             return outputHandler;
         }
 
+        @Override
         public File getSubmissionDirectory() {
             return submissionDirectory;
+        }
+
+        @Override
+        public File getResourcesDirectory() {
+            return resourcesDirectory;
+        }
+
+        @Override
+        public ImmutableMap<String, Object> getProperties() {
+            return properties;
         }
 
         protected synchronized void cleanup() {
@@ -131,6 +151,7 @@ public final class Evaluation {
         private File workingDirectory;
         private LabOutputHandler outputHandler = new LoggingOutputHandler();
         private boolean cleanUpAfterFinish = true;
+        private final ImmutableMap.Builder<String,Object> properties = ImmutableMap.builder();
 
         private Builder() {
         }
@@ -157,6 +178,11 @@ public final class Evaluation {
 
         public Builder setCleanUpAfterFinish(boolean cleanUpAfterFinish) {
             this.cleanUpAfterFinish = cleanUpAfterFinish;
+            return this;
+        }
+
+        public Builder addProperty(String key, Object value) {
+            this.properties.put(key, value);
             return this;
         }
 

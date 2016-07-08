@@ -2,8 +2,11 @@ package org.lakunu.labs.plugins;
 
 import junit.framework.Assert;
 import org.junit.Test;
-import org.lakunu.labs.Evaluation;
 import org.lakunu.labs.EvaluationTest;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PluginTest {
 
@@ -48,6 +51,46 @@ public class PluginTest {
                 .setFailOnError(false)
                 .build();
         Assert.assertTrue(plugin.execute(testContext));
+    }
+
+    @Test
+    public void testStringReplacement() {
+        EvaluationTest.TestContext testContext = EvaluationTest.testContextBuilder()
+                .addProperty("p1", "foo")
+                .addProperty("p2", "bar")
+                .build();
+        List<String> values = new ArrayList<>();
+        CustomTestPlugin plugin = CustomTestPlugin.newBuilder()
+                .setFunction(context -> {
+                    values.add(context.replaceProperties("* ${p1} * ${p2} * ${p3}"));
+                    return true;
+                })
+                .build();
+        Assert.assertTrue(plugin.execute(testContext));
+        Assert.assertEquals(1, values.size());
+        Assert.assertEquals("* foo * bar * ${p3}", values.get(0));
+    }
+
+    @Test
+    public void testResourceDirReplacement() {
+        EvaluationTest.TestContext testContext = EvaluationTest.testContextBuilder().build();
+        List<String> values = new ArrayList<>();
+        CustomTestPlugin plugin = CustomTestPlugin.newBuilder()
+                .setFunction(context -> {
+                    values.add(context.replaceProperties("* ${" + Plugin.RESOURCE_DIR_PROPERTY + "} *"));
+                    return true;
+                })
+                .build();
+        Assert.assertTrue(plugin.execute(testContext));
+        Assert.assertEquals(1, values.size());
+        Assert.assertEquals("* ${" + Plugin.RESOURCE_DIR_PROPERTY + "} *", values.get(0));
+
+        testContext = EvaluationTest.testContextBuilder()
+                .setResourceDirectory(new File("/tmp/foo"))
+                .build();
+        Assert.assertTrue(plugin.execute(testContext));
+        Assert.assertEquals(2, values.size());
+        Assert.assertEquals("* /tmp/foo *", values.get(1));
     }
 
 }
