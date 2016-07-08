@@ -29,12 +29,25 @@
   ],
   "test": [
     {
+      "plugin": "copy",
+      "file": "/Users/hiranya/academic/cs56/github-grader/InstructorRationalTest.java",
+      "toDir": "src"
+    },
+    {
       "plugin": "ant",
       "target": "test",
       "validators": [
         {
           "name": "rational-test",
           "type": "ant-test",
+          "suites": ["RationalTest"],
+          "score": 20,
+          "scorePerTest": 1
+        },
+        {
+          "name": "secret-test",
+          "type": "ant-test",
+          "suites": ["InstructorRationalTest"],
           "score": 20,
           "scorePerTest": 1
         }

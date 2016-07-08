@@ -1,2 +1,3 @@
 org.lakunu.labs.plugins.AntPluginFactory
+org.lakunu.labs.plugins.CopyPluginFactory
 org.lakunu.labs.plugins.RunCommandPluginFactory
