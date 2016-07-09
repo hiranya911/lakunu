@@ -3,6 +3,7 @@ package org.lakunu.labs;
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.submit.Submission;
+import org.lakunu.labs.utils.LabUtils;
 import org.lakunu.labs.utils.LoggingOutputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -20,11 +23,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class Evaluation {
 
     private static final Logger logger = LoggerFactory.getLogger(Evaluation.class);
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(
+            "yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 
     private final Submission submission;
     private final Lab lab;
     private final File workingDirectory;
     private final LabOutputHandler outputHandler;
+    private final boolean outputSummary;
     private final boolean cleanUpAfterFinish;
 
     private Evaluation(Builder builder) {
@@ -37,22 +43,54 @@ public final class Evaluation {
         this.submission = builder.submission;
         this.lab = builder.lab;
         this.workingDirectory = builder.workingDirectory;
+        this.outputSummary = builder.outputSummary;
         this.cleanUpAfterFinish = builder.cleanUpAfterFinish;
         this.outputHandler = builder.outputHandler;
     }
 
     public void run(String finalPhase) throws IOException {
+        long start = System.nanoTime();
         Context context = new EvaluationContext(this);
         try {
             lab.execute(context, finalPhase);
         } finally {
-            for (Score score : context.getScores()) {
-                logger.info("Item score... {}", score.toString());
+            if (outputSummary) {
+                dumpSummary(start, context);
             }
+            LabUtils.outputBreak(outputHandler);
             if (cleanUpAfterFinish) {
                 context.cleanup();
             }
         }
+    }
+
+    private void dumpSummary(long start, Context context) {
+        Runtime runtime = Runtime.getRuntime();
+        long total = runtime.totalMemory();
+        long used = total - runtime.freeMemory();
+        long end = System.nanoTime();
+        LabOutputHandler outputHandler = context.getOutputHandler();
+        LabUtils.outputTitle("Evaluation complete", outputHandler);
+
+        ImmutableList<Score> scores = context.getScores();
+        if (!scores.isEmpty()) {
+            int longest = context.getScores().stream()
+                    .mapToInt(s -> s.getName().length()).max().getAsInt();
+            for (Score score : context.getScores()) {
+                outputHandler.info(String.format("Score: %" + (longest + 1) + "s      %s",
+                        score.getName(), score.toString()));
+            }
+            outputHandler.info("");
+            outputHandler.info("Total score: " + Score.total(scores).toString());
+            outputHandler.info("");
+            outputHandler.info("");
+        }
+
+        outputHandler.info(String.format("Total time: %.3f s", (end - start)/1e9));
+        outputHandler.info(String.format("Finished at: %s", DATE_FORMAT.format(
+                new Date(System.currentTimeMillis()))));
+        outputHandler.info(String.format("Final memory: %dM/%dM",
+                used/FileUtils.ONE_MB, total/FileUtils.ONE_MB));
     }
 
     public void run() throws IOException {
@@ -127,7 +165,6 @@ public final class Evaluation {
         }
 
         protected synchronized void cleanup() {
-            logger.info("Cleaning up...");
             FileUtils.deleteQuietly(evaluationDirectory);
             evaluationDirectory = null;
         }
@@ -141,6 +178,7 @@ public final class Evaluation {
         private File workingDirectory;
         private LabOutputHandler outputHandler = new LoggingOutputHandler();
         private boolean cleanUpAfterFinish = true;
+        private boolean outputSummary = true;
 
         private Builder() {
         }
@@ -167,6 +205,11 @@ public final class Evaluation {
 
         public Builder setCleanUpAfterFinish(boolean cleanUpAfterFinish) {
             this.cleanUpAfterFinish = cleanUpAfterFinish;
+            return this;
+        }
+
+        public Builder setOutputSummary(boolean outputSummary) {
+            this.outputSummary = outputSummary;
             return this;
         }
 

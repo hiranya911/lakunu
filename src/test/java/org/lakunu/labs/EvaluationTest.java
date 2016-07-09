@@ -33,6 +33,7 @@ public class EvaluationTest {
                 .setOutputHandler(outputHandler)
                 .setWorkingDirectory(FileUtils.getTempDirectory())
                 .setOutputHandler(outputHandler)
+                .setOutputSummary(false)
                 .build();
         eval.run();
 
@@ -71,6 +72,7 @@ public class EvaluationTest {
                 .setOutputHandler(outputHandler)
                 .setWorkingDirectory(FileUtils.getTempDirectory())
                 .setOutputHandler(outputHandler)
+                .setOutputSummary(false)
                 .build();
         eval.run();
 

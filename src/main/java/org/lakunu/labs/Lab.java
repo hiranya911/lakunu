@@ -73,7 +73,6 @@ public final class Lab {
                 break;
             }
         }
-        LabUtils.outputBreak(context.getOutputHandler());
     }
 
     private boolean runPhase(Evaluation.Context context, String phase) {

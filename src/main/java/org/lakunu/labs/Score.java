@@ -55,7 +55,7 @@ public final class Score {
 
     @Override
     public String toString() {
-        String str = name + ": " + value;
+        String str = "" + value;
         if (limit >= 0) {
             str += " / " + limit;
         }
