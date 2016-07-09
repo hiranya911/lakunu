@@ -5,9 +5,10 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.lakunu.labs.DefaultLabBuilder;
 import org.lakunu.labs.Lab;
+import org.lakunu.labs.Score;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.InputStream;
 
 import static org.hamcrest.CoreMatchers.is;
 
@@ -111,6 +112,28 @@ public class JsonLabFactoryTest {
             Assert.fail("No error thrown for invalid plugin");
         } catch (Exception ignored) {
         }
+    }
+
+    @Test
+    public void testSample1() throws Exception {
+        Lab lab;
+        try (InputStream in = getClass().getResourceAsStream("/sample1.json")) {
+            Assert.assertNotNull("Failed to load sample1.json", in);
+            lab = JsonLabFactory.newLab(in);
+        }
+        Assert.assertEquals("sample1", lab.getName());
+        Assert.assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
+        Assert.assertThat(lab.getActivePhases(), is(ImmutableList.of("build", "run", "test")));
+        ImmutableList<Score> rubric = lab.getRubric();
+        Assert.assertEquals(6, rubric.size());
+        ImmutableList<String> key = ImmutableList.of(
+                "no-binaries", "build-success", "build-dir-created",
+                "run-jar", "rational-test", "secret-test"
+        );
+        Assert.assertTrue(key.stream()
+                .allMatch(k -> rubric.stream().anyMatch(r -> r.getName().equals(k))));
+        Assert.assertEquals(60D, Score.total(rubric).getLimit(), 1e-10);
+        Assert.assertEquals(0D, Score.total(rubric).getValue(), 1e-10);
     }
 
 }

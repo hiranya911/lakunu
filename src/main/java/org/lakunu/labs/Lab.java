@@ -75,7 +75,7 @@ public final class Lab {
         }
     }
 
-    ImmutableList<Score> getRubric() {
+    public ImmutableList<Score> getRubric() {
         ImmutableList.Builder<Score> rubric = ImmutableList.builder();
         for (String phase : phases) {
             ImmutableList<Plugin> pluginList = plugins.get(phase);
