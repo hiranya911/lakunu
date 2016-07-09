@@ -12,9 +12,13 @@ public abstract class Validator {
     protected final double score;
 
     protected Validator(Builder builder) {
-        checkArgument(!Strings.isNullOrEmpty(builder.name), "name is required");
-        this.name = builder.name;
-        this.score = builder.score;
+        this(builder.name, builder.score);
+    }
+
+    protected Validator(String name, double score) {
+        checkArgument(!Strings.isNullOrEmpty(name), "name is required");
+        this.name = name;
+        this.score = score;
     }
 
     public abstract Score validate(Plugin.Context context);
@@ -42,6 +46,14 @@ public abstract class Validator {
         } else {
             checkArgument(value <= 0 && value >= score, "invalid score: %s", value);
             return Score.newPenalty(name, value);
+        }
+    }
+
+    protected final Score reportScoreWithLimit(double value) {
+        if (score >= 0) {
+            return reportScore(Math.min(score, value));
+        } else {
+            return reportScore(Math.max(score, value));
         }
     }
 

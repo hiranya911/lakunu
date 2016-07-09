@@ -39,7 +39,7 @@ public final class FileExistsValidator extends Validator {
                 .filter(this::checkFile).count();
         long existingDirs = directories.stream().map(context::resolvePath)
                 .filter(this::checkDirectory).count();
-        return reportScore((existingFiles + existingDirs) * scorePerFile);
+        return reportScoreWithLimit((existingFiles + existingDirs) * scorePerFile);
     }
 
     private boolean checkFile(File f) {

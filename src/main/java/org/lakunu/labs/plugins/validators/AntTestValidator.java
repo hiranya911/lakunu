@@ -64,11 +64,7 @@ public final class AntTestValidator extends Validator {
                 .filter(k -> testSuites.isEmpty() || testSuites.contains(k))
                 .mapToInt(k -> results.get(k).passed)
                 .sum();
-        if (score >= 0) {
-            return reportScore(Math.min(score, scorePerTest * passed));
-        } else {
-            return reportScore(Math.max(score, scorePerTest * passed));
-        }
+        return reportScoreWithLimit(scorePerTest * passed);
     }
 
     public static final class TestResultMap {
