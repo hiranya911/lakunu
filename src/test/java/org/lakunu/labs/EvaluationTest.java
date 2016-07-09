@@ -146,7 +146,7 @@ public class EvaluationTest {
 
         private File evaluationDirectory;
         private LabOutputHandler outputHandler;
-        private File submissionDirectory;
+        private File submissionDirectory = FileUtils.getTempDirectory();
         private File resourceDirectory;
 
         private TestContextBuilder() {

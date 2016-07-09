@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -22,15 +23,18 @@ public abstract class Plugin {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final boolean failOnError;
-    private final ImmutableList<Validator> validators;
+    private final ImmutableList<Validator> preValidators;
+    private final ImmutableList<Validator> postValidators;
 
     protected Plugin(Builder<?,?> builder) {
         this.failOnError = builder.failOnError;
-        this.validators = ImmutableList.copyOf(builder.validators);
+        this.preValidators = ImmutableList.copyOf(builder.preValidators);
+        this.postValidators = ImmutableList.copyOf(builder.postValidators);
     }
 
     public final boolean execute(Evaluation.Context context) {
         Context pluginContext = new Context(context);
+        preValidators.forEach(v -> context.addScore(v.validate(pluginContext)));
         try {
             boolean success = doExecute(pluginContext);
             pluginContext.success = success;
@@ -44,7 +48,7 @@ public abstract class Plugin {
                 return true;
             }
         } finally {
-            validators.forEach(v -> context.addScore(v.validate(pluginContext)));
+            postValidators.forEach(v -> context.addScore(v.validate(pluginContext)));
         }
     }
 
@@ -53,6 +57,7 @@ public abstract class Plugin {
     public final static class Context {
 
         private final Evaluation.Context context;
+        private final Path submissionPath;
         private String output;
         private String errors;
         private Exception exception;
@@ -62,6 +67,8 @@ public abstract class Plugin {
 
         Context(Evaluation.Context context) {
             this.context = context;
+            this.submissionPath = FileSystems.getDefault().getPath(context.getSubmissionDirectory()
+                    .getAbsolutePath());
         }
 
         public LabOutputHandler getOutputHandler() {
@@ -94,6 +101,10 @@ public abstract class Plugin {
             return exception;
         }
 
+        public File resolvePath(String path) {
+            return submissionPath.resolve(path).toFile().getAbsoluteFile();
+        }
+
         public File getResource(String name) {
             File resourcesDirectory = context.getResourcesDirectory();
             checkArgument(resourcesDirectory != null, "resources directory unavailable");
@@ -123,7 +134,8 @@ public abstract class Plugin {
         private final B thisObj;
 
         private boolean failOnError = true;
-        private final List<Validator> validators = new ArrayList<>();
+        private final List<Validator> preValidators = new ArrayList<>();
+        private final List<Validator> postValidators = new ArrayList<>();
 
         protected Builder() {
             this.thisObj = getThisObj();
@@ -134,8 +146,13 @@ public abstract class Plugin {
             return thisObj;
         }
 
-        public final B addValidator(Validator validator) {
-            this.validators.add(validator);
+        public final B addPreValidator(Validator validator) {
+            this.preValidators.add(validator);
+            return thisObj;
+        }
+
+        public final B addPostValidator(Validator validator) {
+            this.postValidators.add(validator);
             return thisObj;
         }
 

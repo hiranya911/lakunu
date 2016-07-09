@@ -17,9 +17,13 @@ public abstract class PluginFactory<T extends Plugin> {
     public final T build(ImmutableMap<String,Object> properties) {
         Plugin.Builder<T,?> builder = doBuild(properties);
         builder.setFailOnError(isFailOnError(properties));
-        List<?> validators = (List) properties.get("validators");
-        if (validators != null) {
-            validators.forEach(obj -> builder.addValidator(newValidator(obj)));
+        List<?> preValidators = (List) properties.get("pre");
+        if (preValidators != null) {
+            preValidators.forEach(obj -> builder.addPreValidator(newValidator(obj)));
+        }
+        List<?> postValidators = (List) properties.get("post");
+        if (postValidators != null) {
+            postValidators.forEach(obj -> builder.addPostValidator(newValidator(obj)));
         }
         return builder.build();
     }

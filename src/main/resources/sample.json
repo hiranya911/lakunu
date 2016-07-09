@@ -3,11 +3,32 @@
   "build": [
     {
       "plugin": "ant",
+      "target": "clean"
+    },
+    {
+      "plugin": "ant",
       "target": "jar",
-      "validators": [
+      "pre": [
+        {
+          "name": "no-binaries",
+          "type": "file-exists",
+          "files": [ "build/Rational.class" ],
+          "testNotExists": true,
+          "scorePerFile": 5,
+          "score": 5
+        }
+      ],
+      "post": [
         {
           "name": "build-success",
           "type": "success",
+          "score": 5
+        },
+        {
+          "name": "build-dir-created",
+          "type": "file-exists",
+          "files": [ "build" ],
+          "scorePerFile": 5,
           "score": 5
         }
       ]
@@ -18,7 +39,7 @@
       "plugin": "run-command",
       "command": "java",
       "args": ["-jar", "build/rational.jar", "1", "2"],
-      "validators": [
+      "post": [
         {
           "name": "run-jar",
           "type": "output-match",
@@ -37,7 +58,7 @@
     {
       "plugin": "ant",
       "target": "test",
-      "validators": [
+      "post": [
         {
           "name": "rational-test",
           "type": "ant-test",

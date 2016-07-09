@@ -25,6 +25,9 @@ public final class AntTestValidator extends Validator {
         super(builder);
         checkArgument(builder.score < 0 == builder.scorePerTest < 0,
                 "scorePerTest must have same sign as score");
+        if (builder.score != 0) {
+            checkArgument(builder.scorePerTest != 0, "scorePerTest cannot be 0");
+        }
         this.scorePerTest = builder.scorePerTest;
         this.testSuites = ImmutableList.copyOf(builder.testSuites);
     }

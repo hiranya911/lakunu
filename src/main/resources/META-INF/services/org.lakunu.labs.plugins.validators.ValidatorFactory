@@ -1,3 +1,4 @@
 org.lakunu.labs.plugins.validators.AntTestValidatorFactory
+org.lakunu.labs.plugins.validators.FileExistsValidatorFactory
 org.lakunu.labs.plugins.validators.OutputMatchValidatorFactory
 org.lakunu.labs.plugins.validators.SuccessValidatorFactory

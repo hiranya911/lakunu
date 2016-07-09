@@ -5,8 +5,6 @@ import com.google.common.primitives.Booleans;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
-import java.nio.file.FileSystems;
-import java.nio.file.Path;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -40,7 +38,7 @@ public final class CopyPlugin extends Plugin {
     protected boolean doExecute(Context context) throws Exception {
         File source = getSource(context);
         if (toFile != null) {
-            File dest = getDestination(context, toFile);
+            File dest = context.resolvePath(toFile);
             if (source.isDirectory()) {
                 FileUtils.copyDirectory(source, dest);
             } else {
@@ -49,7 +47,7 @@ public final class CopyPlugin extends Plugin {
             context.getOutputHandler().info("Copied " + source.getAbsolutePath() + " as " +
                     dest.getAbsolutePath());
         } else {
-            File dest = getDestination(context, toDirectory);
+            File dest = context.resolvePath(toDirectory);
             if (source.isDirectory()) {
                 FileUtils.copyDirectoryToDirectory(source, dest);
             } else {
@@ -68,12 +66,6 @@ public final class CopyPlugin extends Plugin {
         } else {
             return context.getResource(resource);
         }
-    }
-
-    private File getDestination(Context context, String path) {
-        Path home = FileSystems.getDefault().getPath(context.getSubmissionDirectory()
-                .getAbsolutePath());
-        return home.resolve(path).toFile().getAbsoluteFile();
     }
 
     public static Builder newBuilder() {
