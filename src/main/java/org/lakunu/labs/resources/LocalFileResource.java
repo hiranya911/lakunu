@@ -21,10 +21,8 @@ public final class LocalFileResource extends Resource {
 
     @Override
     public void copyTo(File resourcesDir) throws IOException {
-        if (logger.isDebugEnabled()) {
-            logger.info("Copying resource {} to {}", file.getAbsolutePath(),
-                    resourcesDir.getAbsolutePath());
-        }
+        logger.info("Copying resource {} to {}", file.getAbsolutePath(),
+                resourcesDir.getAbsolutePath());
         if (file.isDirectory()) {
             FileUtils.copyDirectoryToDirectory(file, resourcesDir);
         } else {
