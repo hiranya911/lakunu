@@ -15,6 +15,7 @@ public final class OutputMatchValidatorFactory extends ValidatorFactory<OutputMa
                 .setName(getProperty(properties, "name", String.class))
                 .setScore(getNumericProperty(properties, "score"))
                 .setPattern(getProperty(properties, "pattern", String.class))
+                .setError(getProperty(properties, "error", false, Boolean.class))
                 .build();
     }
 }
