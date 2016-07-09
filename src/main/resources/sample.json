@@ -1,4 +1,5 @@
 {
+  "_resources": "/Users/hiranya/academic/cs56/github-grader/InstructorRationalTest.java",
   "build": [
     {
       "plugin": "ant",
@@ -30,7 +31,7 @@
   "test": [
     {
       "plugin": "copy",
-      "file": "/Users/hiranya/academic/cs56/github-grader/InstructorRationalTest.java",
+      "resource": "InstructorRationalTest.java",
       "toDir": "src"
     },
     {

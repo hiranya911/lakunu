@@ -12,24 +12,33 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 public final class CopyPlugin extends Plugin {
 
-    private final String file;
+    private final File file;
+    private final String resource;
     private final String toFile;
     private final String toDirectory;
 
     private CopyPlugin(Builder builder) {
         super(builder);
-        checkArgument(!Strings.isNullOrEmpty(builder.file), "Source file is required");
+        int sources = Booleans.countTrue(!Strings.isNullOrEmpty(builder.file),
+                !Strings.isNullOrEmpty(builder.resource));
+        checkArgument(sources == 1, "Exactly one of file or resource is required");
         int targets = Booleans.countTrue(!Strings.isNullOrEmpty(builder.toFile),
                 !Strings.isNullOrEmpty(builder.toDirectory));
         checkArgument(targets == 1, "Exactly one of toFile or toDirectory is required");
-        this.file = builder.file;
+        if (builder.file != null) {
+            this.file = new File(builder.file).getAbsoluteFile();
+            checkArgument(this.file.exists(), "File: {} does not exist", this.file.getPath());
+        } else {
+            this.file = null;
+        }
+        this.resource = builder.resource;
         this.toFile = builder.toFile;
         this.toDirectory = builder.toDirectory;
     }
 
     @Override
     protected boolean doExecute(Context context) throws Exception {
-        File source = new File(file);
+        File source = getSource(context);
         if (toFile != null) {
             File dest = getDestination(context, toFile);
             if (source.isDirectory()) {
@@ -53,6 +62,14 @@ public final class CopyPlugin extends Plugin {
         return true;
     }
 
+    private File getSource(Context context) {
+        if (file != null) {
+            return file;
+        } else {
+            return context.getResource(resource);
+        }
+    }
+
     private File getDestination(Context context, String path) {
         Path home = FileSystems.getDefault().getPath(context.getSubmissionDirectory()
                 .getAbsolutePath());
@@ -66,6 +83,7 @@ public final class CopyPlugin extends Plugin {
     public static class Builder extends Plugin.Builder<CopyPlugin,Builder> {
 
         private String file;
+        private String resource;
         private String toFile;
         private String toDirectory;
 
@@ -74,6 +92,11 @@ public final class CopyPlugin extends Plugin {
 
         public Builder setFile(String file) {
             this.file = file;
+            return this;
+        }
+
+        public Builder setResource(String resource) {
+            this.resource = resource;
             return this;
         }
 
