@@ -38,7 +38,7 @@ public final class Score {
     }
 
     public static Score total(Collection<Score> scores) {
-        return scores.stream().reduce((s1,s2) -> s1.add("total", s2)).get();
+        return scores.stream().reduce(newPoints("total", 0D, 0D), (s1,s2) -> s1.add("total", s2));
     }
 
     public static Score newPoints(String name, double value, double limit) {

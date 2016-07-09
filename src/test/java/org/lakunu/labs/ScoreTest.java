@@ -91,4 +91,13 @@ public class ScoreTest {
         Assert.assertEquals(15D, s.getLimit(), 1e-10);
     }
 
+    @Test
+    public void testZeroTotal() {
+        ImmutableList<Score> scores = ImmutableList.of();
+        Score s = Score.total(scores);
+        Assert.assertEquals("total", s.getName());
+        Assert.assertEquals(0D, s.getValue(), 1e-10);
+        Assert.assertEquals(0D, s.getLimit(), 1e-10);
+    }
+
 }

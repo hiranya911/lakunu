@@ -136,4 +136,18 @@ public class JsonLabFactoryTest {
         Assert.assertEquals(0D, Score.total(rubric).getValue(), 1e-10);
     }
 
+    @Test
+    public void testSample2() throws Exception {
+        Lab lab;
+        try (InputStream in = getClass().getResourceAsStream("/sample2.json")) {
+            Assert.assertNotNull("Failed to load sample2.json", in);
+            lab = JsonLabFactory.newLab(in);
+        }
+        Assert.assertEquals("sample2", lab.getName());
+        Assert.assertThat(lab.getPhases(), is(DefaultLabBuilder.PHASE_ORDER));
+        Assert.assertThat(lab.getActivePhases(), is(ImmutableList.of("build", "test")));
+        ImmutableList<Score> rubric = lab.getRubric();
+        Assert.assertEquals(0, rubric.size());
+    }
+
 }
