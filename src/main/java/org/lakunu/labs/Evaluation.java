@@ -53,11 +53,15 @@ public final class Evaluation {
     public void run(String finalPhase) throws IOException {
         long start = System.nanoTime();
         Context context = new EvaluationContext(this);
+        boolean exception = false;
         try {
             lab.execute(context, finalPhase);
+        } catch (Exception e) {
+            exception = true;
+            throw e;
         } finally {
             if (outputSummary) {
-                dumpSummary(start, context);
+                dumpSummary(start, exception, context);
             }
             LabUtils.outputBreak(outputHandler);
             if (cleanUpAfterFinish) {
@@ -66,13 +70,17 @@ public final class Evaluation {
         }
     }
 
-    private void dumpSummary(long start, Context context) {
+    private void dumpSummary(long start, boolean exception, Context context) {
         Runtime runtime = Runtime.getRuntime();
         long total = runtime.totalMemory();
         long used = total - runtime.freeMemory();
         long end = System.nanoTime();
         LabOutputHandler outputHandler = context.getOutputHandler();
-        LabUtils.outputTitle("Evaluation complete", outputHandler);
+        if (exception) {
+            LabUtils.outputTitle("Evaluation terminated due to exception", outputHandler);
+        } else {
+            LabUtils.outputTitle("Evaluation complete", outputHandler);
+        }
 
         ImmutableList<Score> rubric = lab.getRubric();
         if (!rubric.isEmpty()) {
@@ -80,10 +88,17 @@ public final class Evaluation {
             ImmutableList<Score> graded = context.getScores();
             List<Score> finalGrades = new ArrayList<>();
             for (int i = 0; i < rubric.size(); i++) {
-                Score score = i < graded.size() ? graded.get(i) : rubric.get(i);
+                Score score;
+                if (i < graded.size()) {
+                    score = graded.get(i);
+                    outputHandler.info(String.format("Score: %" + (longest + 1) + "s %20s",
+                            score.getName(), score.toString()));
+                } else {
+                    score = rubric.get(i);
+                    outputHandler.info(String.format("Score: %" + (longest + 1) + "s %20s (Skipped)",
+                            score.getName(), score.toString()));
+                }
                 finalGrades.add(score);
-                outputHandler.info(String.format("Score: %" + (longest + 1) + "s      %s",
-                        score.getName(), score.toString()));
             }
             outputHandler.info("");
             outputHandler.info("Total score: " + Score.total(finalGrades).toString());

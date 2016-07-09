@@ -17,8 +17,12 @@ public class Main {
 
     private static final Options OPTIONS = new Options()
             .addOption(Option.builder("l").longOpt("lab")
-                    .desc("Path to the lab configuration file")
+                    .desc("Path to the lab configuration file (defaults to lab.json)")
                     .hasArg().argName("FILE")
+                    .build())
+            .addOption(Option.builder("wd").longOpt("working-dir")
+                    .desc("Path to the working directory (defaults to system's temp directory)")
+                    .hasArg().argName("DIR")
                     .build());
 
     private static void printUsage() {
@@ -55,11 +59,19 @@ public class Main {
             return;
         }
 
+        File workingDir;
+        if (cmd.hasOption("wd")) {
+            workingDir = new File(cmd.getOptionValue("wd")).getAbsoluteFile();
+        } else {
+            workingDir = FileUtils.getTempDirectory();
+        }
+
         DirectorySubmission submission = new DirectorySubmission(remaining[0]);
         try (FileInputStream in = FileUtils.openInputStream(labConfig)) {
             Evaluation evaluation = Evaluation.newBuilder().setSubmission(submission)
                     .setLab(JsonLabFactory.newLab(in))
-                    .setWorkingDirectory(FileUtils.getTempDirectory())
+                    .setWorkingDirectory(workingDir)
+                    .setCleanUpAfterFinish(true)
                     .build();
             evaluation.run();
         } catch (IOException e) {
