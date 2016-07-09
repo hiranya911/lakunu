@@ -46,7 +46,7 @@ public final class Lab {
         this.phases = phases;
         this.plugins = ImmutableListMultimap.copyOf(builder.plugins);
         this.name = builder.name;
-        this.resources = new Resources(builder.resources.build());
+        this.resources = Resources.fromResourceSet(builder.resources.build());
     }
 
     public String getName() {
