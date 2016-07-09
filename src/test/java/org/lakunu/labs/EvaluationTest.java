@@ -52,6 +52,41 @@ public class EvaluationTest {
     }
 
     @Test
+    public void testEvaluationProperties() throws Exception {
+        Lab lab = DefaultLabBuilder.newBuilder()
+                .setName("test")
+                .addPlugin(DefaultLabBuilder.BUILD_PHASE, CustomTestPlugin.newInstance(context -> {
+                    context.getOutputHandler().info(context.replaceProperties("Hello world ${foo}"));
+                    return true;
+                }))
+                .build();
+        TestOutputHandler outputHandler = new TestOutputHandler();
+        Submission submission = new TestSubmission();
+        Evaluation eval = Evaluation.newBuilder()
+                .setLab(lab)
+                .setSubmission(submission)
+                .setOutputHandler(outputHandler)
+                .setWorkingDirectory(FileUtils.getTempDirectory())
+                .setOutputHandler(outputHandler)
+                .addProperty("foo", "abc")
+                .build();
+        eval.run();
+
+        ImmutableList<String> entries = outputHandler.entries().stream()
+                .map(e -> e.line)
+                .collect(LabUtils.immutableList());
+        Assert.assertTrue(entries.size() > 0);
+        ImmutableList<String> expected = expected("\n" +
+                "------------------------------------------------------------------------\n" +
+                "Starting build phase\n" +
+                "------------------------------------------------------------------------\n" +
+                "\n" +
+                "Hello world abc\n" +
+                "------------------------------------------------------------------------");
+        Assert.assertThat(entries, is(expected));
+    }
+
+    @Test
     public void testMultiplePluginEvaluation() throws Exception {
         Lab lab = DefaultLabBuilder.newBuilder()
                 .setName("test")
