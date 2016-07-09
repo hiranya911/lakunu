@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -69,12 +71,12 @@ public final class Evaluation {
     public static abstract class Context {
 
         private final Queue<Score> scores = new ConcurrentLinkedQueue<>();
+        private final Map<String,Object> properties = new HashMap<>();
 
         public abstract File getEvaluationDirectory() throws IOException;
         public abstract LabOutputHandler getOutputHandler();
         public abstract File getSubmissionDirectory();
         public abstract File getResourcesDirectory();
-        public abstract ImmutableMap<String,Object> getProperties();
         protected abstract void cleanup();
 
         public final void addScore(Score score) {
@@ -84,6 +86,22 @@ public final class Evaluation {
         public ImmutableList<Score> getScores() {
             return ImmutableList.copyOf(scores);
         }
+
+        public final ImmutableMap<String,Object> getProperties() {
+            return ImmutableMap.copyOf(properties);
+        }
+
+        public final <T> T getProperty(String name, Class<T> clazz) {
+            Object value = properties.get(name);
+            if (value != null) {
+                return clazz.cast(value);
+            }
+            return null;
+        }
+
+        public final void setProperty(String name, Object value) {
+            properties.put(name, value);
+        }
     }
 
     public static final class EvaluationContext extends Context {
@@ -92,7 +110,6 @@ public final class Evaluation {
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
         private final File resourcesDirectory;
-        private final ImmutableMap<String,Object> properties;
         private File evaluationDirectory;
 
         private EvaluationContext(Evaluation eval) throws IOException {
@@ -100,7 +117,7 @@ public final class Evaluation {
             this.outputHandler = eval.outputHandler;
             this.resourcesDirectory = eval.lab.prepareResources(this);
             this.submissionDirectory = eval.submission.prepare(this);
-            this.properties = eval.properties;
+            eval.properties.forEach(this::setProperty);
             checkNotNull(submissionDirectory, "Submission directory is required");
             checkArgument(submissionDirectory.isDirectory() && submissionDirectory.exists(),
                     "Submission directory path is not a directory or does not exist");
@@ -129,11 +146,6 @@ public final class Evaluation {
         @Override
         public File getResourcesDirectory() {
             return resourcesDirectory;
-        }
-
-        @Override
-        public ImmutableMap<String, Object> getProperties() {
-            return properties;
         }
 
         protected synchronized void cleanup() {

@@ -10,12 +10,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 public abstract class Plugin {
 
-    public static final String RESOURCE_DIR_PROPERTY = "_res";
+    public static final String RESOURCE_PREFIX = "res:";
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -50,8 +54,7 @@ public abstract class Plugin {
 
     public final static class Context {
 
-        private final LabOutputHandler outputHandler;
-        private final File submissionDirectory;
+        private final Evaluation.Context context;
         private final StrSubstitutor substitutor;
         private String output;
         private String errors;
@@ -59,17 +62,16 @@ public abstract class Plugin {
         private boolean success;
 
         Context(Evaluation.Context context) {
-            this.outputHandler = context.getOutputHandler();
-            this.submissionDirectory = context.getSubmissionDirectory();
+            this.context = context;
             this.substitutor = new StrSubstitutor(new ContextPropertyLookup(context));
         }
 
         public LabOutputHandler getOutputHandler() {
-            return outputHandler;
+            return context.getOutputHandler();
         }
 
         public File getSubmissionDirectory() {
-            return submissionDirectory;
+            return context.getSubmissionDirectory();
         }
 
         public String getOutput() {
@@ -101,28 +103,42 @@ public abstract class Plugin {
         public String replaceProperties(String str) {
             return substitutor.replace(str);
         }
+
+        public final <T> T getProperty(String name, Class<T> clazz) {
+            return context.getProperty(name, clazz);
+        }
+
+        public final void setProperty(String name, Object value) {
+            context.setProperty(name, value);
+        }
     }
 
     private static class ContextPropertyLookup extends StrLookup {
 
-        private final StrLookup<Object> properties;
-        private final File resourceDirectory;
+        private final Evaluation.Context context;
+        private final Path resourceDir;
 
         private ContextPropertyLookup(Evaluation.Context context) {
-            this.properties = StrLookup.mapLookup(context.getProperties());
-            this.resourceDirectory = context.getResourcesDirectory();
+            this.context = context;
+            File resourcesDirectory = context.getResourcesDirectory();
+            if (resourcesDirectory != null) {
+                this.resourceDir = resourcesDirectory.toPath();
+            } else {
+                this.resourceDir = null;
+            }
         }
 
         @Override
         public String lookup(String key) {
-            if (RESOURCE_DIR_PROPERTY.equals(key)) {
-                if (resourceDirectory != null) {
-                    return resourceDirectory.getAbsolutePath();
-                } else {
-                    return null;
-                }
+            if (key.startsWith(RESOURCE_PREFIX)) {
+                checkArgument(resourceDir != null, "resources directory not available");
+                checkArgument(key.length() > RESOURCE_PREFIX.length(), "invalid key: {}", key);
+                String fileName = key.substring(RESOURCE_PREFIX.length());
+                Path path = resourceDir.resolve(fileName).toAbsolutePath();
+                checkArgument(Files.exists(path), "Non-existing resource reference: {}", fileName);
+                return path.toString();
             } else {
-                return properties.lookup(key);
+                return StrLookup.mapLookup(context.getProperties()).lookup(key);
             }
         }
     }

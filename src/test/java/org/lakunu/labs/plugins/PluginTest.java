@@ -74,25 +74,59 @@ public class PluginTest {
     }
 
     @Test
-    public void testResourceDirReplacement() {
+    public void testResourceRefNoResourceDir() {
         EvaluationTest.TestContext testContext = EvaluationTest.testContextBuilder().build();
-        List<String> values = new ArrayList<>();
         CustomTestPlugin plugin = CustomTestPlugin.newBuilder()
                 .setFunction(context -> {
-                    values.add(context.replaceProperties("* ${" + Plugin.RESOURCE_DIR_PROPERTY + "} *"));
+                    context.replaceProperties("* ${res:foo} *");
                     return true;
                 })
                 .build();
-        Assert.assertTrue(plugin.execute(testContext));
-        Assert.assertEquals(1, values.size());
-        Assert.assertEquals("* ${" + Plugin.RESOURCE_DIR_PROPERTY + "} *", values.get(0));
+        try {
+            plugin.execute(testContext);
+            Assert.fail("No error thrown for missing resources directory");
+        } catch (Exception ignored) {
+        }
+    }
 
-        testContext = EvaluationTest.testContextBuilder()
-                .setResourceDirectory(new File("/tmp/foo"))
+    @Test
+    public void testResourceRefNoResourceFile() {
+        EvaluationTest.TestContext testContext = EvaluationTest.testContextBuilder()
+                .setResourceDirectory(FileUtils.getTempDirectory())
                 .build();
-        Assert.assertTrue(plugin.execute(testContext));
-        Assert.assertEquals(2, values.size());
-        Assert.assertEquals("* /tmp/foo *", values.get(1));
+        CustomTestPlugin plugin = CustomTestPlugin.newBuilder()
+                .setFunction(context -> {
+                    context.replaceProperties("* ${res:foo} *");
+                    return true;
+                })
+                .build();
+        try {
+            plugin.execute(testContext);
+            Assert.fail("No error thrown for missing resources directory");
+        } catch (Exception ignored) {
+        }
+    }
+
+    @Test
+    public void testResourceDirReplacement() throws Exception {
+        File tempFile = File.createTempFile("lakunu", null, FileUtils.getTempDirectory());
+        try {
+            EvaluationTest.TestContext testContext = EvaluationTest.testContextBuilder()
+                    .setResourceDirectory(FileUtils.getTempDirectory())
+                    .build();
+            List<String> values = new ArrayList<>();
+            CustomTestPlugin plugin = CustomTestPlugin.newBuilder()
+                    .setFunction(context -> {
+                        values.add(context.replaceProperties("* ${res:" + tempFile.getName() + "} *"));
+                        return true;
+                    })
+                    .build();
+            Assert.assertTrue(plugin.execute(testContext));
+            Assert.assertEquals(1, values.size());
+            Assert.assertEquals("* " + tempFile.getAbsolutePath() + " *", values.get(0));
+        } finally {
+            FileUtils.deleteQuietly(tempFile);
+        }
     }
 
     public static Plugin.Context pluginContext(Evaluation.Context evalContext) {

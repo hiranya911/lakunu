@@ -109,14 +109,13 @@ public class EvaluationTest {
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
         private final File resourceDirectory;
-        private final ImmutableMap<String,Object> properties;
 
         private TestContext(TestContextBuilder builder) {
             this.evaluationDirectory = builder.evaluationDirectory;
             this.outputHandler = builder.outputHandler;
             this.submissionDirectory = builder.submissionDirectory;
             this.resourceDirectory = builder.resourceDirectory;
-            this.properties = builder.properties.build();
+            builder.properties.build().forEach(this::setProperty);
         }
 
         @Override
@@ -137,11 +136,6 @@ public class EvaluationTest {
         @Override
         public File getResourcesDirectory() {
             return resourceDirectory;
-        }
-
-        @Override
-        public ImmutableMap<String, Object> getProperties() {
-            return properties;
         }
 
         @Override
