@@ -58,7 +58,7 @@ public abstract class Plugin {
         private Exception exception;
         private boolean success;
 
-        private Context(Evaluation.Context context) {
+        Context(Evaluation.Context context) {
             this.outputHandler = context.getOutputHandler();
             this.submissionDirectory = context.getSubmissionDirectory();
             this.substitutor = new StrSubstitutor(new ContextPropertyLookup(context));

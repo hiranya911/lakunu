@@ -1,7 +1,9 @@
 package org.lakunu.labs.plugins;
 
 import junit.framework.Assert;
+import org.apache.commons.io.FileUtils;
 import org.junit.Test;
+import org.lakunu.labs.Evaluation;
 import org.lakunu.labs.EvaluationTest;
 
 import java.io.File;
@@ -91,6 +93,10 @@ public class PluginTest {
         Assert.assertTrue(plugin.execute(testContext));
         Assert.assertEquals(2, values.size());
         Assert.assertEquals("* /tmp/foo *", values.get(1));
+    }
+
+    public static Plugin.Context pluginContext(Evaluation.Context evalContext) {
+        return new Plugin.Context(evalContext);
     }
 
 }

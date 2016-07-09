@@ -1,4 +1,4 @@
-package org.lakunu.labs.utils;
+package org.lakunu.labs.plugins.utils;
 
 import org.apache.commons.exec.LogOutputStream;
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -14,7 +14,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-public final class CommandOutputStream extends TeeOutputStream {
+final class CommandOutputStream extends TeeOutputStream {
 
     private static final int LEVEL_STDOUT = 0;
     private static final int LEVEL_STDERR = 1;
@@ -28,15 +28,15 @@ public final class CommandOutputStream extends TeeOutputStream {
         return ((StringBufferOutputStream) branch).buffer.toString();
     }
 
-    public static Factory withoutBuffering(boolean stdout) {
+    static Factory withoutBuffering(boolean stdout) {
         return new Factory(stdout, false, 0);
     }
 
-    public static Factory withBuffering(boolean stdout, int threshold) {
+    static Factory withBuffering(boolean stdout, int threshold) {
         return new Factory(stdout, true, threshold);
     }
 
-    public static final class Factory {
+    static final class Factory {
         private final int level;
         private final boolean buffering;
         private final int bufferLimit;
@@ -61,8 +61,8 @@ public final class CommandOutputStream extends TeeOutputStream {
         }
     }
 
-    public static CommandOutputStream.Factory newStreamFactory(boolean stdout,
-                                                               boolean buffering, int threshold) {
+    static CommandOutputStream.Factory newStreamFactory(boolean stdout, boolean buffering,
+                                                        int threshold) {
         if (buffering) {
             return CommandOutputStream.withBuffering(stdout, threshold);
         } else {

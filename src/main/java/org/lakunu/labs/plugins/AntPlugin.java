@@ -1,47 +1,33 @@
 package org.lakunu.labs.plugins;
 
-import com.google.common.base.Strings;
-import org.lakunu.labs.utils.CommandOutputStream;
-import org.lakunu.labs.utils.SystemCommand;
-
-import static com.google.common.base.Preconditions.checkArgument;
+import org.lakunu.labs.plugins.utils.SystemCommand;
 
 public final class AntPlugin extends Plugin {
 
-    private final String antBinary;
-    private final String buildTarget;
+    private final SystemCommand command;
     private final boolean processStderr;
-    private final CommandOutputStream.Factory stdoutFactory;
-    private final CommandOutputStream.Factory stderrFactory;
 
     private AntPlugin(Builder builder) {
         super(builder);
-        checkArgument(!Strings.isNullOrEmpty(builder.antBinary), "antBinary is required");
-        checkArgument(!Strings.isNullOrEmpty(builder.buildTarget), "buildTarget is required");
-        this.antBinary = builder.antBinary;
-        this.buildTarget = builder.buildTarget;
+        this.command = SystemCommand.newBuilder()
+                .setCommand(builder.antBinary)
+                .addArg(builder.buildTarget)
+                .setBufferStdout(true)
+                .setStdoutBufferLimit(builder.stdoutBufferLimit)
+                .setBufferStderr(builder.processStderr)
+                .setStderrBufferLimit(builder.stderrBufferLimit)
+                .build();
         this.processStderr = builder.processStderr;
-        this.stdoutFactory = CommandOutputStream.newStreamFactory(
-                true, true, builder.stdoutBufferLimit);
-        this.stderrFactory = CommandOutputStream.newStreamFactory(
-                false, builder.processStderr, builder.stderrBufferLimit);
     }
 
     @Override
     protected boolean doExecute(Context context) throws Exception {
-        SystemCommand command = SystemCommand.newBuilder()
-                .setCommand(antBinary)
-                .addArgument(buildTarget)
-                .setWorkingDirectory(context.getSubmissionDirectory())
-                .build();
-        CommandOutputStream stdout = stdoutFactory.build(context.getOutputHandler());
-        CommandOutputStream stderr = stderrFactory.build(context.getOutputHandler());
-        int status = command.run(stdout, stderr);
-        context.setOutput(stdout.getContent());
+        SystemCommand.Output output = command.run(context);
+        context.setOutput(output.getStdout());
         if (processStderr) {
-            context.setErrors(stderr.getContent());
+            context.setErrors(output.getStderr());
         }
-        return status == 0;
+        return output.getStatus() == 0;
     }
 
     public static Builder newBuilder() {

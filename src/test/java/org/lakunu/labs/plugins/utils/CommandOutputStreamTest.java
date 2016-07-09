@@ -1,10 +1,11 @@
-package org.lakunu.labs.utils;
+package org.lakunu.labs.plugins.utils;
 
 import com.google.common.collect.ImmutableList;
 import junit.framework.Assert;
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.lakunu.labs.TestOutputHandler;
+import org.lakunu.labs.plugins.utils.CommandOutputStream;
 
 import java.io.IOException;
 
