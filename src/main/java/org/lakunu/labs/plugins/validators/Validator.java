@@ -23,6 +23,10 @@ public abstract class Validator {
 
     public abstract Score validate(Plugin.Context context);
 
+    public final Score zero() {
+        return reportScore(false);
+    }
+
     protected final Score reportScore(boolean condition) {
         if (score >= 0) {
             if (condition) {

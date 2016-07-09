@@ -13,7 +13,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -72,16 +74,19 @@ public final class Evaluation {
         LabOutputHandler outputHandler = context.getOutputHandler();
         LabUtils.outputTitle("Evaluation complete", outputHandler);
 
-        ImmutableList<Score> scores = context.getScores();
-        if (!scores.isEmpty()) {
-            int longest = context.getScores().stream()
-                    .mapToInt(s -> s.getName().length()).max().getAsInt();
-            for (Score score : context.getScores()) {
+        ImmutableList<Score> rubric = lab.getRubric();
+        if (!rubric.isEmpty()) {
+            int longest = rubric.stream().mapToInt(s -> s.getName().length()).max().getAsInt();
+            ImmutableList<Score> graded = context.getScores();
+            List<Score> finalGrades = new ArrayList<>();
+            for (int i = 0; i < rubric.size(); i++) {
+                Score score = i < graded.size() ? graded.get(i) : rubric.get(i);
+                finalGrades.add(score);
                 outputHandler.info(String.format("Score: %" + (longest + 1) + "s      %s",
                         score.getName(), score.toString()));
             }
             outputHandler.info("");
-            outputHandler.info("Total score: " + Score.total(scores).toString());
+            outputHandler.info("Total score: " + Score.total(finalGrades).toString());
             outputHandler.info("");
             outputHandler.info("");
         }

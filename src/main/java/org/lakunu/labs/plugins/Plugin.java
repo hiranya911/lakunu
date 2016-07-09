@@ -3,6 +3,7 @@ package org.lakunu.labs.plugins;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.labs.Evaluation;
 import org.lakunu.labs.LabOutputHandler;
+import org.lakunu.labs.Score;
 import org.lakunu.labs.plugins.validators.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,13 @@ public abstract class Plugin {
         } finally {
             postValidators.forEach(v -> context.addScore(v.validate(pluginContext)));
         }
+    }
+
+    public final ImmutableList<Score> getRubric() {
+        ImmutableList.Builder<Score> rubric = ImmutableList.builder();
+        preValidators.forEach(v -> rubric.add(v.zero()));
+        postValidators.forEach(v -> rubric.add(v.zero()));
+        return rubric.build();
     }
 
     protected abstract boolean doExecute(Context context) throws Exception;

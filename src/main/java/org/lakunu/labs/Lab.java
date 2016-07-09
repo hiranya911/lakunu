@@ -75,6 +75,15 @@ public final class Lab {
         }
     }
 
+    ImmutableList<Score> getRubric() {
+        ImmutableList.Builder<Score> rubric = ImmutableList.builder();
+        for (String phase : phases) {
+            ImmutableList<Plugin> pluginList = plugins.get(phase);
+            pluginList.forEach(p -> rubric.addAll(p.getRubric()));
+        }
+        return rubric.build();
+    }
+
     private boolean runPhase(Evaluation.Context context, String phase) {
         ImmutableList<Plugin> pluginList = plugins.get(phase);
         if (pluginList.isEmpty()) {
