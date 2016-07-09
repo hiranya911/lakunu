@@ -56,29 +56,11 @@ public class PluginTest {
     }
 
     @Test
-    public void testStringReplacement() {
-        EvaluationTest.TestContext testContext = EvaluationTest.testContextBuilder()
-                .addProperty("p1", "foo")
-                .addProperty("p2", "bar")
-                .build();
-        List<String> values = new ArrayList<>();
-        CustomTestPlugin plugin = CustomTestPlugin.newBuilder()
-                .setFunction(context -> {
-                    values.add(context.replaceProperties("* ${p1} * ${p2} * ${p3}"));
-                    return true;
-                })
-                .build();
-        Assert.assertTrue(plugin.execute(testContext));
-        Assert.assertEquals(1, values.size());
-        Assert.assertEquals("* foo * bar * ${p3}", values.get(0));
-    }
-
-    @Test
     public void testResourceRefNoResourceDir() {
         EvaluationTest.TestContext testContext = EvaluationTest.testContextBuilder().build();
         CustomTestPlugin plugin = CustomTestPlugin.newBuilder()
                 .setFunction(context -> {
-                    context.replaceProperties("* ${res:foo} *");
+                    context.getResource("foo");
                     return true;
                 })
                 .build();
@@ -96,7 +78,7 @@ public class PluginTest {
                 .build();
         CustomTestPlugin plugin = CustomTestPlugin.newBuilder()
                 .setFunction(context -> {
-                    context.replaceProperties("* ${res:foo} *");
+                    context.getResource("foo");
                     return true;
                 })
                 .build();
@@ -117,13 +99,13 @@ public class PluginTest {
             List<String> values = new ArrayList<>();
             CustomTestPlugin plugin = CustomTestPlugin.newBuilder()
                     .setFunction(context -> {
-                        values.add(context.replaceProperties("* ${res:" + tempFile.getName() + "} *"));
+                        values.add(context.getResource(tempFile.getName()).getAbsolutePath());
                         return true;
                     })
                     .build();
             Assert.assertTrue(plugin.execute(testContext));
             Assert.assertEquals(1, values.size());
-            Assert.assertEquals("* " + tempFile.getAbsolutePath() + " *", values.get(0));
+            Assert.assertEquals(tempFile.getAbsolutePath(), values.get(0));
         } finally {
             FileUtils.deleteQuietly(tempFile);
         }

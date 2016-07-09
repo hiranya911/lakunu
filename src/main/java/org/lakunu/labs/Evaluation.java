@@ -1,7 +1,6 @@
 package org.lakunu.labs;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.utils.LoggingOutputHandler;
@@ -12,8 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -29,7 +26,6 @@ public final class Evaluation {
     private final File workingDirectory;
     private final LabOutputHandler outputHandler;
     private final boolean cleanUpAfterFinish;
-    private final ImmutableMap<String,Object> properties;
 
     private Evaluation(Builder builder) {
         checkNotNull(builder.submission, "Submission is required");
@@ -43,7 +39,6 @@ public final class Evaluation {
         this.workingDirectory = builder.workingDirectory;
         this.cleanUpAfterFinish = builder.cleanUpAfterFinish;
         this.outputHandler = builder.outputHandler;
-        this.properties = builder.properties.build();
     }
 
     public void run(String finalPhase) throws IOException {
@@ -71,7 +66,6 @@ public final class Evaluation {
     public static abstract class Context {
 
         private final Queue<Score> scores = new ConcurrentLinkedQueue<>();
-        private final Map<String,Object> properties = new HashMap<>();
 
         public abstract File getEvaluationDirectory() throws IOException;
         public abstract LabOutputHandler getOutputHandler();
@@ -87,21 +81,6 @@ public final class Evaluation {
             return ImmutableList.copyOf(scores);
         }
 
-        public final ImmutableMap<String,Object> getProperties() {
-            return ImmutableMap.copyOf(properties);
-        }
-
-        public final <T> T getProperty(String name, Class<T> clazz) {
-            Object value = properties.get(name);
-            if (value != null) {
-                return clazz.cast(value);
-            }
-            return null;
-        }
-
-        public final void setProperty(String name, Object value) {
-            properties.put(name, value);
-        }
     }
 
     public static final class EvaluationContext extends Context {
@@ -117,7 +96,6 @@ public final class Evaluation {
             this.outputHandler = eval.outputHandler;
             this.resourcesDirectory = eval.lab.prepareResources(this);
             this.submissionDirectory = eval.submission.prepare(this);
-            eval.properties.forEach(this::setProperty);
             checkNotNull(submissionDirectory, "Submission directory is required");
             checkArgument(submissionDirectory.isDirectory() && submissionDirectory.exists(),
                     "Submission directory path is not a directory or does not exist");
@@ -163,7 +141,6 @@ public final class Evaluation {
         private File workingDirectory;
         private LabOutputHandler outputHandler = new LoggingOutputHandler();
         private boolean cleanUpAfterFinish = true;
-        private final ImmutableMap.Builder<String,Object> properties = ImmutableMap.builder();
 
         private Builder() {
         }
@@ -190,11 +167,6 @@ public final class Evaluation {
 
         public Builder setCleanUpAfterFinish(boolean cleanUpAfterFinish) {
             this.cleanUpAfterFinish = cleanUpAfterFinish;
-            return this;
-        }
-
-        public Builder addProperty(String key, Object value) {
-            this.properties.put(key, value);
             return this;
         }
 

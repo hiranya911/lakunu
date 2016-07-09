@@ -29,7 +29,7 @@ public final class CopyPlugin extends Plugin {
 
     @Override
     protected boolean doExecute(Context context) throws Exception {
-        File source = new File(context.replaceProperties(file));
+        File source = new File(file);
         if (toFile != null) {
             File dest = getDestination(context, toFile);
             if (source.isDirectory()) {
@@ -56,7 +56,7 @@ public final class CopyPlugin extends Plugin {
     private File getDestination(Context context, String path) {
         Path home = FileSystems.getDefault().getPath(context.getSubmissionDirectory()
                 .getAbsolutePath());
-        return home.resolve(context.replaceProperties(path)).toFile().getAbsoluteFile();
+        return home.resolve(path).toFile().getAbsoluteFile();
     }
 
     public static Builder newBuilder() {

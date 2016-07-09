@@ -33,8 +33,8 @@ public final class SystemCommand {
     }
 
     public Output run(Plugin.Context context) throws IOException {
-        CommandLine cmdLine = CommandLine.parse(context.replaceProperties(command));
-        args.forEach(arg -> cmdLine.addArgument(context.replaceProperties(arg)));
+        CommandLine cmdLine = CommandLine.parse(command);
+        args.forEach(cmdLine::addArgument);
         Executor exec = new DefaultExecutor();
         exec.setExitValues(null);
         exec.setWorkingDirectory(context.getSubmissionDirectory());

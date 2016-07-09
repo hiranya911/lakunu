@@ -1,7 +1,6 @@
 package org.lakunu.labs;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -47,41 +46,6 @@ public class EvaluationTest {
                 "------------------------------------------------------------------------\n" +
                 "\n" +
                 "Hello world\n" +
-                "------------------------------------------------------------------------");
-        Assert.assertThat(entries, is(expected));
-    }
-
-    @Test
-    public void testEvaluationProperties() throws Exception {
-        Lab lab = DefaultLabBuilder.newBuilder()
-                .setName("test")
-                .addPlugin(DefaultLabBuilder.BUILD_PHASE, CustomTestPlugin.newInstance(context -> {
-                    context.getOutputHandler().info(context.replaceProperties("Hello world ${foo}"));
-                    return true;
-                }))
-                .build();
-        TestOutputHandler outputHandler = new TestOutputHandler();
-        Submission submission = new TestSubmission();
-        Evaluation eval = Evaluation.newBuilder()
-                .setLab(lab)
-                .setSubmission(submission)
-                .setOutputHandler(outputHandler)
-                .setWorkingDirectory(FileUtils.getTempDirectory())
-                .setOutputHandler(outputHandler)
-                .addProperty("foo", "abc")
-                .build();
-        eval.run();
-
-        ImmutableList<String> entries = outputHandler.entries().stream()
-                .map(e -> e.line)
-                .collect(LabUtils.immutableList());
-        Assert.assertTrue(entries.size() > 0);
-        ImmutableList<String> expected = expected("\n" +
-                "------------------------------------------------------------------------\n" +
-                "Starting build phase\n" +
-                "------------------------------------------------------------------------\n" +
-                "\n" +
-                "Hello world abc\n" +
                 "------------------------------------------------------------------------");
         Assert.assertThat(entries, is(expected));
     }
@@ -150,7 +114,6 @@ public class EvaluationTest {
             this.outputHandler = builder.outputHandler;
             this.submissionDirectory = builder.submissionDirectory;
             this.resourceDirectory = builder.resourceDirectory;
-            builder.properties.build().forEach(this::setProperty);
         }
 
         @Override
@@ -180,11 +143,11 @@ public class EvaluationTest {
     }
 
     public static class TestContextBuilder {
+
         private File evaluationDirectory;
         private LabOutputHandler outputHandler;
         private File submissionDirectory;
         private File resourceDirectory;
-        private final ImmutableMap.Builder<String,Object> properties = ImmutableMap.builder();
 
         private TestContextBuilder() {
         }
@@ -206,11 +169,6 @@ public class EvaluationTest {
 
         public TestContextBuilder setResourceDirectory(File resourceDirectory) {
             this.resourceDirectory = resourceDirectory;
-            return this;
-        }
-
-        public TestContextBuilder addProperty(String key, Object value) {
-            this.properties.put(key, value);
             return this;
         }
 
