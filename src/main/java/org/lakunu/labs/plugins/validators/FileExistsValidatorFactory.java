@@ -22,6 +22,11 @@ public final class FileExistsValidatorFactory extends ValidatorFactory<FileExist
         if (files != null) {
             files.forEach(f -> builder.addFile(f.toString()));
         }
+
+        List<?> dirs = getProperty(properties, "dirs", List.class);
+        if (dirs != null) {
+            dirs.forEach(d -> builder.addDirectory(d.toString()));
+        }
         return builder.build();
     }
 }

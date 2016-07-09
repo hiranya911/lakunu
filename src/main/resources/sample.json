@@ -27,7 +27,7 @@
         {
           "name": "build-dir-created",
           "type": "file-exists",
-          "files": [ "build" ],
+          "dirs": [ "build" ],
           "scorePerFile": 5,
           "score": 5
         }
