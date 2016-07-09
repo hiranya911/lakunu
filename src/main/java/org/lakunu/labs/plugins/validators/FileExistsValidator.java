@@ -21,11 +21,14 @@ public final class FileExistsValidator extends Validator {
         super(builder);
         checkArgument(!builder.files.isEmpty() || !builder.directories.isEmpty(),
                 "specify at least one file or directory to check");
-        checkArgument(builder.score < 0 == builder.scorePerFile < 0,
-                "scorePerFile must have same sign as score");
-        if (builder.score != 0) {
-            checkArgument(builder.scorePerFile != 0,
-                    "scorePerFile cannot be 0 when score is non-zero");
+        if (builder.score < 0) {
+            checkArgument(builder.scorePerFile <= 0,
+                    "scorePerFile must be 0 or have the same sign as score");
+        } else if (builder.score > 0) {
+            checkArgument(builder.scorePerFile >= 0,
+                    "scorePerFile must be 0 or have the same sign as score");
+        } else {
+            checkArgument(builder.scorePerFile == 0D, "scorePerFile must be 0 when score is 0");
         }
         this.files = ImmutableList.copyOf(builder.files);
         this.directories = ImmutableList.copyOf(builder.directories);
@@ -35,11 +38,15 @@ public final class FileExistsValidator extends Validator {
 
     @Override
     public Score validate(Plugin.Context context) {
-        long existingFiles = files.stream().map(context::resolvePath)
+        long validFiles = files.stream().map(context::resolvePath)
                 .filter(this::checkFile).count();
-        long existingDirs = directories.stream().map(context::resolvePath)
+        long validDirs = directories.stream().map(context::resolvePath)
                 .filter(this::checkDirectory).count();
-        return reportScoreWithLimit((existingFiles + existingDirs) * scorePerFile);
+        if (scorePerFile == 0D) {
+            return reportScore(validFiles + validDirs == files.size() + directories.size());
+        } else {
+            return reportScoreWithLimit((validFiles + validDirs) * scorePerFile);
+        }
     }
 
     private boolean checkFile(File f) {

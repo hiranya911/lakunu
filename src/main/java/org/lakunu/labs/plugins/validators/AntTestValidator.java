@@ -21,12 +21,16 @@ public final class AntTestValidator extends Validator {
     private final double scorePerTest;
     private final ImmutableList<String> testSuites;
 
-    public AntTestValidator(Builder builder) {
+    private AntTestValidator(Builder builder) {
         super(builder);
-        checkArgument(builder.score < 0 == builder.scorePerTest < 0,
-                "scorePerTest must have same sign as score");
-        if (builder.score != 0) {
-            checkArgument(builder.scorePerTest != 0, "scorePerTest cannot be 0");
+        if (builder.score < 0) {
+            checkArgument(builder.scorePerTest <= 0,
+                    "scorePerTest must be 0 or have the same sign as score");
+        } else if (builder.score > 0) {
+            checkArgument(builder.scorePerTest >= 0,
+                    "scorePerTest must be 0 or have the same sign as score");
+        } else {
+            checkArgument(builder.scorePerTest == 0D, "scorePerTest must be 0 when score is 0");
         }
         this.scorePerTest = builder.scorePerTest;
         this.testSuites = ImmutableList.copyOf(builder.testSuites);
@@ -64,7 +68,15 @@ public final class AntTestValidator extends Validator {
                 .filter(k -> testSuites.isEmpty() || testSuites.contains(k))
                 .mapToInt(k -> results.get(k).passed)
                 .sum();
-        return reportScoreWithLimit(scorePerTest * passed);
+        if (scorePerTest == 0D) {
+            int total = results.suites()
+                    .filter(k -> testSuites.isEmpty() || testSuites.contains(k))
+                    .mapToInt(k -> results.get(k).total)
+                    .sum();
+            return reportScore(passed == total);
+        } else {
+            return reportScoreWithLimit(scorePerTest * passed);
+        }
     }
 
     public static final class TestResultMap {
