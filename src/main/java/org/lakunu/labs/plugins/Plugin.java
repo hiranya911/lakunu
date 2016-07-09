@@ -39,17 +39,15 @@ public abstract class Plugin {
         try {
             boolean success = doExecute(pluginContext);
             pluginContext.success = success;
+            postValidators.forEach(v -> context.addScore(v.validate(pluginContext)));
             return success || !failOnError;
         } catch (Exception e) {
-            pluginContext.exception = e;
             if (failOnError) {
                 throw new RuntimeException(e);
             } else {
                 logger.warn("Error while executing plugin", e);
                 return true;
             }
-        } finally {
-            postValidators.forEach(v -> context.addScore(v.validate(pluginContext)));
         }
     }
 
@@ -68,7 +66,6 @@ public abstract class Plugin {
         private final Path submissionPath;
         private String output;
         private String errors;
-        private Exception exception;
         private boolean success;
 
         private final Map<String,Object> properties = new HashMap<>();
@@ -91,22 +88,16 @@ public abstract class Plugin {
             return output;
         }
 
-        public Context setOutput(String output) {
+        public void setOutput(String output) {
             this.output = output;
-            return this;
         }
 
         public String getErrors() {
             return errors;
         }
 
-        public Context setErrors(String errors) {
+        public void setErrors(String errors) {
             this.errors = errors;
-            return this;
-        }
-
-        public Exception getException() {
-            return exception;
         }
 
         public File resolvePath(String path) {
