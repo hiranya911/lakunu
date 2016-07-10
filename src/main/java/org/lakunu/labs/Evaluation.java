@@ -162,8 +162,8 @@ public final class Evaluation {
         @Override
         public synchronized File getEvaluationDirectory() throws IOException {
             if (evaluationDirectory == null) {
-                Path workingDirPath = Files.createTempDirectory(workingDirectory.toPath(), "lakunu");
-                evaluationDirectory = workingDirPath.toFile();
+                Path evaluationDirPath = Files.createTempDirectory(workingDirectory.toPath(), "lakunu");
+                evaluationDirectory = evaluationDirPath.toFile();
                 logger.info("Created evaluation directory: {}", evaluationDirectory.getAbsolutePath());
             }
             return evaluationDirectory;
