@@ -17,7 +17,7 @@ public class Main {
 
     private static final Options OPTIONS = new Options()
             .addOption(Option.builder("l").longOpt("lab")
-                    .desc("Path to the lab configuration file (defaults to lab.json)")
+                    .desc("Path to the lab configuration file (defaults to ./lab.json)")
                     .hasArg().argName("FILE")
                     .build())
             .addOption(Option.builder("wd").longOpt("working-dir")

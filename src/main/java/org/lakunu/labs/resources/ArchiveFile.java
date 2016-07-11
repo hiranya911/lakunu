@@ -59,7 +59,7 @@ public abstract class ArchiveFile<T extends ArchiveEntry> {
     protected final void mapFileMode(T entry, File target) throws IOException {
         if (SystemUtils.IS_OS_UNIX || SystemUtils.IS_OS_LINUX || SystemUtils.IS_OS_MAC) {
             int mode = (getFileMode(entry) & 0777);
-            logger.error("Setting permission to {}", mode);
+            logger.debug("Setting permission to {}", mode);
             if (mode > 0) {
                 // Some code borrowed with thanks from https://github.com/fge/java7-fs-more/
                 // Refer their PosixModes class for the full implementation.
