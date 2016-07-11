@@ -10,6 +10,6 @@ public abstract class ResourceCollection {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    public abstract void copyTo(File evaluationDir) throws IOException;
+    public abstract void extract(File resourcesDir) throws IOException;
 
 }

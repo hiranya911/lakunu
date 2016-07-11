@@ -7,6 +7,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import org.lakunu.labs.*;
 import org.lakunu.labs.plugins.Plugin;
+import org.lakunu.labs.resources.ArchiveResourceCollection;
 import org.lakunu.labs.resources.LocalFileResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,6 +49,11 @@ public final class JsonLabFactory implements LabFactory {
             } else {
                 builder.addResource(new LocalFileResource(resources.asText()));
             }
+        }
+
+        JsonNode collection = json.get("_collection");
+        if (collection != null) {
+            builder.setCollection(new ArchiveResourceCollection(collection.asText()));
         }
 
         Iterator<Map.Entry<String,JsonNode>> fields = json.fields();

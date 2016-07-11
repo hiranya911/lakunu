@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.*;
 import org.lakunu.labs.plugins.Plugin;
 import org.lakunu.labs.resources.Resource;
+import org.lakunu.labs.resources.ResourceCollection;
 import org.lakunu.labs.resources.Resources;
 import org.lakunu.labs.utils.LabUtils;
 
@@ -46,7 +47,7 @@ public final class Lab {
         this.phases = phases;
         this.plugins = ImmutableListMultimap.copyOf(builder.plugins);
         this.name = builder.name;
-        this.resources = Resources.fromResourceSet(builder.resources.build());
+        this.resources = builder.resources.build();
     }
 
     public String getName() {
@@ -102,7 +103,7 @@ public final class Lab {
     public abstract static class Builder {
         private String name;
         private final ListMultimap<String,Plugin> plugins = ArrayListMultimap.create();
-        private ImmutableSet.Builder<Resource> resources = ImmutableSet.builder();
+        private Resources.Builder resources = Resources.newBuilder();
 
         protected Builder() {
         }
@@ -118,7 +119,12 @@ public final class Lab {
         }
 
         public final Builder addResource(Resource resource) {
-            this.resources.add(resource);
+            this.resources.addResource(resource);
+            return this;
+        }
+
+        public final Builder setCollection(ResourceCollection collection) {
+            this.resources.setCollection(collection);
             return this;
         }
 

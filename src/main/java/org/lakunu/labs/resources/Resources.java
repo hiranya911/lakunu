@@ -15,23 +15,16 @@ public final class Resources {
     private final ImmutableSet<Resource> resources;
     private final ResourceCollection collection;
 
-    private Resources(ImmutableSet<Resource> resources, ResourceCollection collection) {
-        int count = Booleans.countTrue(resources != null, collection != null);
-        checkArgument(count == 1, "One of resource list or resource collection is required");
+    private Resources(Builder builder) {
+        ImmutableSet<Resource> resources = builder.resources.build();
+        int count = Booleans.countTrue(!resources.isEmpty(), builder.collection != null);
+        checkArgument(count != 2, "Cannot specify both resources and a resource collection");
         this.resources = resources;
-        this.collection = collection;
-    }
-
-    public static Resources fromResourceSet(ImmutableSet<Resource> resourceSet) {
-        return new Resources(resourceSet, null);
-    }
-
-    public static Resources fromResourceCollection(ResourceCollection collection) {
-        return new Resources(null, collection);
+        this.collection = builder.collection;
     }
 
     public File prepare(Evaluation.Context context) throws IOException {
-        if (resources.isEmpty()) {
+        if (resources.isEmpty() && collection == null) {
             return null;
         }
         File resourcesDir = new File(context.getEvaluationDirectory(), "_resources");
@@ -39,7 +32,38 @@ public final class Resources {
         for (Resource resource : resources) {
             resource.copyTo(resourcesDir);
         }
+
+        if (collection != null) {
+            collection.extract(resourcesDir);
+        }
         return resourcesDir;
+    }
+
+    public static Builder newBuilder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+
+        private final ImmutableSet.Builder<Resource> resources = ImmutableSet.builder();
+        private ResourceCollection collection;
+
+        private Builder() {
+        }
+
+        public final Builder addResource(Resource resource) {
+            this.resources.add(resource);
+            return this;
+        }
+
+        public Builder setCollection(ResourceCollection collection) {
+            this.collection = collection;
+            return this;
+        }
+
+        public Resources build() {
+            return new Resources(this);
+        }
     }
 
 }

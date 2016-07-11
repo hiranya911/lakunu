@@ -111,7 +111,7 @@ public abstract class ArchiveFile<T extends ArchiveEntry> {
             try (U input = openStream()) {
                 T entry;
                 while ((entry = getNextEntry(input)) != null) {
-                    logger.info("Extracting {}", entry.getName());
+                    logger.debug("Extracting streaming archive entry {}", entry.getName());
                     File file = new File(dest, entry.getName());
                     if (entry.isDirectory()) {
                         FileUtils.forceMkdir(file);
@@ -162,7 +162,7 @@ public abstract class ArchiveFile<T extends ArchiveEntry> {
             Enumeration<ZipArchiveEntry> entries = zip.getEntries();
             while (entries.hasMoreElements()) {
                 ZipArchiveEntry entry = entries.nextElement();
-                logger.info("Extracting {}", entry.getName());
+                logger.debug("Extracting zip file entry {}", entry.getName());
                 File file = new File(dest, entry.getName());
                 if (entry.isDirectory()) {
                     FileUtils.forceMkdir(file);
@@ -181,6 +181,7 @@ public abstract class ArchiveFile<T extends ArchiveEntry> {
     }
 
     public static ArchiveFile newArchiveFile(String path) {
+        checkArgument(!Strings.isNullOrEmpty(path), "Path is required");
         File file = new File(path);
         String name = file.getName().toLowerCase();
         if (name.endsWith(".zip")) {
