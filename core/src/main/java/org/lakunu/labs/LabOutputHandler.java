@@ -18,8 +18,4 @@ public interface LabOutputHandler {
 
     }
 
-    default void close() {
-
-    }
-
 }

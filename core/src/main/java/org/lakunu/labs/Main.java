@@ -4,7 +4,6 @@ import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.config.JsonLabFactory;
 import org.lakunu.labs.submit.DirectorySubmission;
-import org.lakunu.labs.utils.FileOutputHandler;
 import org.lakunu.labs.utils.LoggingOutputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,8 +11,6 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
-import static com.google.common.base.Preconditions.checkArgument;
 
 public class Main {
 
@@ -27,10 +24,6 @@ public class Main {
             .addOption(Option.builder("wd").longOpt("working-dir")
                     .desc("Path to the working directory (defaults to system's temp directory)")
                     .hasArg().argName("DIR")
-                    .build())
-            .addOption(Option.builder("o").longOpt("output")
-                    .desc("Path to the output file (optional)")
-                    .hasArg().argName("FILE")
                     .build());
 
     private static void printUsage() {
@@ -54,27 +47,18 @@ public class Main {
             return;
         }
 
-        LabOutputHandler outputHandler;
-        try {
-            outputHandler = getOutputHandler(cmd);
-        } catch (IOException e) {
-            logger.error("Error while initializing output handler", e);
-            return;
-        }
-
+        logger.info("Evaluating directory submission: {}", remaining[0]);
         DirectorySubmission submission = new DirectorySubmission(remaining[0]);
         try (FileInputStream in = FileUtils.openInputStream(getLabConfig(cmd))) {
             Evaluation evaluation = Evaluation.newBuilder().setSubmission(submission)
                     .setLab(JsonLabFactory.newLab(in))
                     .setWorkingDirectory(getWorkingDirectory(cmd))
                     .setCleanUpAfterFinish(true)
-                    .setOutputHandler(outputHandler)
+                    .setOutputHandler(LoggingOutputHandler.INSTANCE)
                     .build();
             evaluation.run();
         } catch (IOException e) {
             logger.error("Error while evaluating lab", e);
-        } finally {
-            outputHandler.close();
         }
     }
 
@@ -85,26 +69,19 @@ public class Main {
         } else {
             labConfig = new File("lab.json").getAbsoluteFile();
         }
-        logger.info("Lab configuration file: {}", labConfig.getPath());
-        checkArgument(labConfig.exists() && labConfig.isFile(),
-                "lab config does not exist or is not a regular file");
+        logger.info("Loading lab configuration from: {}", labConfig.getPath());
         return labConfig;
     }
 
     private static File getWorkingDirectory(CommandLine cmd) {
+        File workingDir;
         if (cmd.hasOption("wd")) {
-            return new File(cmd.getOptionValue("wd")).getAbsoluteFile();
+            workingDir = new File(cmd.getOptionValue("wd")).getAbsoluteFile();
         } else {
-            return FileUtils.getTempDirectory();
+            workingDir = FileUtils.getTempDirectory();
         }
-    }
-
-    private static LabOutputHandler getOutputHandler(CommandLine cmd) throws IOException {
-        if (cmd.hasOption("o")) {
-            return new FileOutputHandler(cmd.getOptionValue("o"));
-        } else {
-            return new LoggingOutputHandler();
-        }
+        logger.info("Using working directory: {}", workingDir.getAbsolutePath());
+        return workingDir;
     }
 
 }

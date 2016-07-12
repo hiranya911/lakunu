@@ -8,6 +8,11 @@ public class LoggingOutputHandler implements LabOutputHandler {
 
     private static final Logger logger = LoggerFactory.getLogger("LAB_OUTPUT");
 
+    public static final LoggingOutputHandler INSTANCE = new LoggingOutputHandler();
+
+    private LoggingOutputHandler() {
+    }
+
     @Override
     public void info(String msg) {
         logger.info(msg);

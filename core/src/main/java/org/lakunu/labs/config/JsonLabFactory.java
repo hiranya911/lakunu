@@ -63,7 +63,7 @@ public final class JsonLabFactory implements LabFactory {
                 continue;
             }
             String phase = entry.getKey();
-            logger.info("Setting up phase: {}", phase);
+            logger.debug("Setting up phase: {}", phase);
             JsonNode value = entry.getValue();
             if (value.isArray()) {
                 for (int i = 0; i < value.size(); i++) {
@@ -81,7 +81,7 @@ public final class JsonLabFactory implements LabFactory {
     private Plugin newPlugin(JsonNode node) {
         String plugin = getStringField(node, "plugin", null);
         checkArgument(!Strings.isNullOrEmpty(plugin), "Plugin name is required");
-        logger.info("Setting up plugin: {}", plugin);
+        logger.debug("Setting up plugin: {}", plugin);
         ObjectMapper mapper = new ObjectMapper();
         Map<String,Object> properties = mapper.convertValue(node,
                 new TypeReference<Map<String,Object>>(){});
