@@ -54,7 +54,7 @@ public class Main {
                     .setLab(JsonLabFactory.newLab(in))
                     .setWorkingDirectory(getWorkingDirectory(cmd))
                     .setCleanUpAfterFinish(true)
-                    .setOutputHandler(LoggingOutputHandler.INSTANCE)
+                    .setOutputHandler(LoggingOutputHandler.DEFAULT)
                     .build();
             evaluation.run();
         } catch (IOException e) {

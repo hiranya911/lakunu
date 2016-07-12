@@ -14,6 +14,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+/**
+ * An output stream implementation that writes to both a LabOutputHandler and an in-memory
+ * string buffer. In-memory buffering can be turned off if necessary, in which case the
+ * output will be written only to the LabOutputHandler.
+ */
 final class CommandOutputStream extends TeeOutputStream {
 
     private static final int LEVEL_STDOUT = 0;
