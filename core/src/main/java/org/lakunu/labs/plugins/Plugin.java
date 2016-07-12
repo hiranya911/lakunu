@@ -60,6 +60,10 @@ public abstract class Plugin {
 
     protected abstract boolean doExecute(Context context) throws Exception;
 
+    protected final void outputNewLine(Context context) {
+        context.getOutputHandler().info("");
+    }
+
     public final static class Context {
 
         private final Evaluation.Context context;

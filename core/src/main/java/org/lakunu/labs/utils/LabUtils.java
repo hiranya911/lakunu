@@ -12,7 +12,6 @@ public class LabUtils {
     }
 
     public static void outputTitle(String title, LabOutputHandler outputHandler) {
-        outputHandler.info("");
         outputBreak(outputHandler);
         outputHandler.info(title);
         outputBreak(outputHandler);

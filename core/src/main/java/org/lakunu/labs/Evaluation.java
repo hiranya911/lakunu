@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.utils.LabUtils;
-import org.lakunu.labs.utils.LoggingOutputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -196,7 +195,7 @@ public final class Evaluation {
         private Submission submission;
         private Lab lab;
         private File workingDirectory;
-        private LabOutputHandler outputHandler = new LoggingOutputHandler();
+        private LabOutputHandler outputHandler;
         private boolean cleanUpAfterFinish = true;
         private boolean outputSummary = true;
 

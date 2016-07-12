@@ -31,6 +31,7 @@ public final class RunCommandPlugin extends Plugin {
         SystemCommand.Output output = command.run(context);
         context.setOutput(output.getStdout());
         context.setErrors(output.getStderr());
+        outputNewLine(context);
         return output.getStatus() == this.status;
     }
 

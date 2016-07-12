@@ -4,7 +4,7 @@ import org.lakunu.labs.LabOutputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class LoggingOutputHandler implements LabOutputHandler {
+public class LoggingOutputHandler implements LabOutputHandler {
 
     private static final Logger logger = LoggerFactory.getLogger("LAB_OUTPUT");
 

@@ -56,7 +56,7 @@ public final class CopyPlugin extends Plugin {
             context.getOutputHandler().info("Copied " + source.getAbsolutePath() + " into " +
                     dest.getAbsolutePath());
         }
-        context.getOutputHandler().info("");
+        outputNewLine(context);
         return true;
     }
 

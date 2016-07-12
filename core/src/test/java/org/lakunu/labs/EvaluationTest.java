@@ -41,7 +41,7 @@ public class EvaluationTest {
                 .map(e -> e.line)
                 .collect(LabUtils.immutableList());
         Assert.assertTrue(entries.size() > 0);
-        ImmutableList<String> expected = expected("\n" +
+        ImmutableList<String> expected = expected(
                 "------------------------------------------------------------------------\n" +
                 "Starting build phase\n" +
                 "------------------------------------------------------------------------\n" +
@@ -80,13 +80,12 @@ public class EvaluationTest {
                 .map(e -> e.line)
                 .collect(LabUtils.immutableList());
         Assert.assertTrue(entries.size() > 0);
-        ImmutableList<String> expected = expected("\n" +
+        ImmutableList<String> expected = expected(
                         "------------------------------------------------------------------------\n" +
                         "Starting build phase\n" +
                         "------------------------------------------------------------------------\n" +
                         "\n" +
                         "Hello world\n" +
-                        "\n" +
                         "------------------------------------------------------------------------\n" +
                         "Starting run phase\n" +
                         "------------------------------------------------------------------------\n" +

@@ -27,6 +27,7 @@ public final class AntPlugin extends Plugin {
         if (processStderr) {
             context.setErrors(output.getStderr());
         }
+        outputNewLine(context);
         return output.getStatus() == 0;
     }
 
