@@ -1,24 +1,29 @@
-<%--
-  ~ Copyright (c) 2013 Les Hazlewood and contributors
-  ~
-  ~ Licensed under the Apache License, Version 2.0 (the "License");
-  ~ you may not use this file except in compliance with the License.
-  ~ You may obtain a copy of the License at
-  ~
-  ~     http://www.apache.org/licenses/LICENSE-2.0
-  ~
-  ~ Unless required by applicable law or agreed to in writing, software
-  ~ distributed under the License is distributed on an "AS IS" BASIS,
-  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  ~ See the License for the specific language governing permissions and
-  ~ limitations under the License.
-  --%>
-<%-- Default behavior is to simply show the site's home page --%>
+<%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <html>
     <head>
         <title>Lakunu: Home</title>
     </head>
     <body>
         <h1>Welcome to Lakunu</h1>
+        <shiro:guest>
+            <p>Please Login</p>
+            <form name="loginform" action="" method="POST" accept-charset="UTF-8" role="form">
+                <input class="form-control" placeholder="Username or Email" name="username" type="text">
+                <input class="form-control" placeholder="Password" name="password" type="password" value="">
+                <input name="rememberMe" type="checkbox" value="true"> Remember Me
+                <input class="btn btn-lg btn-success btn-block" type="submit" value="Login">
+            </form>
+            <%
+                Object loginError = request.getAttribute("shiroLoginFailure");
+                if (loginError != null) {
+            %>
+            <p>Error: <%=loginError%></p>
+            <%
+                }
+            %>
+        </shiro:guest>
+        <shiro:user>
+            <p>You are logged in as <shiro:principal/> (<a href="/logout">logout</a>)</p>
+        </shiro:user>
     </body>
 </html>
