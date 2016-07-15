@@ -9,14 +9,16 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class Course {
 
-    private final long id;
+    public static final String DEFAULT_ID = "_unidentified_";
+
+    private final String id;
     private String name;
     private String description;
     private final String owner;
     private final Timestamp createdAt;
 
     private Course(Builder builder) {
-        checkArgument(builder.id >= -1, "ID must be greater than or equal to -1");
+        checkArgument(!Strings.isNullOrEmpty(builder.id), "ID is required");
         checkArgument(!Strings.isNullOrEmpty(builder.name), "name is required");
         checkArgument(!Strings.isNullOrEmpty(builder.description), "description is required");
         checkArgument(!Strings.isNullOrEmpty(builder.owner), "owner is required");
@@ -28,7 +30,7 @@ public final class Course {
         this.createdAt = builder.createdAt;
     }
 
-    public long getId() {
+    public String getId() {
         return id;
     }
 
@@ -66,7 +68,7 @@ public final class Course {
 
     public static class Builder {
 
-        private long id = -1L;
+        private String id = DEFAULT_ID;
         private String name;
         private String description;
         private String owner;
@@ -75,7 +77,7 @@ public final class Course {
         private Builder() {
         }
 
-        public Builder setId(long id) {
+        public Builder setId(String id) {
             this.id = id;
             return this;
         }

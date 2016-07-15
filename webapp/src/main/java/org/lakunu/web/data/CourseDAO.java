@@ -2,15 +2,30 @@ package org.lakunu.web.data;
 
 import com.google.common.collect.ImmutableList;
 
-import static org.lakunu.web.security.Utils.checkPermissions;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.lakunu.web.utils.Security.checkPermissions;
 
 public abstract class CourseDAO {
 
     public final ImmutableList<Course> getOwnedCourses() {
         checkPermissions("course:listOwned");
-        return doGetOwnedCourses();
+        try {
+            return doGetOwnedCourses();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
-    protected abstract ImmutableList<Course> doGetOwnedCourses();
+    public final String addCourse(Course course) {
+        checkNotNull(course, "Course is required");
+        checkPermissions("course:add");
+        return null;
+    }
 
+    public final Course getCourse(long id) {
+        checkPermissions("course:get:" + id);
+        return null;
+    }
+
+    protected abstract ImmutableList<Course> doGetOwnedCourses() throws Exception;
 }

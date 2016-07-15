@@ -1,10 +1,11 @@
 package org.lakunu.web;
 
 import org.lakunu.web.data.DAOCollection;
-import org.lakunu.web.data.test.TestCourseDAO;
+import org.lakunu.web.data.jdbc.JDBCDAOCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
@@ -16,15 +17,18 @@ public final class LakunuContextListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
-        DAOCollection collection = DAOCollection.newBuilder()
-                .setCourseDAO(new TestCourseDAO())
-                .build();
-        servletContextEvent.getServletContext().setAttribute(DAOCollection.DAO_COLLECTION, collection);
+        ServletContext servletContext = servletContextEvent.getServletContext();
+        // TODO: Load the DAO collection from a config
+        servletContext.setAttribute(DAOCollection.DAO_COLLECTION, new JDBCDAOCollection(servletContext));
         logger.info("Lakunu webapp initialized");
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        ServletContext servletContext = servletContextEvent.getServletContext();
+        DAOCollection daoCollection = (DAOCollection) servletContext.getAttribute(
+                DAOCollection.DAO_COLLECTION);
+        daoCollection.close();
         logger.info("Lakunu webapp terminated");
     }
 }
