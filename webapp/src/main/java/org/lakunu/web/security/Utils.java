@@ -1,9 +1,9 @@
-package org.lakunu.web.utils;
+package org.lakunu.web.security;
 
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 
-public class LakunuSecurityUtils {
+public class Utils {
 
     public static void checkPermissions(String... permissions) {
         Subject subject = SecurityUtils.getSubject();
