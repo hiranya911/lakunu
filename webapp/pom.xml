@@ -30,6 +30,35 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>keytool-maven-plugin</artifactId>
+                <version>1.5</version>
+                <executions>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <id>clean</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <phase>generate-resources</phase>
+                        <id>genkey</id>
+                        <goals>
+                            <goal>generateKeyPair</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <keystore>${project.build.directory}/jetty-ssl.keystore</keystore>
+                    <dname>cn=127.0.0.1</dname>
+                    <keypass>jetty123</keypass>
+                    <storepass>jetty123</storepass>
+                    <alias>jetty</alias>
+                    <keyalg>RSA</keyalg>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.5.1</version>
                 <configuration>
@@ -42,6 +71,7 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>9.3.10.v20160621</version>
                 <configuration>
+                    <jettyXml>src/main/resources/jetty.xml,src/main/resources/jetty-ssl.xml,src/main/resources/jetty-https.xml</jettyXml>
                     <webApp>
                         <contextPath>/</contextPath>
                     </webApp>
