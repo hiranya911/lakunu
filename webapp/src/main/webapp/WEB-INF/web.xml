@@ -37,6 +37,16 @@
         <dispatcher>ERROR</dispatcher>
     </filter-mapping>
 
+    <servlet>
+        <servlet-name>HomePageServlet</servlet-name>
+        <servlet-class>org.lakunu.web.api.HomePageServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>HomePageServlet</servlet-name>
+        <url-pattern>/home</url-pattern>
+    </servlet-mapping>
+
     <welcome-file-list>
         <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
