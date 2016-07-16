@@ -13,11 +13,11 @@ import java.sql.SQLException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public final class JDBCCourseDAO extends CourseDAO {
+public final class JdbcCourseDAO extends CourseDAO {
 
     private final DataSource dataSource;
 
-    public JDBCCourseDAO(DataSource dataSource) {
+    JdbcCourseDAO(DataSource dataSource) {
         checkNotNull(dataSource, "datasource is required");
         this.dataSource = dataSource;
     }

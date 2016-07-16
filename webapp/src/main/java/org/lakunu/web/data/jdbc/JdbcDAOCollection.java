@@ -11,16 +11,16 @@ import javax.servlet.ServletContext;
 import java.io.IOException;
 import java.sql.SQLException;
 
-public final class JDBCDAOCollection implements DAOCollection {
+public final class JdbcDAOCollection implements DAOCollection {
 
     public static final String JDBC_PROPERTIES = "/WEB-INF/jdbc.properties";
 
-    private static final Logger logger = LoggerFactory.getLogger(JDBCDAOCollection.class);
+    private static final Logger logger = LoggerFactory.getLogger(JdbcDAOCollection.class);
 
     private final BasicDataSource dataSource;
-    private final JDBCCourseDAO courseDAO;
+    private final JdbcCourseDAO courseDAO;
 
-    public JDBCDAOCollection(ServletContext servletContext) {
+    public JdbcDAOCollection(ServletContext servletContext) {
         ConfigProperties properties;
         try {
             properties = new ConfigProperties(servletContext, JDBC_PROPERTIES);
@@ -35,7 +35,7 @@ public final class JDBCDAOCollection implements DAOCollection {
         this.dataSource.setPassword(properties.getOptional("password", null));
         logger.info("JDBC datasource initialized: {}", this.dataSource.getUrl());
 
-        this.courseDAO = new JDBCCourseDAO(this.dataSource);
+        this.courseDAO = new JdbcCourseDAO(this.dataSource);
     }
 
     @Override

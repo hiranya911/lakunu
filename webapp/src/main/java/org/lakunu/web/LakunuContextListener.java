@@ -1,7 +1,8 @@
 package org.lakunu.web;
 
+import com.google.common.base.Strings;
 import org.lakunu.web.data.DAOCollection;
-import org.lakunu.web.data.jdbc.JDBCDAOCollection;
+import org.lakunu.web.data.jdbc.JdbcDAOCollection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,6 +10,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.annotation.WebListener;
+
+import java.lang.reflect.Constructor;
 
 @WebListener
 public final class LakunuContextListener implements ServletContextListener {
@@ -18,8 +21,7 @@ public final class LakunuContextListener implements ServletContextListener {
     @Override
     public void contextInitialized(ServletContextEvent servletContextEvent) {
         ServletContext servletContext = servletContextEvent.getServletContext();
-        // TODO: Load the DAO collection from a config
-        servletContext.setAttribute(DAOCollection.DAO_COLLECTION, new JDBCDAOCollection(servletContext));
+        servletContext.setAttribute(DAOCollection.DAO_COLLECTION, initDAOCollection(servletContext));
         logger.info("Lakunu webapp initialized");
     }
 
@@ -30,5 +32,20 @@ public final class LakunuContextListener implements ServletContextListener {
                 DAOCollection.DAO_COLLECTION);
         daoCollection.close();
         logger.info("Lakunu webapp terminated");
+    }
+
+    private DAOCollection initDAOCollection(ServletContext servletContext) {
+        String type = servletContext.getInitParameter("daoCollection");
+        if (Strings.isNullOrEmpty(type)) {
+            logger.info("DAOCollection type not configured. Using default.");
+            type = JdbcDAOCollection.class.getName();
+        }
+        try {
+            Class<? extends DAOCollection> clazz = Class.forName(type).asSubclass(DAOCollection.class);
+            Constructor<? extends DAOCollection> constructor = clazz.getConstructor(ServletContext.class);
+            return constructor.newInstance(servletContext);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
