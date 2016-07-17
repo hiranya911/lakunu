@@ -14,6 +14,16 @@
             <div class="row">
                 <div class="col-md-12">
                     <div class="panel panel-primary">
+                        <div class="panel-heading">Create New Course</div>
+                        <div class="panel-body">
+                            <p>form goes here</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-primary">
                         <div class="panel-heading">My Courses (Instructor)</div>
                         <div class="panel-body">
                             <c:if test="${empty courses}">

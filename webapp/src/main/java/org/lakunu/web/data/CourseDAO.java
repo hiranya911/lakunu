@@ -19,7 +19,11 @@ public abstract class CourseDAO {
     public final String addCourse(Course course) {
         checkNotNull(course, "Course is required");
         checkPermissions("course:add");
-        return null;
+        try {
+            return doAddCourse(course);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public final Course getCourse(long id) {
@@ -28,4 +32,5 @@ public abstract class CourseDAO {
     }
 
     protected abstract ImmutableList<Course> doGetOwnedCourses() throws Exception;
+    protected abstract String doAddCourse(Course course) throws Exception;
 }
