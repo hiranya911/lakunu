@@ -12,7 +12,7 @@ public abstract class CourseDAO {
         try {
             return doGetOwnedCourses();
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new DAOException("Error while retrieving owned courses", e);
         }
     }
 
@@ -22,7 +22,7 @@ public abstract class CourseDAO {
         try {
             return doAddCourse(course);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new DAOException("Error while adding course", e);
         }
     }
 
