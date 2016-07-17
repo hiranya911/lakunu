@@ -14,13 +14,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 public final class JdbcCourseDAO extends CourseDAO {
 
-    private static final String GET_OWNED_COURSES_SQL =
-            "SELECT COURSE_ID, COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_OWNER = ?";
-    private static final String ADD_COURSE_SQL =
-            "INSERT INTO COURSE (COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT) VALUES (?,?,?,?)";
-    private static final String GET_COURSE_SQL =
-            "SELECT COURSE_ID, COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_ID = ?";
-
     private final DataSource dataSource;
 
     JdbcCourseDAO(DataSource dataSource) {
@@ -30,79 +23,121 @@ public final class JdbcCourseDAO extends CourseDAO {
 
     @Override
     protected ImmutableList<Course> doGetOwnedCourses() throws Exception {
-        try (
-                Connection connection = dataSource.getConnection();
-                PreparedStatement stmt = getOwnedCoursesQuery(connection);
-                ResultSet rs = stmt.executeQuery()
-        ) {
-            ImmutableList.Builder<Course> builder = ImmutableList.builder();
-            while (rs.next()) {
-                Course course = Course.newBuilder().setId(String.valueOf(rs.getLong("COURSE_ID")))
-                        .setName(rs.getString("COURSE_NAME"))
-                        .setDescription(rs.getString("COURSE_DESCRIPTION"))
-                        .setOwner(rs.getString("COURSE_OWNER"))
-                        .setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT")).build();
-                builder.add(course);
-            }
-            return builder.build();
-        }
-    }
-
-    private PreparedStatement getOwnedCoursesQuery(Connection connection) throws SQLException {
-        PreparedStatement stmt = connection.prepareStatement(GET_OWNED_COURSES_SQL);
-        stmt.setString(1, Security.getCurrentUser());
-        return stmt;
+        return GetOwnedCoursesCommand.execute(dataSource);
     }
 
     @Override
     protected String doAddCourse(Course course) throws Exception {
-        try (
-                Connection connection = dataSource.getConnection();
-                PreparedStatement stmt = addCourseQuery(connection, course)
-        ) {
-            int rows = stmt.executeUpdate();
-            checkState(rows == 1, "Failed to add the course to database");
-            try (ResultSet rs = stmt.getGeneratedKeys()) {
-                if (rs.next()) {
-                    return String.valueOf(rs.getLong(1));
-                } else {
-                    throw new IllegalStateException("Failed to retrieve new course ID");
+        return String.valueOf(AddCourseCommand.execute(dataSource, course));
+    }
+
+    @Override
+    protected Course doGetCourse(String courseId) throws Exception {
+        return GetCourseCommand.execute(dataSource, courseId);
+    }
+
+    private static final class AddCourseCommand extends Command<Long> {
+
+        private static final String ADD_COURSE_SQL =
+                "INSERT INTO COURSE (COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT) VALUES (?,?,?,?)";
+
+        private final Course course;
+
+        private AddCourseCommand(DataSource dataSource, Course course) {
+            super(dataSource);
+            this.course = course;
+        }
+
+        private static long execute(DataSource dataSource, Course course) throws SQLException {
+            return new AddCourseCommand(dataSource, course).run();
+        }
+
+        @Override
+        protected Long doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(ADD_COURSE_SQL)) {
+                stmt.setString(1, course.getName());
+                stmt.setString(2, course.getDescription());
+                stmt.setString(3, Security.getCurrentUser());
+                stmt.setTimestamp(4, new Timestamp(Calendar.getInstance().getTime().getTime()));
+                int rows = stmt.executeUpdate();
+                checkState(rows == 1, "Failed to add the course to database");
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return rs.getLong(1);
+                    } else {
+                        throw new IllegalStateException("Failed to retrieve new course ID");
+                    }
                 }
             }
         }
     }
 
-    private PreparedStatement addCourseQuery(Connection connection, Course course) throws SQLException {
-        PreparedStatement stmt = connection.prepareStatement(ADD_COURSE_SQL);
-        stmt.setString(1, course.getName());
-        stmt.setString(2, course.getDescription());
-        stmt.setString(3, Security.getCurrentUser());
-        stmt.setTimestamp(4, new Timestamp(Calendar.getInstance().getTime().getTime()));
-        return stmt;
-    }
+    private static final class GetCourseCommand extends Command<Course> {
 
-    @Override
-    protected Course doGetCourse(String courseId) throws Exception {
-        try (
-                Connection connection = dataSource.getConnection();
-                PreparedStatement stmt = getCourseQuery(connection, courseId);
-                ResultSet rs = stmt.executeQuery()
-        ) {
-            if (rs.next()) {
-                return Course.newBuilder().setId(String.valueOf(rs.getLong("COURSE_ID")))
-                        .setName(rs.getString("COURSE_NAME"))
-                        .setDescription(rs.getString("COURSE_DESCRIPTION"))
-                        .setOwner(rs.getString("COURSE_OWNER"))
-                        .setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT")).build();
-            } else {
-                return null;
+        private static final String GET_COURSE_SQL =
+                "SELECT COURSE_ID, COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_ID = ?";
+
+        private final long courseId;
+
+        private GetCourseCommand(DataSource dataSource, long courseId) {
+            super(dataSource);
+            this.courseId = courseId;
+        }
+
+        private static Course execute(DataSource dataSource, String courseId) throws SQLException {
+            return new GetCourseCommand(dataSource, Long.parseLong(courseId)).run();
+        }
+
+        @Override
+        protected Course doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(GET_COURSE_SQL)) {
+                stmt.setLong(1, courseId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return Course.newBuilder().setId(String.valueOf(rs.getLong("COURSE_ID")))
+                                .setName(rs.getString("COURSE_NAME"))
+                                .setDescription(rs.getString("COURSE_DESCRIPTION"))
+                                .setOwner(rs.getString("COURSE_OWNER"))
+                                .setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT")).build();
+                    } else {
+                        return null;
+                    }
+                }
             }
         }
     }
 
-    private PreparedStatement getCourseQuery(Connection connection, String courseId) throws SQLException {
-        PreparedStatement stmt = connection.prepareStatement(GET_COURSE_SQL);
-        stmt.setLong(1, Long.parseLong(courseId));
-        return stmt;
+    private static final class GetOwnedCoursesCommand extends Command<ImmutableList<Course>> {
+
+        private static final String GET_OWNED_COURSES_SQL =
+                "SELECT COURSE_ID, COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_OWNER = ?";
+
+        private GetOwnedCoursesCommand(DataSource dataSource) {
+            super(dataSource);
+        }
+
+        private static ImmutableList<Course> execute(DataSource dataSource) throws SQLException {
+            return new GetOwnedCoursesCommand(dataSource).run();
+        }
+
+        @Override
+        protected ImmutableList<Course> doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(GET_OWNED_COURSES_SQL)) {
+                stmt.setString(1, Security.getCurrentUser());
+                try (ResultSet rs = stmt.executeQuery()) {
+                    ImmutableList.Builder<Course> builder = ImmutableList.builder();
+                    while (rs.next()) {
+                        Course course = Course.newBuilder()
+                                .setId(String.valueOf(rs.getLong("COURSE_ID")))
+                                .setName(rs.getString("COURSE_NAME"))
+                                .setDescription(rs.getString("COURSE_DESCRIPTION"))
+                                .setOwner(rs.getString("COURSE_OWNER"))
+                                .setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT")).build();
+                        builder.add(course);
+                    }
+                    return builder.build();
+                }
+            }
+        }
     }
 }
