@@ -11,23 +11,31 @@
             <p>You are logged in as <shiro:principal/> (<a href="/logout">logout</a>)</p>
         </div>
         <div class="container">
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="panel panel-primary">
-                        <div class="panel-heading">Create New Course</div>
-                        <div class="panel-body">
-                            <form class="form" action="/course" method="POST" role="form">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCourseModal">Add Course</button>
+            <div id="addCourseModal" class="modal fade" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Add New Course</h4>
+                        </div>
+                        <div class="modal-body">
+                            <form id="addCourse" class="form" action="/course" method="POST" role="form">
                                 <div class="form-group">
                                     <label for="courseName">Name:</label>
                                     <input type="text" class="form-control" name="courseName"
-                                           id="courseName" size="128" maxlength="128" required/>
+                                           id="courseName" maxlength="128" placeholder="e.g. CS101" required/>
                                 </div>
                                 <div class="form-group">
                                     <label for="courseDescription">Description:</label>
-                                    <textarea class="form-control" rows="3" name="courseDescription" id="courseDescription" required></textarea>
+                                    <textarea class="form-control" rows="3" name="courseDescription"
+                                              id="courseDescription" maxlength="512" required></textarea>
                                 </div>
-                                <button class="btn btn-primary" type="submit">Create</button>
                             </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="submit" form="addCourse">Create</button>
+                            <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
                         </div>
                     </div>
                 </div>

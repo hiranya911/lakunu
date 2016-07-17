@@ -22,7 +22,9 @@ public final class Course {
     private Course(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.id), "ID is required");
         checkArgument(!Strings.isNullOrEmpty(builder.name), "name is required");
+        checkArgument(builder.name.length() <= 128, "name is too long");
         checkArgument(!Strings.isNullOrEmpty(builder.description), "description is required");
+        checkArgument(builder.description.length() <= 512, "description is too long");
         checkArgument(!Strings.isNullOrEmpty(builder.owner), "owner is required");
         checkNotNull(builder.createdAt, "created time is required");
         this.id = builder.id;
@@ -41,9 +43,12 @@ public final class Course {
     }
 
     public Course setName(String name) {
-        checkArgument(!Strings.isNullOrEmpty(name), "name is required");
-        this.name = name;
-        return this;
+        return newBuilder().setId(this.id)
+                .setName(name)
+                .setDescription(this.description)
+                .setOwner(this.owner)
+                .setCreatedAt(this.createdAt)
+                .build();
     }
 
     public String getDescription() {
@@ -51,9 +56,12 @@ public final class Course {
     }
 
     public Course setDescription(String description) {
-        checkArgument(!Strings.isNullOrEmpty(description), "description is required");
-        this.description = description;
-        return this;
+        return newBuilder().setId(this.id)
+                .setName(this.name)
+                .setDescription(description)
+                .setOwner(this.owner)
+                .setCreatedAt(this.createdAt)
+                .build();
     }
 
     public String getOwner() {
