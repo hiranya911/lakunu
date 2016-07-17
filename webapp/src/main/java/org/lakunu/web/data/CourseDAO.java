@@ -1,7 +1,9 @@
 package org.lakunu.web.data;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.lakunu.web.utils.Security.checkPermissions;
 
@@ -26,11 +28,17 @@ public abstract class CourseDAO {
         }
     }
 
-    public final Course getCourse(long id) {
-        checkPermissions("course:get:" + id);
-        return null;
+    public final Course getCourse(String courseId) {
+        checkArgument(!Strings.isNullOrEmpty(courseId), "Course ID is required");
+        checkPermissions("course:get:" + courseId);
+        try {
+            return doGetCourse(courseId);
+        } catch (Exception e) {
+            throw new DAOException("Error while retrieving course", e);
+        }
     }
 
     protected abstract ImmutableList<Course> doGetOwnedCourses() throws Exception;
     protected abstract String doAddCourse(Course course) throws Exception;
+    protected abstract Course doGetCourse(String courseId) throws Exception;
 }

@@ -18,6 +18,8 @@ public final class JdbcCourseDAO extends CourseDAO {
             "SELECT COURSE_ID, COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_OWNER = ?";
     private static final String ADD_COURSE_SQL =
             "INSERT INTO COURSE (COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT) VALUES (?,?,?,?)";
+    private static final String GET_COURSE_SQL =
+            "SELECT COURSE_ID, COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_ID = ?";
 
     private final DataSource dataSource;
 
@@ -76,6 +78,31 @@ public final class JdbcCourseDAO extends CourseDAO {
         stmt.setString(2, course.getDescription());
         stmt.setString(3, Security.getCurrentUser());
         stmt.setTimestamp(4, new Timestamp(Calendar.getInstance().getTime().getTime()));
+        return stmt;
+    }
+
+    @Override
+    protected Course doGetCourse(String courseId) throws Exception {
+        try (
+                Connection connection = dataSource.getConnection();
+                PreparedStatement stmt = getCourseQuery(connection, courseId);
+                ResultSet rs = stmt.executeQuery()
+        ) {
+            if (rs.next()) {
+                return Course.newBuilder().setId(String.valueOf(rs.getLong("COURSE_ID")))
+                        .setName(rs.getString("COURSE_NAME"))
+                        .setDescription(rs.getString("COURSE_DESCRIPTION"))
+                        .setOwner(rs.getString("COURSE_OWNER"))
+                        .setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT")).build();
+            } else {
+                return null;
+            }
+        }
+    }
+
+    private PreparedStatement getCourseQuery(Connection connection, String courseId) throws SQLException {
+        PreparedStatement stmt = connection.prepareStatement(GET_COURSE_SQL);
+        stmt.setLong(1, Long.parseLong(courseId));
         return stmt;
     }
 }
