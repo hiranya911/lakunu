@@ -31,4 +31,15 @@ public class CourseServlet extends LakunuServlet {
         req.getRequestDispatcher("/course.jsp").forward(req, resp);
     }
 
+    @Override
+    protected void doPost(HttpServletRequest req,
+                          HttpServletResponse resp) throws ServletException, IOException {
+        Course course = Course.newBuilder()
+                .setName(req.getParameter("courseName"))
+                .setDescription(req.getParameter("courseDescription"))
+                .build();
+        String courseId = daoCollection.getCourseDAO().addCourse(course);
+        resp.sendRedirect("/course/" + courseId);
+    }
+
 }

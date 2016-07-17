@@ -12,11 +12,22 @@
         </div>
         <div class="container">
             <div class="row">
-                <div class="col-md-12">
+                <div class="col-md-4">
                     <div class="panel panel-primary">
                         <div class="panel-heading">Create New Course</div>
                         <div class="panel-body">
-                            <p>form goes here</p>
+                            <form class="form" action="/course" method="POST" role="form">
+                                <div class="form-group">
+                                    <label for="courseName">Name:</label>
+                                    <input type="text" class="form-control" name="courseName"
+                                           id="courseName" size="128" maxlength="128" required/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="courseDescription">Description:</label>
+                                    <textarea class="form-control" rows="3" name="courseDescription" id="courseDescription" required></textarea>
+                                </div>
+                                <button class="btn btn-primary" type="submit">Create</button>
+                            </form>
                         </div>
                     </div>
                 </div>

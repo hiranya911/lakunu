@@ -1,8 +1,10 @@
 package org.lakunu.web.data;
 
 import com.google.common.base.Strings;
+import org.lakunu.web.utils.Security;
 
 import java.sql.Timestamp;
+import java.util.Calendar;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -103,6 +105,12 @@ public final class Course {
         }
 
         public Course build() {
+            if (this.owner == null) {
+                this.owner = Security.getCurrentUser();
+            }
+            if (this.createdAt == null) {
+                this.createdAt = new Timestamp(Calendar.getInstance().getTime().getTime());
+            }
             return new Course(this);
         }
     }

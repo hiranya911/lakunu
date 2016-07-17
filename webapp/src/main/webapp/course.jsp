@@ -8,7 +8,7 @@
 </head>
 <body>
 <div class="page-header">
-    <h1>Welcome to Lakunu</h1>
+    <h1>Course: ${course.name}</h1>
     <p>You are logged in as <shiro:principal/> (<a href="/logout">logout</a>)</p>
 </div>
 <div class="container">

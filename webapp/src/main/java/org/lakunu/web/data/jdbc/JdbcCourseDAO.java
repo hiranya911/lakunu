@@ -7,12 +7,13 @@ import org.lakunu.web.utils.Security;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.Calendar;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public final class JdbcCourseDAO extends CourseDAO {
+
+    public static final int ROLE_INSTRUCTOR = 1;
 
     private final DataSource dataSource;
 
@@ -36,10 +37,12 @@ public final class JdbcCourseDAO extends CourseDAO {
         return GetCourseCommand.execute(dataSource, courseId);
     }
 
-    private static final class AddCourseCommand extends Command<Long> {
+    private static final class AddCourseCommand extends TxCommand<Long> {
 
         private static final String ADD_COURSE_SQL =
                 "INSERT INTO COURSE (COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT) VALUES (?,?,?,?)";
+        private static final String ADD_COURSE_OWNER_SQL =
+                "INSERT INTO COURSE_USER (COURSE_ID, USER_ID, USER_ROLE) VALUES (?,?,?)";
 
         private final Course course;
 
@@ -53,22 +56,32 @@ public final class JdbcCourseDAO extends CourseDAO {
         }
 
         @Override
-        protected Long doRun(Connection connection) throws SQLException {
-            try (PreparedStatement stmt = connection.prepareStatement(ADD_COURSE_SQL)) {
+        protected Long doTransaction(Connection connection) throws SQLException {
+            long insertId;
+            try (PreparedStatement stmt = connection.prepareStatement(ADD_COURSE_SQL,
+                    Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, course.getName());
                 stmt.setString(2, course.getDescription());
-                stmt.setString(3, Security.getCurrentUser());
-                stmt.setTimestamp(4, new Timestamp(Calendar.getInstance().getTime().getTime()));
+                stmt.setString(3, course.getOwner());
+                stmt.setTimestamp(4, course.getCreatedAt());
                 int rows = stmt.executeUpdate();
                 checkState(rows == 1, "Failed to add the course to database");
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (rs.next()) {
-                        return rs.getLong(1);
+                        insertId = rs.getLong(1);
                     } else {
                         throw new IllegalStateException("Failed to retrieve new course ID");
                     }
                 }
             }
+
+            try (PreparedStatement stmt = connection.prepareStatement(ADD_COURSE_OWNER_SQL)) {
+                stmt.setLong(1, insertId);
+                stmt.setString(2, Security.getCurrentUser());
+                stmt.setInt(3, ROLE_INSTRUCTOR);
+                stmt.executeUpdate();
+            }
+            return insertId;
         }
     }
 

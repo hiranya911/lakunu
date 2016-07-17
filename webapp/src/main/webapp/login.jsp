@@ -23,7 +23,7 @@
                         <h3 class="panel-title" align="center">Sign in</h3>
                     </div>
                     <div class="panel-body">
-                        <form class="form-signin" action="" method="POST">
+                        <form class="form-signin" action="" method="POST" role="form">
                             <div class="form-group">
                                 <label for="inputUsername" class="sr-only">Username</label>
                                 <input class="form-control" placeholder="Username" name="username"
