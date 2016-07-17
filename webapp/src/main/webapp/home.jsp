@@ -6,12 +6,32 @@
         <title>Lakunu: Home</title>
     </head>
     <body>
-        <div class="page-header">
-            <h1>Welcome to Lakunu</h1>
-            <p>You are logged in as <shiro:principal/> (<a href="/logout">logout</a>)</p>
-        </div>
+        <nav class="navbar navbar-inverse navbar-fixed-top">
+            <div class="navbar-inner">
+                <div class="container">
+                    <div class="navbar-header">
+                        <a class="navbar-brand" href="/">Lakunu</a>
+                    </div>
+                    <ul class="nav navbar-nav">
+                        <li class="active"><a href="home.jsp">Home</a></li>
+                        <li><a href="#" data-toggle="modal" data-target="#addCourseModal">New Course</a></li>
+                    </ul>
+                    <ul class="nav pull-right">
+                        <li class="dropdown">
+                            <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                <span class="glyphicon glyphicon-user"></span>
+                                <shiro:principal/>
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a href="logout">Logout</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+        <div id="fix-for-navbar-fixed-top-spacing" style="height: 60px;">&nbsp;</div>
         <div class="container">
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addCourseModal">Add Course</button>
             <div id="addCourseModal" class="modal fade" role="dialog">
                 <div class="modal-dialog">
                     <div class="modal-content">
