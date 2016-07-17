@@ -25,6 +25,7 @@
                                     <tr>
                                         <th>Name</th>
                                         <th>Description</th>
+                                        <th>Created</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -32,6 +33,7 @@
                                         <tr>
                                             <td>${course.name}</td>
                                             <td>${course.description}</td>
+                                            <td>${course.createdAt}</td>
                                         </tr>
                                     </c:forEach>
                                     </tbody>
