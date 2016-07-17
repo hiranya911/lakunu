@@ -82,6 +82,7 @@
                 <configuration>
                     <jettyXml>src/main/resources/jetty.xml,src/main/resources/jetty-ssl.xml,src/main/resources/jetty-https.xml</jettyXml>
                     <webApp>
+                        <jettyEnvXml>src/main/resources/jetty-env.xml</jettyEnvXml>
                         <contextPath>/</contextPath>
                     </webApp>
                 </configuration>

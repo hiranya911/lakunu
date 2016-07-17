@@ -19,6 +19,7 @@ public final class ConfigProperties {
         checkArgument(!Strings.isNullOrEmpty(path), "path is required");
         this.properties = new Properties();
         try (InputStream in = context.getResourceAsStream(path)) {
+            checkNotNull(in, "failed to load resource: %s", path);
             this.properties.load(in);
         }
     }

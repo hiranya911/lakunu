@@ -1,41 +1,45 @@
 package org.lakunu.web.data.jdbc;
 
-import org.apache.commons.dbcp2.BasicDataSource;
 import org.lakunu.web.data.CourseDAO;
 import org.lakunu.web.data.DAOCollection;
 import org.lakunu.web.utils.ConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.ServletContext;
-import java.io.IOException;
-import java.sql.SQLException;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 
 public final class JdbcDAOCollection implements DAOCollection {
 
-    public static final String JDBC_PROPERTIES = "/WEB-INF/jdbc.properties";
+    private static final String DAO_COLLECTION_DS = "daoCollection.ds";
 
     private static final Logger logger = LoggerFactory.getLogger(JdbcDAOCollection.class);
 
-    private final BasicDataSource dataSource;
     private final JdbcCourseDAO courseDAO;
 
-    public JdbcDAOCollection(ServletContext servletContext) {
-        ConfigProperties properties;
+    public JdbcDAOCollection(ConfigProperties properties) {
+        InitialContext context = null;
         try {
-            properties = new ConfigProperties(servletContext, JDBC_PROPERTIES);
-            logger.info("Loaded JDBC configuration from: {}", JDBC_PROPERTIES);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to load JDBC configuration", e);
+            context = new InitialContext();
+            String dsName = properties.getRequired(DAO_COLLECTION_DS);
+            DataSource dataSource = (DataSource) context.lookup(dsName);
+            logger.info("Loaded JDBC datasource: {}", dsName);
+            this.courseDAO = new JdbcCourseDAO(dataSource);
+        } catch (NamingException e) {
+            throw new RuntimeException(e);
+        } finally {
+            closeContext(context);
         }
-        this.dataSource = new BasicDataSource();
-        this.dataSource.setUrl(properties.getRequired("url"));
-        this.dataSource.setDriverClassName(properties.getRequired("driver"));
-        this.dataSource.setUsername(properties.getRequired("username"));
-        this.dataSource.setPassword(properties.getOptional("password", null));
-        logger.info("JDBC datasource initialized: {}", this.dataSource.getUrl());
+    }
 
-        this.courseDAO = new JdbcCourseDAO(this.dataSource);
+    private void closeContext(InitialContext context) {
+        if (context != null) {
+            try {
+                context.close();
+            } catch (NamingException ignored) {
+            }
+        }
     }
 
     @Override
@@ -43,12 +47,4 @@ public final class JdbcDAOCollection implements DAOCollection {
         return courseDAO;
     }
 
-    @Override
-    public void close() {
-        try {
-            this.dataSource.close();
-        } catch (SQLException e) {
-            logger.warn("Error while closing JDBC datasource", e);
-        }
-    }
 }
