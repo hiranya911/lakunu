@@ -9,19 +9,31 @@
 <shiro:guest>
     <div class="container">
         <div class="row">
+            <div class="col-md-12">
+                <div class="jumbotron">
+                    <h1>Welcome to Lakunu</h1>
+                    <p>Automate grading programming assignments</p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
             <div class="col-md-4 col-md-offset-4">
                 <div class="panel panel-default">
                     <div class="panel-heading">
-                        <h3 class="panel-title">Please sign in to Lakunu</h3>
+                        <h3 class="panel-title" align="center">Sign in</h3>
                     </div>
                     <div class="panel-body">
                         <form class="form-signin" action="" method="POST">
-                            <label for="inputUsername" class="sr-only">Email address</label>
-                            <input class="form-control" placeholder="Username" name="username"
-                                   id="inputUsername" type="text" required autofocus>
-                            <label for="inputPassword" class="sr-only">Password</label>
-                            <input class="form-control" placeholder="Password" name="password"
-                                   id="inputPassword" type="password" required>
+                            <div class="form-group">
+                                <label for="inputUsername" class="sr-only">Username</label>
+                                <input class="form-control" placeholder="Username" name="username"
+                                       id="inputUsername" type="text" required autofocus>
+                            </div>
+                            <div class="form-group">
+                                <label for="inputPassword" class="sr-only">Password</label>
+                                <input class="form-control" placeholder="Password" name="password"
+                                       id="inputPassword" type="password" required>
+                            </div>
                             <div class="checkbox">
                                 <label>
                                     <input name="rememberMe" type="checkbox" value="true"> Remember
