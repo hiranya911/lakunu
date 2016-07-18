@@ -21,6 +21,7 @@ public class CourseServlet extends LakunuServlet {
             return;
         }
 
+        // TODO: Improve the path parameter parsing
         String courseId = pathInfo.substring(1);
         Course course = daoCollection.getCourseDAO().getCourse(courseId);
         if (course == null) {

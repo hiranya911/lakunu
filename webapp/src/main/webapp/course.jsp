@@ -7,15 +7,12 @@
     <title>Lakunu: Course [${course.name}]</title>
 </head>
 <body>
-<div class="page-header">
-    <h1>Course: ${course.name}</h1>
-    <p>You are logged in as <shiro:principal/> (<a href="/logout">logout</a>)</p>
-</div>
+<%@ include file="include/body_top.html" %>
 <div class="container">
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-primary">
-                <div class="panel-heading">Course Info</div>
+                <div class="panel-heading">Course Info: ${course.name}</div>
                 <div class="panel-body">
                     <table class="table table-striped">
                         <tbody>
@@ -45,6 +42,13 @@
             </div>
         </div>
     </div>
+    <shiro:hasPermission name="course:share:${course.id}">
+        <div class="row">
+            <div class="col-md-12">
+                <p>Share form goes here</p>
+            </div>
+        </div>
+    </shiro:hasPermission>
 </div>
 </body>
 </html>
