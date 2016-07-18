@@ -1,6 +1,5 @@
 package org.lakunu.web.data.jdbc;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
@@ -18,7 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class CoursePermissionRealm extends AuthorizingRealm {
 
@@ -32,16 +31,17 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
 
     @Override
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+        // This is essentially a configuration error. It's not meaningful to throw an
+        // AuthorizationException for this case.
+        checkNotNull(dataSource, "DataSource not specified");
+
         if (principals == null) {
             throw new AuthorizationException("Principals must not be null");
-        }
-        if (dataSource == null) {
-            throw new AuthorizationException("DataSource not specified");
         }
 
         try {
             Set<CourseRole> courseRoles = GetCourseRolesCommand.execute(dataSource,
-                    principals.getPrimaryPrincipal().toString());
+                    principals.getPrimaryPrincipal());
             ImmutableSet.Builder<String> permissions = ImmutableSet.builder();
             courseRoles.forEach(role -> {
                 switch (role.role) {
@@ -76,13 +76,14 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
 
         private final String userId;
 
-        private GetCourseRolesCommand(DataSource dataSource, String userId) {
+        private GetCourseRolesCommand(DataSource dataSource, Object userId) {
             super(dataSource);
-            checkArgument(!Strings.isNullOrEmpty(userId), "userId is required");
-            this.userId = userId;
+            checkNotNull(userId, "userId is required");
+            this.userId = userId.toString();
         }
 
-        private static Set<CourseRole> execute(DataSource dataSource, String userId) throws SQLException {
+        private static Set<CourseRole> execute(DataSource dataSource,
+                                               Object userId) throws SQLException {
             return new GetCourseRolesCommand(dataSource, userId).run();
         }
 
@@ -107,7 +108,7 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
         private final long courseId;
         private final int role;
 
-        public CourseRole(long courseId, int role) {
+        private CourseRole(long courseId, int role) {
             this.courseId = courseId;
             this.role = role;
         }

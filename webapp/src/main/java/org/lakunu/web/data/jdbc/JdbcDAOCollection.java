@@ -23,8 +23,8 @@ public final class JdbcDAOCollection implements DAOCollection {
         try {
             context = new InitialContext();
             String dsName = properties.getRequired(DAO_COLLECTION_DS);
+            logger.info("Loading JDBC datasource: {}", dsName);
             DataSource dataSource = (DataSource) context.lookup(dsName);
-            logger.info("Loaded JDBC datasource: {}", dsName);
             this.courseDAO = new JdbcCourseDAO(dataSource);
         } catch (NamingException e) {
             throw new RuntimeException(e);
