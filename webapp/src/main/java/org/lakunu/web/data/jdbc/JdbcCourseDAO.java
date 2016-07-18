@@ -13,8 +13,6 @@ import static com.google.common.base.Preconditions.checkState;
 
 public final class JdbcCourseDAO extends CourseDAO {
 
-    public static final int ROLE_INSTRUCTOR = 1;
-
     private final DataSource dataSource;
 
     JdbcCourseDAO(DataSource dataSource) {
@@ -78,7 +76,7 @@ public final class JdbcCourseDAO extends CourseDAO {
             try (PreparedStatement stmt = connection.prepareStatement(ADD_COURSE_OWNER_SQL)) {
                 stmt.setLong(1, insertId);
                 stmt.setString(2, Security.getCurrentUser());
-                stmt.setInt(3, ROLE_INSTRUCTOR);
+                stmt.setInt(3, CoursePermissionRealm.ROLE_INSTRUCTOR);
                 stmt.executeUpdate();
             }
             return insertId;
