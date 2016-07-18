@@ -38,7 +38,7 @@ public class CourseServlet extends LakunuServlet {
         Course course = Course.newBuilder()
                 .setName(req.getParameter("courseName"))
                 .setDescription(req.getParameter("courseDescription"))
-                .build();
+                .buildForAddition();
         String courseId = daoCollection.getCourseDAO().addCourse(course);
         resp.sendRedirect("/course/" + courseId);
     }

@@ -11,7 +11,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class Course {
 
-    public static final String DEFAULT_ID = "_unidentified_";
+    private static final String DEFAULT_ID = "_unidentified_";
 
     private final String id;
     private String name;
@@ -78,7 +78,7 @@ public final class Course {
 
     public static class Builder {
 
-        private String id = DEFAULT_ID;
+        private String id;
         private String name;
         private String description;
         private String owner;
@@ -113,12 +113,13 @@ public final class Course {
         }
 
         public Course build() {
-            if (this.owner == null) {
-                this.owner = Security.getCurrentUser();
-            }
-            if (this.createdAt == null) {
-                this.createdAt = new Timestamp(Calendar.getInstance().getTime().getTime());
-            }
+            return new Course(this);
+        }
+
+        public Course buildForAddition() {
+            this.id = DEFAULT_ID;
+            this.owner = Security.getCurrentUser();
+            this.createdAt = new Timestamp(Calendar.getInstance().getTime().getTime());
             return new Course(this);
         }
     }
