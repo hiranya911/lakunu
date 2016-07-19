@@ -1,6 +1,7 @@
 package org.lakunu.labs.ant;
 
 import com.google.common.base.Strings;
+import org.lakunu.labs.Score;
 import org.lakunu.labs.ant.validators.PropertyValidator;
 import org.lakunu.labs.ant.validators.SuccessValidator;
 import org.lakunu.labs.ant.validators.Validator;
@@ -39,6 +40,11 @@ public abstract class ValidationTask {
     public void execute(TaskContext context) {
         Validator validator = buildValidator();
         validator.validate(context);
+    }
+
+    public Score getRubric() {
+        Validator validator = buildValidator();
+        return validator.zero();
     }
 
     private Validator buildValidator() {

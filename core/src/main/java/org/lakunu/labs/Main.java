@@ -2,14 +2,13 @@ package org.lakunu.labs;
 
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
-import org.lakunu.labs.config.JsonLabFactory;
+import org.lakunu.labs.ant.AntEvaluationPlan;
 import org.lakunu.labs.submit.DirectorySubmission;
 import org.lakunu.labs.utils.LoggingOutputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 
 public class Main {
@@ -47,15 +46,20 @@ public class Main {
             return;
         }
 
+        Lab lab = Lab.newBuilder()
+                .setName("anonymous")
+                .setEvaluationPlan(new AntEvaluationPlan(getLabConfig(cmd), null))
+                .build();
+
         logger.info("Evaluating directory submission: {}", remaining[0]);
         DirectorySubmission submission = new DirectorySubmission(remaining[0]);
-        try (FileInputStream in = FileUtils.openInputStream(getLabConfig(cmd))) {
-            Evaluation evaluation = Evaluation.newBuilder().setSubmission(submission)
-                    .setLab(JsonLabFactory.newLab(in))
-                    .setWorkingDirectory(getWorkingDirectory(cmd))
-                    .setCleanUpAfterFinish(true)
-                    .setOutputHandler(LoggingOutputHandler.DEFAULT)
-                    .build();
+        Evaluation evaluation = Evaluation.newBuilder().setSubmission(submission)
+                .setLab(lab)
+                .setWorkingDirectory(getWorkingDirectory(cmd))
+                .setCleanUpAfterFinish(true)
+                .setOutputHandler(LoggingOutputHandler.DEFAULT)
+                .build();
+        try {
             evaluation.run();
         } catch (IOException e) {
             logger.error("Error while evaluating lab", e);
@@ -67,7 +71,7 @@ public class Main {
         if (cmd.hasOption("l")) {
             labConfig = new File(cmd.getOptionValue("l")).getAbsoluteFile();
         } else {
-            labConfig = new File("lab.json").getAbsoluteFile();
+            labConfig = new File("lakunu.xml").getAbsoluteFile();
         }
         logger.info("Loading lab configuration from: {}", labConfig.getPath());
         return labConfig;

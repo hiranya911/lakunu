@@ -23,8 +23,6 @@ public final class PropertyValidator extends Validator {
     @Override
     public void validate(TaskContext context) {
         String value = context.getProject().getProperty(property);
-        if (value != null && value.equals(this.value)) {
-            reportFullScore(context);
-        }
+        context.addScore(reportScore(value != null && value.equals(this.value)));
     }
 }

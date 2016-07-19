@@ -10,8 +10,6 @@ public final class SuccessValidator extends Validator {
 
     @Override
     public void validate(TaskContext context) {
-        if (context.isSuccess()) {
-            reportFullScore(context);
-        }
+        context.addScore(reportScore(context.isSuccess()));
     }
 }

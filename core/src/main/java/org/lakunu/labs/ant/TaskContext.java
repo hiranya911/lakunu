@@ -1,19 +1,27 @@
 package org.lakunu.labs.ant;
 
-import org.apache.tools.ant.Project;
+import org.lakunu.labs.Score;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class TaskContext {
 
-    private final Project project;
+    private final AntEvaluationPlan.EvaluationProject project;
     private boolean success;
     private String output;
 
-    public TaskContext(Project project) {
+    public TaskContext(AntEvaluationPlan.EvaluationProject project) {
+        checkNotNull(project, "Project is required");
         this.project = project;
     }
 
-    public Project getProject() {
+    public AntEvaluationPlan.EvaluationProject getProject() {
         return project;
+    }
+
+    public void addScore(Score score) {
+        checkNotNull(score, "Score cannot be null");
+        project.getContext().addScore(score);
     }
 
     public boolean isSuccess() {

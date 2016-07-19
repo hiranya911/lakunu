@@ -54,7 +54,7 @@ public final class Evaluation {
         Context context = new EvaluationContext(this);
         boolean exception = false;
         try {
-            lab.execute(context, finalPhase);
+            lab.evaluate(context, finalPhase);
         } catch (Exception e) {
             exception = true;
             throw e;

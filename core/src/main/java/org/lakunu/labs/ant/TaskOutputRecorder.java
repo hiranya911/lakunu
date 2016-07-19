@@ -11,7 +11,7 @@ import org.apache.tools.ant.Project;
 import java.io.IOException;
 import java.io.OutputStream;
 
-public class AntOutputListener implements BuildListener {
+public final class TaskOutputRecorder implements BuildListener {
 
     private final StringBufferOutputStream output = new StringBufferOutputStream(64 * 1024);
 
@@ -21,32 +21,26 @@ public class AntOutputListener implements BuildListener {
 
     @Override
     public void buildStarted(BuildEvent buildEvent) {
-
     }
 
     @Override
     public void buildFinished(BuildEvent buildEvent) {
-
     }
 
     @Override
     public void targetStarted(BuildEvent buildEvent) {
-
     }
 
     @Override
     public void targetFinished(BuildEvent buildEvent) {
-
     }
 
     @Override
     public void taskStarted(BuildEvent buildEvent) {
-
     }
 
     @Override
     public void taskFinished(BuildEvent buildEvent) {
-
     }
 
     @Override
