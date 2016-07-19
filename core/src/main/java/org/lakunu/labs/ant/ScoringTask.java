@@ -7,21 +7,20 @@ import org.apache.tools.ant.TaskContainer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class ScoringTask extends Task implements TaskContainer {
+public final class ScoringTask extends Task implements TaskContainer {
 
-    private final List<PreTask> preTasks = new ArrayList<>();
-    private final List<PostTask> postTasks = new ArrayList<>();
+    private final List<ValidationTask.PreValidationTask> preTasks = new ArrayList<>();
+    private final List<ValidationTask.PostValidationTask> postTasks = new ArrayList<>();
     private final List<Task> tasks = new ArrayList<>();
 
-    public void add(PreTask pre) {
+    public void add(ValidationTask.PreValidationTask pre) {
         preTasks.add(pre);
     }
 
-    public void add(PostTask post) {
+    public void add(ValidationTask.PostValidationTask post) {
         postTasks.add(post);
     }
 
@@ -34,18 +33,20 @@ public class ScoringTask extends Task implements TaskContainer {
     @Override
     public void execute() throws BuildException {
         Project project = getProject();
-        preTasks.stream().forEach(t -> t.execute(project));
+        TaskContext context = new TaskContext(getProject());
+        preTasks.stream().forEach(t -> t.execute(context));
         AntOutputListener listener = new AntOutputListener();
         project.addBuildListener(listener);
-        AtomicBoolean status = new AtomicBoolean(true);
         try {
             tasks.stream().forEach(Task::perform);
+            context.setSuccess(true);
         } catch (Exception e) {
-            status.set(false);
+            context.setSuccess(false);
             throw e;
         } finally {
             project.removeBuildListener(listener);
-            postTasks.stream().forEach(t -> t.execute(project, status.get(), listener.getOutput()));
+            context.setOutput(listener.getOutput());
+            postTasks.stream().forEach(t -> t.execute(context));
         }
     }
 

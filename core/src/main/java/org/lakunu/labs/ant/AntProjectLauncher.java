@@ -65,8 +65,9 @@ public final class AntProjectLauncher {
         try {
             project.fireBuildStarted();
             project.init();
-            project.addDataTypeDefinition("pre", PreTask.class);
-            project.addDataTypeDefinition("post", PostTask.class);
+            project.addDataTypeDefinition("score", ScoringTask.class);
+            project.addDataTypeDefinition("pre", ValidationTask.PreValidationTask.class);
+            project.addDataTypeDefinition("post", ValidationTask.PostValidationTask.class);
             project.addDataTypeDefinition("arg", ValidatorArg.class);
             ProjectHelper projectHelper = ProjectHelper.getProjectHelper();
             project.addReference("ant.projectHelper", projectHelper);
@@ -78,12 +79,13 @@ public final class AntProjectLauncher {
             project.fireBuildFinished(null);
         } catch (BuildException ex) {
             project.fireBuildFinished(ex);
-            throw new RuntimeException("!!! Unable to restart the IEHS App !!!", ex);
+            throw new RuntimeException(ex);
         } finally {
+            System.out.println();
             Hashtable<String, Object> userProperties = project.getUserProperties();
             userProperties.keySet().stream().forEach(k -> {
                 if (k.startsWith("lakunu:")) {
-                    System.out.println("Score: " + userProperties.get(k));
+                    System.out.println("[Score]   " + k.substring(7) + ": " + userProperties.get(k));
                 }
             });
         }
@@ -99,8 +101,8 @@ public final class AntProjectLauncher {
 
     public static void main(String[] args) throws Exception {
         AntProjectLauncher launcher = new AntProjectLauncher(
-                "/Users/hiranya/academic/cs56/github-grader/target/source/lab00_EdieS/build.xml",
-                "test");
+                "/Users/hiranya/academic/cs56/github-grader/target/source/lab00_EdieS/lakunu.xml",
+                "grade");
         launcher.run();
     }
 }
