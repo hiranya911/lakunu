@@ -72,6 +72,12 @@ public final class AntEvaluationPlan implements EvaluationPlan {
 
     @Override
     public void evaluate(Evaluation.Context context, String finalPhase) {
+        try {
+            // TODO: Handle this in the launcher
+            addToClassPath();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         Project project = new EvaluationProject(context);
         prepare(project);
         try {

@@ -3,10 +3,7 @@ package org.lakunu.labs.ant;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.labs.Score;
-import org.lakunu.labs.ant.validators.OutputMatchValidator;
-import org.lakunu.labs.ant.validators.PropertyValidator;
-import org.lakunu.labs.ant.validators.SuccessValidator;
-import org.lakunu.labs.ant.validators.LakunuValidator;
+import org.lakunu.labs.ant.validators.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -50,6 +47,7 @@ public abstract class ValidationTask {
         return validator.zero();
     }
 
+    // TODO: Implement this using Service API
     private LakunuValidator buildValidator() {
         checkArgument(!Strings.isNullOrEmpty(type), "validator type not specified");
         ImmutableList<ValidatorArg> args = ImmutableList.copyOf(this.args);
@@ -59,6 +57,8 @@ public abstract class ValidationTask {
             return new PropertyValidator(label, score, args);
         } else if (type.equals("output-match")) {
             return new OutputMatchValidator(label, score, args);
+        } else if (type.equals("ant-test")) {
+            return new AntTestValidator(label, score, args);
         }
         throw new IllegalArgumentException("Unknown validator: " + type);
     }

@@ -1,4 +1,9 @@
 <project default="grade">
+    <path id="project.class.path">
+        <pathelement location="build"/>
+        <pathelement location="lib/junit-4.8.2.jar"/>
+    </path>
+
     <target name="grade">
         <grade>
             <ant target="clean"/>
@@ -25,6 +30,25 @@
             </exec>
             <post label="run-jar" score="5" type="output-match">
                 <arg name="pattern" value="(?s).+"/>
+            </post>
+        </grade>
+        <grade>
+            <junit haltonerror="no" haltonfailure="no">
+                <classpath refid="project.class.path" />
+                <batchtest fork="yes">
+                    <fileset dir="src">
+                        <include name="*Test.java"/>
+                    </fileset>
+                </batchtest>
+                <formatter type="brief" usefile="false" />
+            </junit>
+            <post label="rational-test" score="20" type="ant-test">
+                <arg name="scorePerTest" value="1"/>
+                <arg name="suites" value="RationalTest"/>
+            </post>
+            <post label="secret-test" score="20" type="ant-test">
+                <arg name="scorePerTest" value="1"/>
+                <arg name="suites" value="InstructorRationalTest"/>
             </post>
         </grade>
     </target>

@@ -2,11 +2,16 @@ package org.lakunu.labs.ant;
 
 import org.lakunu.labs.Score;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class TaskContext {
 
     private final AntEvaluationPlan.EvaluationProject project;
+    private final Map<String,Object> properties = new HashMap<>();
+
     private boolean success;
     private String output;
     private String error;
@@ -48,5 +53,13 @@ public final class TaskContext {
     public TaskContext setError(String error) {
         this.error = error;
         return this;
+    }
+
+    public void setProperty(String name, Object value) {
+        properties.put(name, value);
+    }
+
+    public <T> T getProperty(String name, Class<T> clazz) {
+        return clazz.cast(properties.get(name));
     }
 }
