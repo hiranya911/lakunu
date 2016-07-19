@@ -1,10 +1,12 @@
 package org.lakunu.labs.ant;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import org.lakunu.labs.Score;
+import org.lakunu.labs.ant.validators.OutputMatchValidator;
 import org.lakunu.labs.ant.validators.PropertyValidator;
 import org.lakunu.labs.ant.validators.SuccessValidator;
-import org.lakunu.labs.ant.validators.Validator;
+import org.lakunu.labs.ant.validators.LakunuValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,21 +40,25 @@ public abstract class ValidationTask {
     }
 
     public void execute(TaskContext context) {
-        Validator validator = buildValidator();
-        validator.validate(context);
+        LakunuValidator validator = buildValidator();
+        Score score = validator.validate(context);
+        context.addScore(score);
     }
 
     public Score getRubric() {
-        Validator validator = buildValidator();
+        LakunuValidator validator = buildValidator();
         return validator.zero();
     }
 
-    private Validator buildValidator() {
+    private LakunuValidator buildValidator() {
         checkArgument(!Strings.isNullOrEmpty(type), "validator type not specified");
+        ImmutableList<ValidatorArg> args = ImmutableList.copyOf(this.args);
         if (type.equals("success")) {
-            return new SuccessValidator(label, score);
+            return new SuccessValidator(label, score, args);
         } else if (type.equals("property")) {
             return new PropertyValidator(label, score, args);
+        } else if (type.equals("output-match")) {
+            return new OutputMatchValidator(label, score, args);
         }
         throw new IllegalArgumentException("Unknown validator: " + type);
     }

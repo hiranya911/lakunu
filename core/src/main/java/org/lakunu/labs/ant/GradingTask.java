@@ -2,10 +2,8 @@ package org.lakunu.labs.ant;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.tools.ant.BuildException;
-import org.apache.tools.ant.Project;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.TaskContainer;
-import org.lakunu.labs.EvaluationPlan;
 import org.lakunu.labs.Score;
 
 import java.util.ArrayList;
@@ -57,6 +55,7 @@ public final class GradingTask extends Task implements TaskContainer {
         } finally {
             project.removeBuildListener(outputRecorder);
             context.setOutput(outputRecorder.getOutput());
+            context.setError(outputRecorder.getError());
             postTasks.stream().forEach(t -> t.execute(context));
         }
     }

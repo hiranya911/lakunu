@@ -19,6 +19,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class AntEvaluationPlan implements EvaluationPlan {
 
+    private static final String GRADE_TYPE = "grade";
+
     private final File buildFile;
     private final String buildTarget;
 
@@ -37,13 +39,12 @@ public final class AntEvaluationPlan implements EvaluationPlan {
 
         ImmutableList.Builder<Score> rubricBuilder = ImmutableList.builder();
         ImmutableList.Builder<String> phaseBuilder = ImmutableList.builder();
-        String targetToExecute = Strings.isNullOrEmpty(buildTarget) ?
-                project.getDefaultTarget() : buildTarget;
+        String targetToExecute = getBuildTarget(project);
         Vector<Target> targets = project.topoSort(targetToExecute, project.getTargets(), false);
         targets.forEach(target -> {
             phaseBuilder.add(target.getName());
             for (Task task : target.getTasks()) {
-                if (task instanceof UnknownElement && task.getTaskName().equals("score")) {
+                if (task instanceof UnknownElement && task.getTaskName().equals(GRADE_TYPE)) {
                     task.maybeConfigure();
                     GradingTask gradingTask = (GradingTask) ((UnknownElement) task).getRealThing();
                     rubricBuilder.addAll(gradingTask.getRubric());
@@ -63,7 +64,7 @@ public final class AntEvaluationPlan implements EvaluationPlan {
         projectHelper.parse(project, buildFile);
 
         project.init();
-        project.addDataTypeDefinition("score", GradingTask.class);
+        project.addDataTypeDefinition(GRADE_TYPE, GradingTask.class);
         project.addDataTypeDefinition("pre", ValidationTask.PreValidationTask.class);
         project.addDataTypeDefinition("post", ValidationTask.PostValidationTask.class);
         project.addDataTypeDefinition("arg", ValidatorArg.class);
@@ -126,6 +127,7 @@ public final class AntEvaluationPlan implements EvaluationPlan {
         private EvaluationProject(Evaluation.Context context) {
             super();
             this.context = context;
+            this.setBaseDir(context.getSubmissionDirectory());
             File resourcesDirectory = context.getResourcesDirectory();
             if (resourcesDirectory != null) {
                 this.setUserProperty("resource.dir", resourcesDirectory.getAbsolutePath());

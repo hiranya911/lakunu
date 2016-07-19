@@ -14,9 +14,14 @@ import java.io.OutputStream;
 public final class TaskOutputRecorder implements BuildListener {
 
     private final StringBufferOutputStream output = new StringBufferOutputStream(64 * 1024);
+    private final StringBufferOutputStream error = new StringBufferOutputStream(64 * 1024);
 
     public String getOutput() {
         return output.buffer.toString();
+    }
+
+    public String getError() {
+        return error.buffer.toString();
     }
 
     @Override
@@ -45,34 +50,22 @@ public final class TaskOutputRecorder implements BuildListener {
 
     @Override
     public void messageLogged(BuildEvent buildEvent) {
+        OutputStream out = null;
+        switch (buildEvent.getPriority()) {
+            case Project.MSG_INFO:
+                out = output;
+                break;
+            case Project.MSG_ERR:
+                out = error;
+                break;
+        }
         try {
-            IOUtils.write(getMessage(buildEvent), output);
+            if (out != null) {
+                IOUtils.write(buildEvent.getMessage() + "\n", out);
+            }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private String getMessage(BuildEvent event) {
-        StringBuilder sb = new StringBuilder();
-        switch (event.getPriority()) {
-            case Project.MSG_DEBUG:
-                sb.append("[debug] ");
-                break;
-            case Project.MSG_INFO:
-                sb.append("[info] ");
-                break;
-            case Project.MSG_ERR:
-                sb.append("[error] ");
-                break;
-            case Project.MSG_WARN:
-                sb.append("[warn] ");
-                break;
-            case Project.MSG_VERBOSE:
-                sb.append("[verbose] ");
-                break;
-        }
-        sb.append(event.getMessage()).append('\n');
-        return sb.toString();
     }
 
     private static final class StringBufferOutputStream extends ThresholdingOutputStream {

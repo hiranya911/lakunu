@@ -9,6 +9,7 @@ public final class TaskContext {
     private final AntEvaluationPlan.EvaluationProject project;
     private boolean success;
     private String output;
+    private String error;
 
     public TaskContext(AntEvaluationPlan.EvaluationProject project) {
         checkNotNull(project, "Project is required");
@@ -38,5 +39,14 @@ public final class TaskContext {
 
     public void setOutput(String output) {
         this.output = output;
+    }
+
+    public String getError() {
+        return error;
+    }
+
+    public TaskContext setError(String error) {
+        this.error = error;
+        return this;
     }
 }
