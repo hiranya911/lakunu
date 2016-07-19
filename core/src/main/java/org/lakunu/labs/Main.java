@@ -1,8 +1,11 @@
 package org.lakunu.labs;
 
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.ant.AntEvaluationPlan;
+import org.lakunu.labs.resources.LocalFileResource;
+import org.lakunu.labs.resources.Resource;
 import org.lakunu.labs.submit.DirectorySubmission;
 import org.lakunu.labs.utils.LoggingOutputHandler;
 import org.slf4j.Logger;
@@ -17,8 +20,12 @@ public class Main {
 
     private static final Options OPTIONS = new Options()
             .addOption(Option.builder("l").longOpt("lab")
-                    .desc("Path to the lab configuration file (defaults to ./lab.json)")
+                    .desc("Path to the lab configuration file (defaults to ./lakunu.xml)")
                     .hasArg().argName("FILE")
+                    .build())
+            .addOption(Option.builder("r").longOpt("resources")
+                    .desc("List of resource files")
+                    .hasArgs().argName("FILES")
                     .build())
             .addOption(Option.builder("wd").longOpt("working-dir")
                     .desc("Path to the working directory (defaults to system's temp directory)")
@@ -48,6 +55,7 @@ public class Main {
 
         Lab lab = Lab.newBuilder()
                 .setName("anonymous")
+                .addResources(getResources(cmd))
                 .setEvaluationPlan(new AntEvaluationPlan(getLabConfig(cmd), null))
                 .build();
 
@@ -86,6 +94,17 @@ public class Main {
         }
         logger.info("Using working directory: {}", workingDir.getAbsolutePath());
         return workingDir;
+    }
+
+    private static ImmutableList<Resource> getResources(CommandLine cmd) {
+        ImmutableList.Builder<Resource> resources = ImmutableList.builder();
+        if (cmd.hasOption("r")) {
+            String[] resourcePaths = cmd.getOptionValues("r");
+            for (String path : resourcePaths) {
+                resources.add(new LocalFileResource(path));
+            }
+        }
+        return resources.build();
     }
 
 }

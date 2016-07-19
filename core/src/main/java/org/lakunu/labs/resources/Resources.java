@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Booleans;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.Evaluation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,6 +13,8 @@ import java.io.IOException;
 import static com.google.common.base.Preconditions.checkArgument;
 
 public final class Resources {
+
+    private static final Logger logger = LoggerFactory.getLogger(Resources.class);
 
     private final ImmutableSet<Resource> resources;
     private final ResourceCollection collection;
@@ -29,6 +33,7 @@ public final class Resources {
         }
         File resourcesDir = new File(context.getEvaluationDirectory(), "_resources");
         FileUtils.forceMkdir(resourcesDir);
+        logger.info("Created resources directory: {}", resourcesDir.getAbsolutePath());
         for (Resource resource : resources) {
             resource.copyTo(resourcesDir);
         }

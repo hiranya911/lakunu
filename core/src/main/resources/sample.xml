@@ -1,9 +1,4 @@
 <project default="grade">
-    <path id="project.class.path">
-        <pathelement location="build"/>
-        <pathelement location="lib/junit-4.8.2.jar"/>
-    </path>
-
     <target name="grade">
         <grade>
             <ant target="clean"/>
@@ -32,16 +27,9 @@
                 <arg name="pattern" value="(?s).+"/>
             </post>
         </grade>
+        <copy file="${resource.dir}/InstructorRationalTest.java" toDir="src"/>
         <grade>
-            <junit haltonerror="no" haltonfailure="no">
-                <classpath refid="project.class.path" />
-                <batchtest fork="yes">
-                    <fileset dir="src">
-                        <include name="*Test.java"/>
-                    </fileset>
-                </batchtest>
-                <formatter type="brief" usefile="false" />
-            </junit>
+            <ant target="test"/>
             <post label="rational-test" score="20" type="ant-test">
                 <arg name="scorePerTest" value="1"/>
                 <arg name="suites" value="RationalTest"/>

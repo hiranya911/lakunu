@@ -8,6 +8,7 @@ import org.lakunu.labs.resources.Resources;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -67,6 +68,11 @@ public final class Lab {
 
         public final Builder addResource(Resource resource) {
             this.resources.addResource(resource);
+            return this;
+        }
+
+        public final Builder addResources(Collection<Resource> resources) {
+            resources.stream().forEach(this.resources::addResource);
             return this;
         }
 
