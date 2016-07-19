@@ -24,9 +24,10 @@ public final class AntLabOutputHandler extends DefaultLogger {
     }
 
     @Override
-    public void log(String msg) {
-        switch (msgOutputLevel) {
+    protected void printMessage(String msg, PrintStream stream, int priority) {
+        switch (priority) {
             case Project.MSG_INFO:
+            case Project.MSG_VERBOSE:
                 outputHandler.info(msg);
                 break;
             case Project.MSG_WARN:

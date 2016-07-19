@@ -139,7 +139,6 @@ public final class AntEvaluationPlan implements EvaluationPlan {
                 this.setUserProperty("resource.dir", resourcesDirectory.getAbsolutePath());
             }
             this.addBuildListener(new AntLabOutputHandler(context.getOutputHandler(), Project.MSG_INFO));
-            this.addBuildListener(new AntLabOutputHandler(context.getOutputHandler(), Project.MSG_ERR));
         }
 
         public Evaluation.Context getContext() {
