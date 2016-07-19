@@ -3,9 +3,14 @@ package org.lakunu.labs.ant;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.apache.tools.ant.*;
+import org.apache.tools.ant.types.FileSet;
+import org.apache.tools.ant.types.resources.FileResource;
 import org.lakunu.labs.Evaluation;
 import org.lakunu.labs.EvaluationPlan;
 import org.lakunu.labs.Score;
+import org.lakunu.labs.resources.Resources;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -19,8 +24,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class AntEvaluationPlan implements EvaluationPlan {
 
+    private static final Logger logger = LoggerFactory.getLogger(AntEvaluationPlan.class);
+
     private static final String GRADE_TYPE = "grade";
-    private static final String RESOURCE_DIR = "resource.dir";
 
     private final File buildFile;
     private final String buildTarget;
@@ -135,15 +141,32 @@ public final class AntEvaluationPlan implements EvaluationPlan {
             super();
             this.context = context;
             this.setBaseDir(context.getSubmissionDirectory());
-            File resourcesDirectory = context.getResourcesDirectory();
-            if (resourcesDirectory != null) {
-                this.setUserProperty(RESOURCE_DIR, resourcesDirectory.getAbsolutePath());
-            }
+            integrateResources(context.getResources());
             this.addBuildListener(new AntLabOutputHandler(context.getOutputHandler(), Project.MSG_INFO));
         }
 
         public Evaluation.Context getContext() {
             return context;
+        }
+
+        private void integrateResources(Resources resources) {
+            resources.getFiles().forEach(r -> {
+                if (r.isDirectory()) {
+                    FileSet fileset = new FileSet();
+                    fileset.setDir(r);
+                    fileset.setProject(this);
+                    this.addReference("res:" + r.getName(), fileset);
+                } else {
+                    FileResource resource = new FileResource(this, r);
+                    this.addReference("res:" + r.getName(), resource);
+                }
+            });
+        }
+
+        @Override
+        public void addReference(String referenceName, Object value) {
+            logger.info("Registering resource with ID: {}", referenceName);
+            super.addReference(referenceName, value);
         }
     }
 }

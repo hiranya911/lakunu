@@ -31,8 +31,8 @@ public final class Lab {
         return name;
     }
 
-    File prepareResources(Evaluation.Context context) throws IOException {
-        return resources.prepare(context);
+    Resources getResources() {
+        return resources;
     }
 
     void evaluate(Evaluation.Context context, String finalPhase) {
@@ -66,17 +66,17 @@ public final class Lab {
             return this;
         }
 
-        public final Builder addResource(Resource resource) {
-            this.resources.addResource(resource);
+        public final Builder addResourceFile(File file) {
+            this.resources.addFile(file);
             return this;
         }
 
-        public final Builder addResources(Collection<Resource> resources) {
-            resources.stream().forEach(this.resources::addResource);
+        public final Builder addResourceFiles(Collection<File> files) {
+            files.stream().forEach(this.resources::addFile);
             return this;
         }
 
-        public final Builder setCollection(ResourceCollection collection) {
+        public final Builder setResourceCollection(ResourceCollection collection) {
             this.resources.setCollection(collection);
             return this;
         }

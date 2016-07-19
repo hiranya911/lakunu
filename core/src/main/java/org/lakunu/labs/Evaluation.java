@@ -2,6 +2,7 @@ package org.lakunu.labs;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
+import org.lakunu.labs.resources.Resources;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.utils.LabUtils;
 import org.slf4j.Logger;
@@ -49,7 +50,7 @@ public final class Evaluation {
         this.outputHandler = builder.outputHandler;
     }
 
-    public void run(String finalPhase) throws IOException {
+    public void run(String finalPhase) {
         long start = System.nanoTime();
         Context context = new EvaluationContext(this);
         boolean exception = false;
@@ -112,7 +113,7 @@ public final class Evaluation {
                 used/FileUtils.ONE_MB, total/FileUtils.ONE_MB));
     }
 
-    public void run() throws IOException {
+    public void run() {
         run(null);
     }
 
@@ -127,7 +128,7 @@ public final class Evaluation {
         public abstract File getEvaluationDirectory() throws IOException;
         public abstract LabOutputHandler getOutputHandler();
         public abstract File getSubmissionDirectory();
-        public abstract File getResourcesDirectory();
+        public abstract Resources getResources();
         protected abstract void cleanup();
 
         public final void addScore(Score score) {
@@ -145,13 +146,13 @@ public final class Evaluation {
         private final File workingDirectory;
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
-        private final File resourcesDirectory;
+        private final Resources resources;
         private File evaluationDirectory;
 
-        private EvaluationContext(Evaluation eval) throws IOException {
+        private EvaluationContext(Evaluation eval) {
             this.workingDirectory = eval.workingDirectory;
             this.outputHandler = eval.outputHandler;
-            this.resourcesDirectory = eval.lab.prepareResources(this);
+            this.resources = eval.lab.getResources();
             this.submissionDirectory = eval.submission.prepare(this);
             checkNotNull(submissionDirectory, "Submission directory is required");
             checkArgument(submissionDirectory.isDirectory() && submissionDirectory.exists(),
@@ -179,8 +180,8 @@ public final class Evaluation {
         }
 
         @Override
-        public File getResourcesDirectory() {
-            return resourcesDirectory;
+        public Resources getResources() {
+            return resources;
         }
 
         protected synchronized void cleanup() {
