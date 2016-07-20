@@ -4,12 +4,15 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.ant.AntEvaluationPlan;
+import org.lakunu.labs.resources.LocalFileResource;
+import org.lakunu.labs.resources.Resource;
 import org.lakunu.labs.submit.DirectorySubmission;
 import org.lakunu.labs.utils.LoggingOutputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 
 public class Main {
 
@@ -52,7 +55,7 @@ public class Main {
 
         Lab lab = Lab.newBuilder()
                 .setName("anonymous")
-                .addResourceFiles(getResourceFiles(cmd))
+                .addResources(getResources(cmd))
                 .setEvaluationPlan(new AntEvaluationPlan(getLabConfig(cmd), null))
                 .build();
 
@@ -64,7 +67,11 @@ public class Main {
                 .setCleanUpAfterFinish(true)
                 .setOutputHandler(LoggingOutputHandler.DEFAULT)
                 .build();
-        evaluation.run();
+        try {
+            evaluation.run();
+        } catch (IOException e) {
+            logger.error("Error while evaluating lab", e);
+        }
     }
 
     private static File getLabConfig(CommandLine cmd) {
@@ -89,15 +96,15 @@ public class Main {
         return workingDir;
     }
 
-    private static ImmutableList<File> getResourceFiles(CommandLine cmd) {
-        ImmutableList.Builder<File> files = ImmutableList.builder();
+    private static ImmutableList<Resource> getResources(CommandLine cmd) {
+        ImmutableList.Builder<Resource> resources = ImmutableList.builder();
         if (cmd.hasOption("r")) {
             String[] resourcePaths = cmd.getOptionValues("r");
             for (String path : resourcePaths) {
-                files.add(new File(path));
+                resources.add(new LocalFileResource(path));
             }
         }
-        return files.build();
+        return resources.build();
     }
 
 }

@@ -27,9 +27,7 @@
                 <arg name="pattern" value="(?s).+"/>
             </post>
         </grade>
-        <copy toDir="src">
-            <file refid="res:InstructorRationalTest.java"/>
-        </copy>
+        <copy file="${resource.dir}/InstructorRationalTest.java" toDir="src"/>
         <grade>
             <ant target="test"/>
             <post label="rational-test" score="20" type="ant-test">

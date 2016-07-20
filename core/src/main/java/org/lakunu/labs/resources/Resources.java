@@ -2,32 +2,46 @@ package org.lakunu.labs.resources;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Booleans;
+import org.apache.commons.io.FileUtils;
+import org.lakunu.labs.Evaluation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.IOException;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 public final class Resources {
 
-    private final ImmutableSet<File> files;
+    private static final Logger logger = LoggerFactory.getLogger(Resources.class);
+
+    private final ImmutableSet<Resource> resources;
     private final ResourceCollection collection;
 
     private Resources(Builder builder) {
-        ImmutableSet<File> resources = builder.resourcesFiles.build();
+        ImmutableSet<Resource> resources = builder.resources.build();
         int count = Booleans.countTrue(!resources.isEmpty(), builder.collection != null);
-        checkArgument(count != 2, "Cannot specify both resource files and a resource collection");
-        resources.forEach(r ->
-                checkArgument(r.exists(), "resource file does not exist: %s", r.getAbsolutePath()));
-        this.files = resources;
+        checkArgument(count != 2, "Cannot specify both resources and a resource collection");
+        this.resources = resources;
         this.collection = builder.collection;
     }
 
-    public ImmutableSet<File> getFiles() {
-        return files;
-    }
+    public File prepare(Evaluation.Context context) throws IOException {
+        if (resources.isEmpty() && collection == null) {
+            return null;
+        }
+        File resourcesDir = new File(context.getEvaluationDirectory(), "_resources");
+        FileUtils.forceMkdir(resourcesDir);
+        logger.info("Created resources directory: {}", resourcesDir.getAbsolutePath());
+        for (Resource resource : resources) {
+            resource.copyTo(resourcesDir);
+        }
 
-    public ResourceCollection getCollection() {
-        return collection;
+        if (collection != null) {
+            collection.extract(resourcesDir);
+        }
+        return resourcesDir;
     }
 
     public static Builder newBuilder() {
@@ -36,14 +50,14 @@ public final class Resources {
 
     public static class Builder {
 
-        private final ImmutableSet.Builder<File> resourcesFiles = ImmutableSet.builder();
+        private final ImmutableSet.Builder<Resource> resources = ImmutableSet.builder();
         private ResourceCollection collection;
 
         private Builder() {
         }
 
-        public final Builder addFile(File resource) {
-            this.resourcesFiles.add(resource);
+        public final Builder addResource(Resource resource) {
+            this.resources.add(resource);
             return this;
         }
 

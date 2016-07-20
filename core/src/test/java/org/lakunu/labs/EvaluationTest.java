@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.lakunu.labs.resources.Resources;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.submit.TestSubmission;
 import org.lakunu.labs.utils.LabUtils;
@@ -108,11 +107,13 @@ public class EvaluationTest {
         private final File evaluationDirectory;
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
+        private final File resourceDirectory;
 
         private TestContext(TestContextBuilder builder) {
             this.evaluationDirectory = builder.evaluationDirectory;
             this.outputHandler = builder.outputHandler;
             this.submissionDirectory = builder.submissionDirectory;
+            this.resourceDirectory = builder.resourceDirectory;
         }
 
         @Override
@@ -131,8 +132,8 @@ public class EvaluationTest {
         }
 
         @Override
-        public Resources getResources() {
-            return null;
+        public File getResourcesDirectory() {
+            return resourceDirectory;
         }
 
         @Override
