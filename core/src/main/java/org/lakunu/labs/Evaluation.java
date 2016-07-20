@@ -49,7 +49,7 @@ public final class Evaluation {
         this.outputHandler = builder.outputHandler;
     }
 
-    public void run(String finalPhase) throws IOException {
+    public void run(String finalPhase) {
         long start = System.nanoTime();
         Context context = new EvaluationContext(this);
         boolean exception = false;
@@ -67,6 +67,10 @@ public final class Evaluation {
                 context.cleanup();
             }
         }
+    }
+
+    public void run() {
+        run(null);
     }
 
     private void dumpSummary(long start, boolean exception, Context context) {
@@ -112,10 +116,6 @@ public final class Evaluation {
                 used/FileUtils.ONE_MB, total/FileUtils.ONE_MB));
     }
 
-    public void run() throws IOException {
-        run(null);
-    }
-
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -148,10 +148,15 @@ public final class Evaluation {
         private final File resourcesDirectory;
         private File evaluationDirectory;
 
-        private EvaluationContext(Evaluation eval) throws IOException {
+        private EvaluationContext(Evaluation eval) {
             this.workingDirectory = eval.workingDirectory;
             this.outputHandler = eval.outputHandler;
-            this.resourcesDirectory = eval.lab.prepareResources(this);
+            try {
+                this.resourcesDirectory = eval.lab.prepareResources(this);
+            } catch (IOException e) {
+                FileUtils.deleteQuietly(this.evaluationDirectory);
+                throw new RuntimeException(e);
+            }
             this.submissionDirectory = eval.submission.prepare(this);
             checkNotNull(submissionDirectory, "Submission directory is required");
             checkArgument(submissionDirectory.isDirectory() && submissionDirectory.exists(),

@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
 
 public class Main {
 
@@ -67,11 +66,7 @@ public class Main {
                 .setCleanUpAfterFinish(true)
                 .setOutputHandler(LoggingOutputHandler.DEFAULT)
                 .build();
-        try {
-            evaluation.run();
-        } catch (IOException e) {
-            logger.error("Error while evaluating lab", e);
-        }
+        evaluation.run();
     }
 
     private static File getLabConfig(CommandLine cmd) {
