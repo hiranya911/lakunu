@@ -4,26 +4,22 @@ import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
-import org.lakunu.labs.resources.Resources;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.submit.TestSubmission;
 import org.lakunu.labs.utils.LabUtils;
-
-import java.io.File;
-import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.is;
 
 public class EvaluationTest {
 
-    /*@Test
-    public void testSinglePluginEvaluation() throws Exception {
-        Lab lab = DefaultLabBuilder.newBuilder()
+    @Test
+    public void testSingleStepEvaluation() throws Exception {
+        TestEvaluationPlan plan = new TestEvaluationPlan(ImmutableList.of(
+                c -> c.getOutputHandler().info("Step 1")
+        ));
+        Lab lab = Lab.newBuilder()
                 .setName("test")
-                .addPlugin(DefaultLabBuilder.BUILD_PHASE, CustomTestPlugin.newInstance(context -> {
-                    context.getOutputHandler().info("Hello world");
-                    return true;
-                }))
+                .setEvaluationPlan(plan)
                 .build();
         TestOutputHandler outputHandler = new TestOutputHandler();
         Submission submission = new TestSubmission();
@@ -41,28 +37,20 @@ public class EvaluationTest {
                 .map(e -> e.line)
                 .collect(LabUtils.immutableList());
         Assert.assertTrue(entries.size() > 0);
-        ImmutableList<String> expected = expected(
-                "------------------------------------------------------------------------\n" +
-                "Starting build phase\n" +
-                "------------------------------------------------------------------------\n" +
-                "\n" +
-                "Hello world\n" +
-                "------------------------------------------------------------------------");
+        ImmutableList<String> expected = expected("Step 1\n" +
+                "------------------------------------------------------------------------\n");
         Assert.assertThat(entries, is(expected));
     }
 
     @Test
     public void testMultiplePluginEvaluation() throws Exception {
-        Lab lab = DefaultLabBuilder.newBuilder()
+        TestEvaluationPlan plan = new TestEvaluationPlan(ImmutableList.of(
+                c -> c.getOutputHandler().info("Step 1"),
+                c -> c.getOutputHandler().info("Step 2")
+        ));
+        Lab lab = Lab.newBuilder()
                 .setName("test")
-                .addPlugin(DefaultLabBuilder.BUILD_PHASE, CustomTestPlugin.newInstance(context -> {
-                    context.getOutputHandler().info("Hello world");
-                    return true;
-                }))
-                .addPlugin(DefaultLabBuilder.RUN_PHASE, CustomTestPlugin.newInstance(context -> {
-                    context.getOutputHandler().info("Bye world");
-                    return true;
-                }))
+                .setEvaluationPlan(plan)
                 .build();
         TestOutputHandler outputHandler = new TestOutputHandler();
         Submission submission = new TestSubmission();
@@ -80,20 +68,11 @@ public class EvaluationTest {
                 .map(e -> e.line)
                 .collect(LabUtils.immutableList());
         Assert.assertTrue(entries.size() > 0);
-        ImmutableList<String> expected = expected(
-                        "------------------------------------------------------------------------\n" +
-                        "Starting build phase\n" +
-                        "------------------------------------------------------------------------\n" +
-                        "\n" +
-                        "Hello world\n" +
-                        "------------------------------------------------------------------------\n" +
-                        "Starting run phase\n" +
-                        "------------------------------------------------------------------------\n" +
-                        "\n" +
-                        "Bye world\n" +
-                        "------------------------------------------------------------------------");
+        ImmutableList<String> expected = expected("Step 1\n" +
+                "Step 2\n" +
+                "------------------------------------------------------------------------\n");
         Assert.assertThat(entries, is(expected));
-    }*/
+    }
 
     private ImmutableList<String> expected(String output) {
         ImmutableList.Builder<String> builder = ImmutableList.builder();
@@ -102,77 +81,4 @@ public class EvaluationTest {
         }
         return builder.build();
     }
-
-    public static final class TestContext extends Evaluation.Context {
-
-        private final File evaluationDirectory;
-        private final LabOutputHandler outputHandler;
-        private final File submissionDirectory;
-
-        private TestContext(TestContextBuilder builder) {
-            this.evaluationDirectory = builder.evaluationDirectory;
-            this.outputHandler = builder.outputHandler;
-            this.submissionDirectory = builder.submissionDirectory;
-        }
-
-        @Override
-        public File lookupResource(String name) {
-            return null;
-        }
-
-        @Override
-        public File getEvaluationDirectory() throws IOException {
-            return evaluationDirectory;
-        }
-
-        @Override
-        public LabOutputHandler getOutputHandler() {
-            return outputHandler;
-        }
-
-        @Override
-        public File getSubmissionDirectory() {
-            return submissionDirectory;
-        }
-
-        @Override
-        protected void cleanup() {
-
-        }
-    }
-
-    public static class TestContextBuilder {
-
-        private File evaluationDirectory;
-        private LabOutputHandler outputHandler;
-        private File submissionDirectory = FileUtils.getTempDirectory();
-
-        private TestContextBuilder() {
-        }
-
-        public TestContextBuilder setEvaluationDirectory(File evaluationDirectory) {
-            this.evaluationDirectory = evaluationDirectory;
-            return this;
-        }
-
-        public TestContextBuilder setOutputHandler(LabOutputHandler outputHandler) {
-            this.outputHandler = outputHandler;
-            return this;
-        }
-
-        public TestContextBuilder setSubmissionDirectory(File submissionDirectory) {
-            this.submissionDirectory = submissionDirectory;
-            return this;
-        }
-
-        public TestContext build() {
-            return new TestContext(this);
-        }
-    }
-
-    public static TestContextBuilder testContextBuilder() {
-        return new TestContextBuilder();
-    }
-
-
 }

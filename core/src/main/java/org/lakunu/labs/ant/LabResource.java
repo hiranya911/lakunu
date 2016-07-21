@@ -21,8 +21,6 @@ public class LabResource extends FileSet {
     public synchronized void setName(String name) {
         File file = getResource(name);
         checkNotNull(file, "No resource found by the name: %s", name);
-        FileSet fileSet = new FileSet();
-        fileSet.setProject(getProject());
         if (file.isDirectory()) {
             this.setDir(file);
         } else {
