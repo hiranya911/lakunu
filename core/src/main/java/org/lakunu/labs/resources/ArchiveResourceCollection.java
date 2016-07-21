@@ -37,17 +37,20 @@ public final class ArchiveResourceCollection implements ResourceCollection {
         File extractRoot = context.getProperty(ARCHIVE_EXTRACT_ROOT, File.class);
         if (extractRoot == null) {
             synchronized (context) {
-                File tempDir = Files.createTempDirectory(
-                        context.getEvaluationDirectory().toPath(), "_resources").toFile();
-                archive.extract(tempDir);
-                File[] entries = tempDir.listFiles();
-                if (entries != null && entries.length == 1 && entries[0].isDirectory()) {
-                    extractRoot = entries[0];
-                } else {
-                    extractRoot = tempDir;
+                extractRoot = context.getProperty(ARCHIVE_EXTRACT_ROOT, File.class);
+                if (extractRoot == null) {
+                    File tempDir = Files.createTempDirectory(
+                            context.getEvaluationDirectory().toPath(), "_resources").toFile();
+                    archive.extract(tempDir);
+                    File[] entries = tempDir.listFiles();
+                    if (entries != null && entries.length == 1 && entries[0].isDirectory()) {
+                        extractRoot = entries[0];
+                    } else {
+                        extractRoot = tempDir;
+                    }
+                    context.setProperty(ARCHIVE_EXTRACT_ROOT, extractRoot);
+                    logger.info("Using extract directory: {}", extractRoot.getAbsolutePath());
                 }
-                context.setProperty(ARCHIVE_EXTRACT_ROOT, extractRoot);
-                logger.info("Using extract directory: {}", extractRoot.getAbsolutePath());
             }
         }
         return extractRoot;
