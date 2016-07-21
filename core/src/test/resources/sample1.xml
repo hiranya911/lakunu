@@ -1,0 +1,45 @@
+<project default="grade">
+    <target name="grade">
+        <grade>
+            <ant target="clean"/>
+            <available property="class.file.exists" file="build/Rational.class"/>
+            <post label="no-binaries" score="5" type="property">
+                <arg name="property" value="class.file.exists"/>
+                <arg name="checkNotExists" value="true"/>
+            </post>
+        </grade>
+        <grade>
+            <ant target="jar"/>
+            <available property="build.dir.created" file="build"/>
+            <post label="build-success" score="5" type="success"/>
+            <post label="build-dir-created" score="5" type="property">
+                <arg name="property" value="build.dir.created"/>
+            </post>
+        </grade>
+        <grade>
+            <exec executable="java">
+                <arg value="-jar"/>
+                <arg value="build/rational.jar"/>
+                <arg value="1"/>
+                <arg value="2"/>
+            </exec>
+            <post label="run-jar" score="5" type="output-match">
+                <arg name="pattern" value="(?s).+"/>
+            </post>
+        </grade>
+        <copy toDir="src">
+            <labResource name="InstructorRationalTest.java"/>
+        </copy>
+        <grade>
+            <ant target="test"/>
+            <post label="rational-test" score="20" type="ant-test">
+                <arg name="scorePerTest" value="1"/>
+                <arg name="suites" value="RationalTest"/>
+            </post>
+            <post label="secret-test" score="20" type="ant-test">
+                <arg name="scorePerTest" value="1"/>
+                <arg name="suites" value="InstructorRationalTest"/>
+            </post>
+        </grade>
+    </target>
+</project>
