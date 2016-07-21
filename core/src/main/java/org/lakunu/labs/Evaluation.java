@@ -2,6 +2,7 @@ package org.lakunu.labs;
 
 import com.google.common.collect.ImmutableList;
 import org.apache.commons.io.FileUtils;
+import org.lakunu.labs.resources.Resources;
 import org.lakunu.labs.submit.Submission;
 import org.lakunu.labs.utils.LabUtils;
 import org.slf4j.Logger;
@@ -12,10 +13,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -123,11 +121,12 @@ public final class Evaluation {
     public static abstract class Context {
 
         private final Queue<Score> scores = new ConcurrentLinkedQueue<>();
+        private final Map<String,Object> properties = new HashMap<>();
 
         public abstract File getEvaluationDirectory() throws IOException;
         public abstract LabOutputHandler getOutputHandler();
         public abstract File getSubmissionDirectory();
-        public abstract File getResourcesDirectory();
+        public abstract File lookupResource(String name);
         protected abstract void cleanup();
 
         public final void addScore(Score score) {
@@ -138,6 +137,17 @@ public final class Evaluation {
             return ImmutableList.copyOf(scores);
         }
 
+        public final <T> T getProperty(String name, Class<T> clazz) {
+            Object result = properties.get(name);
+            if (result != null) {
+                return clazz.cast(result);
+            }
+            return null;
+        }
+
+        public final void setProperty(String name, Object value) {
+            properties.put(name, value);
+        }
     }
 
     public static final class EvaluationContext extends Context {
@@ -145,22 +155,22 @@ public final class Evaluation {
         private final File workingDirectory;
         private final LabOutputHandler outputHandler;
         private final File submissionDirectory;
-        private final File resourcesDirectory;
         private File evaluationDirectory;
+        private final Resources resources;
 
         private EvaluationContext(Evaluation eval) {
             this.workingDirectory = eval.workingDirectory;
             this.outputHandler = eval.outputHandler;
-            try {
-                this.resourcesDirectory = eval.lab.prepareResources(this);
-            } catch (IOException e) {
-                FileUtils.deleteQuietly(this.evaluationDirectory);
-                throw new RuntimeException(e);
-            }
             this.submissionDirectory = eval.submission.prepare(this);
             checkNotNull(submissionDirectory, "Submission directory is required");
             checkArgument(submissionDirectory.isDirectory() && submissionDirectory.exists(),
                     "Submission directory path is not a directory or does not exist");
+            this.resources = eval.lab.getResources();
+        }
+
+        @Override
+        public File lookupResource(String name) {
+            return resources.lookup(name, this);
         }
 
         @Override
@@ -181,11 +191,6 @@ public final class Evaluation {
         @Override
         public File getSubmissionDirectory() {
             return submissionDirectory;
-        }
-
-        @Override
-        public File getResourcesDirectory() {
-            return resourcesDirectory;
         }
 
         protected synchronized void cleanup() {

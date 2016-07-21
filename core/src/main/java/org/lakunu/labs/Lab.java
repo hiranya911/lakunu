@@ -2,13 +2,7 @@ package org.lakunu.labs;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.*;
-import org.lakunu.labs.resources.Resource;
-import org.lakunu.labs.resources.ResourceCollection;
 import org.lakunu.labs.resources.Resources;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -22,21 +16,22 @@ public final class Lab {
     private Lab(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.name), "Name is required");
         checkNotNull(builder.evaluationPlan, "EvaluationPlan is required");
+        checkNotNull(builder.resources, "Resources instance is required");
         this.name = builder.name;
         this.evaluationPlan = builder.evaluationPlan;
-        this.resources = builder.resources.build();
+        this.resources = builder.resources;
     }
 
     public String getName() {
         return name;
     }
 
-    File prepareResources(Evaluation.Context context) throws IOException {
-        return resources.prepare(context);
-    }
-
     void evaluate(Evaluation.Context context, String finalPhase) {
         evaluationPlan.evaluate(context, finalPhase);
+    }
+
+    Resources getResources() {
+        return resources;
     }
 
     public ImmutableList<Score> getRubric() {
@@ -51,7 +46,7 @@ public final class Lab {
 
         private String name;
         private EvaluationPlan evaluationPlan;
-        private final Resources.Builder resources = Resources.newBuilder();
+        private Resources resources = new Resources(ImmutableSet.of());
 
         private Builder() {
         }
@@ -66,18 +61,8 @@ public final class Lab {
             return this;
         }
 
-        public final Builder addResource(Resource resource) {
-            this.resources.addResource(resource);
-            return this;
-        }
-
-        public final Builder addResources(Collection<Resource> resources) {
-            resources.stream().forEach(this.resources::addResource);
-            return this;
-        }
-
-        public final Builder setCollection(ResourceCollection collection) {
-            this.resources.setCollection(collection);
+        public Builder setResources(Resources resources) {
+            this.resources = resources;
             return this;
         }
 

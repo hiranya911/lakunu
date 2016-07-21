@@ -1,15 +1,11 @@
 package org.lakunu.labs.resources;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.lakunu.labs.Evaluation;
 
 import java.io.File;
-import java.io.IOException;
 
-public abstract class ResourceCollection {
+public interface ResourceCollection {
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
-
-    public abstract void extract(File resourcesDir) throws IOException;
+    File lookup(String name, Evaluation.Context context);
 
 }

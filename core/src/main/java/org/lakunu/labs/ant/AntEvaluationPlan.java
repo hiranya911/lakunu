@@ -20,7 +20,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public final class AntEvaluationPlan implements EvaluationPlan {
 
     private static final String GRADE_TYPE = "grade";
-    private static final String RESOURCE_DIR = "resource.dir";
 
     private final File buildFile;
     private final String buildTarget;
@@ -66,6 +65,7 @@ public final class AntEvaluationPlan implements EvaluationPlan {
 
         project.init();
         project.addDataTypeDefinition(GRADE_TYPE, GradingTask.class);
+        project.addDataTypeDefinition("labResource", LabResource.class);
         project.addDataTypeDefinition("pre", ValidationTask.PreValidationTask.class);
         project.addDataTypeDefinition("post", ValidationTask.PostValidationTask.class);
         project.addDataTypeDefinition("arg", ValidatorArg.class);
@@ -135,10 +135,6 @@ public final class AntEvaluationPlan implements EvaluationPlan {
             super();
             this.context = context;
             this.setBaseDir(context.getSubmissionDirectory());
-            File resourcesDirectory = context.getResourcesDirectory();
-            if (resourcesDirectory != null) {
-                this.setUserProperty(RESOURCE_DIR, resourcesDirectory.getAbsolutePath());
-            }
             this.addBuildListener(new AntLabOutputHandler(context.getOutputHandler(), Project.MSG_INFO));
         }
 

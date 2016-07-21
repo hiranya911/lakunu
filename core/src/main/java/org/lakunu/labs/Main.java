@@ -1,17 +1,20 @@
 package org.lakunu.labs;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Booleans;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.ant.AntEvaluationPlan;
-import org.lakunu.labs.resources.LocalFileResource;
-import org.lakunu.labs.resources.Resource;
+import org.lakunu.labs.resources.DirectoryResourceCollection;
+import org.lakunu.labs.resources.Resources;
 import org.lakunu.labs.submit.DirectorySubmission;
 import org.lakunu.labs.utils.LoggingOutputHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 public class Main {
 
@@ -21,6 +24,10 @@ public class Main {
             .addOption(Option.builder("l").longOpt("lab")
                     .desc("Path to the lab configuration file (defaults to ./lakunu.xml)")
                     .hasArg().argName("FILE")
+                    .build())
+            .addOption(Option.builder("c").longOpt("collection")
+                    .desc("Path to a directory containing lab resources")
+                    .hasArg().argName("DIR")
                     .build())
             .addOption(Option.builder("r").longOpt("resources")
                     .desc("List of resource files")
@@ -54,7 +61,7 @@ public class Main {
 
         Lab lab = Lab.newBuilder()
                 .setName("anonymous")
-                .addResources(getResources(cmd))
+                .setResources(getResources(cmd))
                 .setEvaluationPlan(new AntEvaluationPlan(getLabConfig(cmd), null))
                 .build();
 
@@ -91,15 +98,21 @@ public class Main {
         return workingDir;
     }
 
-    private static ImmutableList<Resource> getResources(CommandLine cmd) {
-        ImmutableList.Builder<Resource> resources = ImmutableList.builder();
+    private static Resources getResources(CommandLine cmd) {
+        int options = Booleans.countTrue(cmd.hasOption("r"), cmd.hasOption("c"));
+        checkArgument(options < 2, "Cannot specify both resource files and a collection");
+        if (cmd.hasOption("c")) {
+            return new Resources(new DirectoryResourceCollection(cmd.getOptionValue("c")));
+        }
+
+        ImmutableSet.Builder<File> resources = ImmutableSet.builder();
         if (cmd.hasOption("r")) {
             String[] resourcePaths = cmd.getOptionValues("r");
             for (String path : resourcePaths) {
-                resources.add(new LocalFileResource(path));
+                resources.add(new File(path));
             }
         }
-        return resources.build();
+        return new Resources(resources.build());
     }
 
 }

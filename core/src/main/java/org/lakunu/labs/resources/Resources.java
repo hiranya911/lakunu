@@ -1,73 +1,48 @@
 package org.lakunu.labs.resources;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.primitives.Booleans;
-import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.Evaluation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.IOException;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class Resources {
 
-    private static final Logger logger = LoggerFactory.getLogger(Resources.class);
-
-    private final ImmutableSet<Resource> resources;
+    private final ImmutableSet<File> files;
     private final ResourceCollection collection;
 
-    private Resources(Builder builder) {
-        ImmutableSet<Resource> resources = builder.resources.build();
-        int count = Booleans.countTrue(!resources.isEmpty(), builder.collection != null);
-        checkArgument(count != 2, "Cannot specify both resources and a resource collection");
-        this.resources = resources;
-        this.collection = builder.collection;
+    public Resources(Set<File> files) {
+        checkNotNull(files, "File set cannot be null");
+        Set<String> fileNames = new HashSet<>();
+        files.forEach(f -> {
+            checkArgument(f.exists() && f.isFile(),
+                    "%s does not exist or is not a regular file", f.getAbsolutePath());
+            checkArgument(fileNames.add(f.getName()), "duplicate resource file name: %s", f.getName());
+        });
+        this.files = ImmutableSet.copyOf(files);
+        this.collection = null;
     }
 
-    public File prepare(Evaluation.Context context) throws IOException {
-        if (resources.isEmpty() && collection == null) {
-            return null;
-        }
-        File resourcesDir = new File(context.getEvaluationDirectory(), "_resources");
-        FileUtils.forceMkdir(resourcesDir);
-        logger.info("Created resources directory: {}", resourcesDir.getAbsolutePath());
-        for (Resource resource : resources) {
-            resource.copyTo(resourcesDir);
-        }
+    public Resources(ResourceCollection collection) {
+        checkNotNull(collection, "resource collection must not be null");
+        this.files = null;
+        this.collection = collection;
+    }
 
+    public File lookup(String name, Evaluation.Context context) {
         if (collection != null) {
-            collection.extract(resourcesDir);
+            return collection.lookup(name, context);
         }
-        return resourcesDir;
-    }
-
-    public static Builder newBuilder() {
-        return new Builder();
-    }
-
-    public static class Builder {
-
-        private final ImmutableSet.Builder<Resource> resources = ImmutableSet.builder();
-        private ResourceCollection collection;
-
-        private Builder() {
-        }
-
-        public final Builder addResource(Resource resource) {
-            this.resources.add(resource);
-            return this;
-        }
-
-        public Builder setCollection(ResourceCollection collection) {
-            this.collection = collection;
-            return this;
-        }
-
-        public Resources build() {
-            return new Resources(this);
+        Optional<File> file = files.stream().filter(f -> f.getName().equals(name)).findFirst();
+        if (file.isPresent()) {
+            return file.get();
+        } else {
+            return null;
         }
     }
 
