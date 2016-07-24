@@ -6,6 +6,8 @@ public interface DAOCollection {
 
     CourseDAO getCourseDAO();
 
+    LabDAO getLabDAO();
+
     default void close() {
 
     }

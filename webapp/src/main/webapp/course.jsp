@@ -1,7 +1,6 @@
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
-<%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
 <head>
     <%@ include file="include/header.html" %>
     <title>Lakunu: Course [${course.name}]</title>
@@ -12,6 +11,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-primary">
+                <%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
                 <div class="panel-heading">Course Info: ${course.name}</div>
                 <div class="panel-body">
                     <table class="table table-striped">
@@ -47,9 +47,7 @@
             <div class="panel panel-primary">
                 <div class="panel-heading">Labs</div>
                 <div class="panel-body">
-                    <c:if test="${empty courseLabs}">
-                        <p>No labs to display</p>
-                    </c:if>
+                    <%--@elvariable id="courseLabs" type="java.util.List<Lab>"--%>
                     <c:if test="${not empty courseLabs}">
                         <table class="table table-striped">
                             <thead class="thead-inverse">
@@ -72,6 +70,7 @@
                             </tbody>
                         </table>
                     </c:if>
+                    <a href="/add_lab.jsp?cId=${course.id}&cName=${course.name}">Add Lab</a>
                 </div>
             </div>
         </div>

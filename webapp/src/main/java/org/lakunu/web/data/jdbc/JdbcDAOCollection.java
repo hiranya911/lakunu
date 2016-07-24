@@ -2,6 +2,7 @@ package org.lakunu.web.data.jdbc;
 
 import org.lakunu.web.data.CourseDAO;
 import org.lakunu.web.data.DAOCollection;
+import org.lakunu.web.data.LabDAO;
 import org.lakunu.web.utils.ConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ public final class JdbcDAOCollection implements DAOCollection {
     private static final Logger logger = LoggerFactory.getLogger(JdbcDAOCollection.class);
 
     private final JdbcCourseDAO courseDAO;
+    private final JdbcLabDAO labDAO;
 
     public JdbcDAOCollection(ConfigProperties properties) {
         InitialContext context = null;
@@ -26,6 +28,7 @@ public final class JdbcDAOCollection implements DAOCollection {
             logger.info("Loading JDBC datasource: {}", dsName);
             DataSource dataSource = (DataSource) context.lookup(dsName);
             this.courseDAO = new JdbcCourseDAO(dataSource);
+            this.labDAO = new JdbcLabDAO(dataSource);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         } finally {
@@ -47,4 +50,8 @@ public final class JdbcDAOCollection implements DAOCollection {
         return courseDAO;
     }
 
+    @Override
+    public LabDAO getLabDAO() {
+        return labDAO;
+    }
 }
