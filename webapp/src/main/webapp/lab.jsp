@@ -9,11 +9,12 @@
 <body>
 <%@ include file="include/body_top.html" %>
 <div class="container">
+    <h3>${lab.name} (${course.name})</h3>
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-primary">
                 <%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
-                <div class="panel-heading">Lab Info: ${lab.name}</div>
+                <div class="panel-heading">Details</div>
                 <div class="panel-body">
                     <table class="table table-striped">
                         <tbody>
@@ -39,7 +40,7 @@
                         </tr>
                         </tbody>
                     </table>
-                    <a href="/course/${lab.courseId}">Back to Course</a>
+                    <a href="/course/${lab.courseId}">Back to ${course.name}</a>
                 </div>
             </div>
         </div>

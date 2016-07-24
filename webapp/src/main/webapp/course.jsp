@@ -1,5 +1,6 @@
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <html>
 <head>
     <%@ include file="include/header.html" %>
@@ -8,11 +9,12 @@
 <body>
 <%@ include file="include/body_top.html" %>
 <div class="container">
+    <h3>${course.name}</h3>
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-primary">
                 <%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
-                <div class="panel-heading">Course Info: ${course.name}</div>
+                <div class="panel-heading">Details</div>
                 <div class="panel-body">
                     <table class="table table-striped">
                         <tbody>
@@ -48,25 +50,41 @@
                 <div class="panel-heading">Labs</div>
                 <div class="panel-body">
                     <%--@elvariable id="courseLabs" type="java.util.List<Lab>"--%>
-                    <c:if test="${not empty courseLabs}">
+                    <%--@elvariable id="labPermissions" type="java.util.Map<String,String>"--%>
+                    <c:if test="${not empty labPermissions}">
                         <table class="table table-striped">
                             <thead class="thead-inverse">
                             <tr>
                                 <th>Name</th>
                                 <th>Description</th>
                                 <th>Created</th>
+                                <th></th>
                             </tr>
                             </thead>
                             <tbody>
                             <c:forEach items="${courseLabs}" var="lab">
-                                <tr>
-                                    <td><c:out value="${lab.name}"/></td>
-                                    <td><c:out value="${lab.description}"/></td>
-                                    <td><c:out value="${lab.createdAt}"/></td>
-                                </tr>
+                                <c:if test="${not empty labPermissions[lab.id]}">
+                                    <tr>
+                                        <td><c:out value="${lab.name}"/></td>
+                                        <td><c:out value="${lab.description}"/></td>
+                                        <td><c:out value="${lab.createdAt}"/></td>
+                                        <td>
+                                            <c:if test="${fn:contains(labPermissions[lab.id], 'v')}">
+                                                <a href="/lab/${course.id}/${lab.id}">View/Edit</a>
+                                                <span class="tab-space">&nbsp;</span>
+                                            </c:if>
+                                            <c:if test="${fn:contains(labPermissions[lab.id], 's')}">
+                                                Submit
+                                            </c:if>
+                                        </td>
+                                    </tr>
+                                </c:if>
                             </c:forEach>
                             </tbody>
                         </table>
+                    </c:if>
+                    <c:if test="${empty labPermissions}">
+                        <p>No labs to display</p>
                     </c:if>
                     <shiro:hasPermission name="course:addLab:${course.id}">
                         <div id="addLabModal" class="modal fade" role="dialog">

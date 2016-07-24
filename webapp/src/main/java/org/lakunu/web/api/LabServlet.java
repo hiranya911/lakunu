@@ -26,6 +26,7 @@ public class LabServlet extends LakunuServlet {
         String labId = pathInfo.substring(pathInfo.indexOf('/', 1) + 1);
         Lab lab = daoCollection.getLabDAO().getLab(courseId, labId);
         req.setAttribute("lab", lab);
+        req.setAttribute("course", daoCollection.getCourseDAO().getCourse(courseId));
         req.getRequestDispatcher("/lab.jsp").forward(req, resp);
     }
 

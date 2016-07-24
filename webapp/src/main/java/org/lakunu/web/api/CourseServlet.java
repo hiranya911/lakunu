@@ -1,13 +1,20 @@
 package org.lakunu.web.api;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.subject.Subject;
 import org.lakunu.web.data.Course;
+import org.lakunu.web.data.Lab;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 @WebServlet("/course/*")
 public class CourseServlet extends LakunuServlet {
@@ -29,8 +36,31 @@ public class CourseServlet extends LakunuServlet {
             return;
         }
         req.setAttribute("course", course);
-        req.setAttribute("courseLabs", daoCollection.getCourseDAO().getLabs(courseId));
+        ImmutableList<Lab> labs = daoCollection.getCourseDAO().getLabs(courseId);
+        req.setAttribute("courseLabs", labs);
+        req.setAttribute("labPermissions", computeLabPermissions(labs));
         req.getRequestDispatcher("/course.jsp").forward(req, resp);
+    }
+
+    private Map<String,String> computeLabPermissions(List<Lab> labs) {
+        ImmutableMap.Builder<String,String> permissions = ImmutableMap.builder();
+        Subject subject = SecurityUtils.getSubject();
+        labs.forEach(lab -> {
+            String permission = "";
+            if (subject.isPermitted("lab:view:" + lab.getCourseId() + ":" + lab.getId())) {
+                permission += "v";
+            }
+            if (subject.isPermitted("lab:edit:" + lab.getCourseId() + ":" + lab.getId())) {
+                permission += "e";
+            }
+            if (subject.isPermitted("lab:submit:" + lab.getCourseId() + ":" + lab.getId())) {
+                permission += "s";
+            }
+            if (permission.length() > 0) {
+                permissions.put(lab.getId(), permission);
+            }
+        });
+        return permissions.build();
     }
 
     @Override
