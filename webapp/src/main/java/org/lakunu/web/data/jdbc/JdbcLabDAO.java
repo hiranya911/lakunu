@@ -1,6 +1,5 @@
 package org.lakunu.web.data.jdbc;
 
-import org.lakunu.web.data.Course;
 import org.lakunu.web.data.Lab;
 import org.lakunu.web.data.LabDAO;
 
@@ -28,8 +27,8 @@ public final class JdbcLabDAO extends LabDAO {
     private static final class AddLabCommand extends Command<Long> {
 
         private static final String ADD_LAB_SQL =  "INSERT INTO LAB " +
-                "(LAB_NAME, LAB_VERSION, LAB_DESCRIPTION, LAB_COURSE_ID, LAB_CREATED_AT, LAB_CREATED_BY) " +
-                "VALUES (?,?,?,?,?,?)";
+                "(LAB_NAME, LAB_DESCRIPTION, LAB_COURSE_ID, LAB_CREATED_AT, LAB_CREATED_BY, LAB_CONFIG, LAB_PUBLISHED) " +
+                "VALUES (?,?,?,?,?,?,?)";
 
         private final Lab lab;
 
@@ -48,11 +47,12 @@ public final class JdbcLabDAO extends LabDAO {
             try (PreparedStatement stmt = connection.prepareStatement(ADD_LAB_SQL,
                     Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, lab.getName());
-                stmt.setString(2, lab.getVersion());
-                stmt.setString(3, lab.getDescription());
-                stmt.setLong(4, Long.parseLong(lab.getCourseId()));
-                stmt.setTimestamp(5, lab.getCreatedAt());
-                stmt.setString(6, lab.getCreatedBy());
+                stmt.setString(2, lab.getDescription());
+                stmt.setLong(3, Long.parseLong(lab.getCourseId()));
+                stmt.setTimestamp(4, lab.getCreatedAt());
+                stmt.setString(5, lab.getCreatedBy());
+                stmt.setBytes(6, lab.getConfiguration());
+                stmt.setBoolean(7, lab.isPublished());
                 int rows = stmt.executeUpdate();
                 checkState(rows == 1, "Failed to add the lab to database");
                 try (ResultSet rs = stmt.getGeneratedKeys()) {

@@ -53,7 +53,6 @@
                             <thead class="thead-inverse">
                             <tr>
                                 <th>Name</th>
-                                <th>Version</th>
                                 <th>Description</th>
                                 <th>Created</th>
                             </tr>
@@ -62,7 +61,6 @@
                             <c:forEach items="${courseLabs}" var="lab">
                                 <tr>
                                     <td><c:out value="${lab.name}"/></td>
-                                    <td><c:out value="${lab.version}"/></td>
                                     <td><c:out value="${lab.description}"/></td>
                                     <td><c:out value="${lab.createdAt}"/></td>
                                 </tr>
@@ -83,10 +81,6 @@
                                             <div class="form-group">
                                                 <label for="labName">Lab Name:</label>
                                                 <input type="text" name="labName" class="form-control" id="labName" required>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="labVersion">Lab Version:</label>
-                                                <input type="text" name="labVersion" class="form-control" id="labVersion" required>
                                             </div>
                                             <div class="form-group">
                                                 <label for="labDescription">Lab Description:</label>

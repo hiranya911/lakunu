@@ -39,7 +39,6 @@ public class LabServlet extends LakunuServlet {
         String courseId = pathInfo.substring(1);
         Lab lab = Lab.newBuilder()
                 .setName(req.getParameter("labName"))
-                .setVersion(req.getParameter("labVersion"))
                 .setDescription(req.getParameter("labDescription"))
                 .setCourseId(courseId)
                 .buildForAddition();

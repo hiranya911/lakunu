@@ -154,7 +154,7 @@ public final class JdbcCourseDAO extends CourseDAO {
     private static final class GetLabsCommand extends Command<ImmutableList<Lab>> {
 
         private static final String GET_LABS_SQL =
-                "SELECT LAB_ID, LAB_NAME, LAB_VERSION, LAB_DESCRIPTION, LAB_CREATED_BY, LAB_CREATED_AT FROM LAB WHERE LAB_COURSE_ID = ?";
+                "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, LAB_CREATED_BY, LAB_CREATED_AT FROM LAB WHERE LAB_COURSE_ID = ?";
 
         private final String courseId;
 
@@ -177,7 +177,6 @@ public final class JdbcCourseDAO extends CourseDAO {
                         Lab lab = Lab.newBuilder()
                                 .setId(String.valueOf(rs.getLong("LAB_ID")))
                                 .setName(rs.getString("LAB_NAME"))
-                                .setVersion(rs.getString("LAB_VERSION"))
                                 .setDescription(rs.getString("LAB_DESCRIPTION"))
                                 .setCourseId(courseId)
                                 .setCreatedBy(rs.getString("LAB_CREATED_BY"))

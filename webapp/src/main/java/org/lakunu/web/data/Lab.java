@@ -14,19 +14,18 @@ public final class Lab {
     private static final String DEFAULT_ID = "_unidentified_";
 
     private final String id;
-    private String name;
-    private String version;
-    private String description;
+    private final String name;
+    private final String description;
     private final String createdBy;
     private final Timestamp createdAt;
     private final String courseId;
+    private final byte[] configuration;
+    private final boolean published;
 
     private Lab(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.id), "ID is required");
         checkArgument(!Strings.isNullOrEmpty(builder.name), "name is required");
         checkArgument(builder.name.length() <= 128, "name is too long");
-        checkArgument(!Strings.isNullOrEmpty(builder.version), "version is required");
-        checkArgument(builder.version.length() <= 128, "version is too long");
         checkArgument(!Strings.isNullOrEmpty(builder.description), "description is required");
         checkArgument(builder.description.length() <= 512, "description is too long");
         checkArgument(!Strings.isNullOrEmpty(builder.createdBy), "createdBy is required");
@@ -34,11 +33,12 @@ public final class Lab {
         checkArgument(!Strings.isNullOrEmpty(builder.courseId), "courseId is required");
         this.id = builder.id;
         this.name = builder.name;
-        this.version = builder.version;
         this.description = builder.description;
         this.createdBy = builder.createdBy;
         this.createdAt = builder.createdAt;
         this.courseId = builder.courseId;
+        this.configuration = builder.configuration;
+        this.published = builder.published;
     }
 
     public String getId() {
@@ -50,17 +50,7 @@ public final class Lab {
     }
 
     public Lab setName(String name) {
-        this.name = name;
-        return this;
-    }
-
-    public String getVersion() {
-        return version;
-    }
-
-    public Lab setVersion(String version) {
-        this.version = version;
-        return this;
+        return copy().setName(name).build();
     }
 
     public String getDescription() {
@@ -68,8 +58,7 @@ public final class Lab {
     }
 
     public Lab setDescription(String description) {
-        this.description = description;
-        return this;
+        return copy().setDescription(description).build();
     }
 
     public String getCreatedBy() {
@@ -84,6 +73,33 @@ public final class Lab {
         return courseId;
     }
 
+    public byte[] getConfiguration() {
+        return configuration;
+    }
+
+    public Lab setConfiguration(byte[] configuration) {
+        return copy().setConfiguration(configuration).build();
+    }
+
+    public boolean isPublished() {
+        return published;
+    }
+
+    public Lab setPublished(boolean published) {
+        return copy().setPublished(published).build();
+    }
+
+    private Builder copy() {
+        return newBuilder().setId(id)
+                .setName(name)
+                .setDescription(description)
+                .setCourseId(courseId)
+                .setCreatedAt(createdAt)
+                .setCreatedBy(createdBy)
+                .setConfiguration(configuration)
+                .setPublished(published);
+    }
+
     public static Builder newBuilder() {
         return new Builder();
     }
@@ -92,11 +108,12 @@ public final class Lab {
 
         private String id;
         private String name;
-        private String version;
         private String description;
         private String createdBy;
         private Timestamp createdAt;
         private String courseId;
+        private byte[] configuration;
+        private boolean published;
 
         private Builder() {
         }
@@ -108,11 +125,6 @@ public final class Lab {
 
         public Builder setName(String name) {
             this.name = name;
-            return this;
-        }
-
-        public Builder setVersion(String version) {
-            this.version = version;
             return this;
         }
 
@@ -136,6 +148,16 @@ public final class Lab {
             return this;
         }
 
+        public Builder setConfiguration(byte[] configuration) {
+            this.configuration = configuration;
+            return this;
+        }
+
+        public Builder setPublished(boolean published) {
+            this.published = published;
+            return this;
+        }
+
         public Lab build() {
             return new Lab(this);
         }
@@ -144,6 +166,7 @@ public final class Lab {
             this.id = DEFAULT_ID;
             this.createdBy = Security.getCurrentUser();
             this.createdAt = new Timestamp(Calendar.getInstance().getTime().getTime());
+            this.published = false;
             return new Lab(this);
         }
     }

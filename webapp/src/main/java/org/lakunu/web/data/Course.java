@@ -14,8 +14,8 @@ public final class Course {
     private static final String DEFAULT_ID = "_unidentified_";
 
     private final String id;
-    private String name;
-    private String description;
+    private final String name;
+    private final String description;
     private final String owner;
     private final Timestamp createdAt;
 
@@ -43,12 +43,7 @@ public final class Course {
     }
 
     public Course setName(String name) {
-        return newBuilder().setId(this.id)
-                .setName(name)
-                .setDescription(this.description)
-                .setOwner(this.owner)
-                .setCreatedAt(this.createdAt)
-                .build();
+        return copy().setName(name).build();
     }
 
     public String getDescription() {
@@ -56,12 +51,7 @@ public final class Course {
     }
 
     public Course setDescription(String description) {
-        return newBuilder().setId(this.id)
-                .setName(this.name)
-                .setDescription(description)
-                .setOwner(this.owner)
-                .setCreatedAt(this.createdAt)
-                .build();
+        return copy().setDescription(description).build();
     }
 
     public String getOwner() {
@@ -70,6 +60,14 @@ public final class Course {
 
     public Timestamp getCreatedAt() {
         return createdAt;
+    }
+
+    private Builder copy() {
+        return newBuilder().setId(id)
+                .setName(name)
+                .setDescription(description)
+                .setCreatedAt(createdAt)
+                .setOwner(owner);
     }
 
     public static Builder newBuilder() {
