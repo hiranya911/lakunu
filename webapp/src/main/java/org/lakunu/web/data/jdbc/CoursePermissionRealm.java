@@ -1,6 +1,7 @@
 package org.lakunu.web.data.jdbc;
 
 import com.google.common.collect.ImmutableSet;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -9,6 +10,7 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -21,7 +23,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class CoursePermissionRealm extends AuthorizingRealm {
 
-    public static final int ROLE_INSTRUCTOR = 1;
+    public static final int ROLE_OWNER = 1;
+    public static final int ROLE_INSTRUCTOR = 2;
 
     private DataSource dataSource;
 
@@ -45,8 +48,11 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
             ImmutableSet.Builder<String> permissions = ImmutableSet.builder();
             courseRoles.forEach(role -> {
                 switch (role.role) {
-                    case ROLE_INSTRUCTOR:
+                    case ROLE_OWNER:
                         permissions.add("course:*:" + role.courseId);
+                        break;
+                    case ROLE_INSTRUCTOR:
+                        permissions.add("course:get,getLabs:" + role.courseId);
                         break;
                 }
             });
@@ -69,10 +75,26 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
         return false;
     }
 
+    public void notifyPermissionChange() {
+        clearCachedAuthorizationInfo(SecurityUtils.getSubject().getPrincipals());
+    }
+
+    public void notifyPermissionChange(String userId) {
+        SimplePrincipalCollection principals = new SimplePrincipalCollection(userId, getName());
+        clearCachedAuthorizationInfo(principals);
+    }
+
+    @Override
+    protected Object getAuthorizationCacheKey(PrincipalCollection principals) {
+        return principals.getPrimaryPrincipal();
+    }
+
     private static final class GetCourseRolesCommand extends Command<Set<CourseRole>> {
 
+        private static final String GET_OWNED_COURSES_SQL =
+                "SELECT COURSE_ID FROM COURSE WHERE COURSE_OWNER = ?";
         private static final String GET_COURSE_PERMISSIONS_SQL =
-                "SELECT COURSE_ID, USER_ID, USER_ROLE FROM COURSE_USER WHERE USER_ID = ?";
+                "SELECT COURSE_ID, USER_ROLE FROM COURSE_USER WHERE USER_ID = ?";
 
         private final String userId;
 
@@ -90,6 +112,16 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
         @Override
         protected Set<CourseRole> doRun(Connection connection) throws SQLException {
             ImmutableSet.Builder<CourseRole> courseRoles = ImmutableSet.builder();
+            try (PreparedStatement stmt = connection.prepareStatement(GET_OWNED_COURSES_SQL)) {
+                stmt.setString(1, userId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        long courseId = rs.getLong("COURSE_ID");
+                        courseRoles.add(new CourseRole(courseId, ROLE_OWNER));
+                    }
+                }
+            }
+
             try (PreparedStatement stmt = connection.prepareStatement(GET_COURSE_PERMISSIONS_SQL)) {
                 stmt.setString(1, userId);
                 try (ResultSet rs = stmt.executeQuery()) {

@@ -40,7 +40,7 @@ public abstract class CourseDAO {
 
     public ImmutableList<Lab> getLabs(String courseId) {
         checkArgument(!Strings.isNullOrEmpty(courseId), "Course ID is required");
-        checkPermissions("course:listLabs:" + courseId);
+        checkPermissions("course:getLabs:" + courseId);
         try {
             return doGetLabs(courseId);
         } catch (Exception e) {
