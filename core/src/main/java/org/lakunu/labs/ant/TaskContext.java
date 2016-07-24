@@ -50,9 +50,8 @@ public final class TaskContext {
         return error;
     }
 
-    public TaskContext setError(String error) {
+    public void setError(String error) {
         this.error = error;
-        return this;
     }
 
     public void setProperty(String name, Object value) {

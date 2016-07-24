@@ -42,6 +42,40 @@
             </div>
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-primary">
+                <div class="panel-heading">Labs</div>
+                <div class="panel-body">
+                    <c:if test="${empty courseLabs}">
+                        <p>No labs to display</p>
+                    </c:if>
+                    <c:if test="${not empty courseLabs}">
+                        <table class="table table-striped">
+                            <thead class="thead-inverse">
+                            <tr>
+                                <th>Name</th>
+                                <th>Version</th>
+                                <th>Description</th>
+                                <th>Created</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <c:forEach items="${courseLabs}" var="lab">
+                                <tr>
+                                    <td><c:out value="${lab.name}"/></td>
+                                    <td><c:out value="${lab.version}"/></td>
+                                    <td><c:out value="${lab.description}"/></td>
+                                    <td><c:out value="${lab.createdAt}"/></td>
+                                </tr>
+                            </c:forEach>
+                            </tbody>
+                        </table>
+                    </c:if>
+                </div>
+            </div>
+        </div>
+    </div>
     <shiro:hasPermission name="course:share:${course.id}">
         <div class="row">
             <div class="col-md-12">

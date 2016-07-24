@@ -29,6 +29,7 @@ public class CourseServlet extends LakunuServlet {
             return;
         }
         req.setAttribute("course", course);
+        req.setAttribute("courseLabs", daoCollection.getCourseDAO().getLabs(courseId));
         req.getRequestDispatcher("/course.jsp").forward(req, resp);
     }
 

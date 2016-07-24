@@ -3,6 +3,7 @@ package org.lakunu.web.data.jdbc;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.web.data.Course;
 import org.lakunu.web.data.CourseDAO;
+import org.lakunu.web.data.Lab;
 import org.lakunu.web.utils.Security;
 
 import javax.sql.DataSource;
@@ -33,6 +34,11 @@ public final class JdbcCourseDAO extends CourseDAO {
     @Override
     protected Course doGetCourse(String courseId) throws Exception {
         return GetCourseCommand.execute(dataSource, courseId);
+    }
+
+    @Override
+    protected ImmutableList<Lab> doGetLabs(String courseId) throws Exception {
+        return GetLabsCommand.execute(dataSource, courseId);
     }
 
     private static final class AddCourseCommand extends TxCommand<Long> {
@@ -145,6 +151,45 @@ public final class JdbcCourseDAO extends CourseDAO {
                                 .setOwner(rs.getString("COURSE_OWNER"))
                                 .setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT")).build();
                         builder.add(course);
+                    }
+                    return builder.build();
+                }
+            }
+        }
+    }
+
+    private static final class GetLabsCommand extends Command<ImmutableList<Lab>> {
+
+        private static final String GET_LABS_SQL =
+                "SELECT LAB_ID, LAB_NAME, LAB_VERSION, LAB_DESCRIPTION, LAB_CREATED_BY, LAB_CREATED_AT FROM LAB WHERE LAB_COURSE_ID = ?";
+
+        private final String courseId;
+
+        private GetLabsCommand(DataSource dataSource, String courseId) {
+            super(dataSource);
+            this.courseId = courseId;
+        }
+
+        private static ImmutableList<Lab> execute(DataSource dataSource, String courseId) throws SQLException {
+            return new GetLabsCommand(dataSource, courseId).run();
+        }
+
+        @Override
+        protected ImmutableList<Lab> doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(GET_LABS_SQL)) {
+                stmt.setString(1, courseId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    ImmutableList.Builder<Lab> builder = ImmutableList.builder();
+                    while (rs.next()) {
+                        Lab lab = Lab.newBuilder()
+                                .setId(String.valueOf(rs.getLong("LAB_ID")))
+                                .setName(rs.getString("LAB_NAME"))
+                                .setVersion(rs.getString("LAB_VERSION"))
+                                .setDescription(rs.getString("LAB_DESCRIPTION"))
+                                .setCourseId(courseId)
+                                .setCreatedBy(rs.getString("LAB_CREATED_BY"))
+                                .setCreatedAt(rs.getTimestamp("LAB_CREATED_AT")).build();
+                        builder.add(lab);
                     }
                     return builder.build();
                 }

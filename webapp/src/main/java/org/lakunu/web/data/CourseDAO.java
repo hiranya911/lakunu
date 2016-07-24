@@ -38,7 +38,18 @@ public abstract class CourseDAO {
         }
     }
 
+    public ImmutableList<Lab> getLabs(String courseId) {
+        checkArgument(!Strings.isNullOrEmpty(courseId), "Course ID is required");
+        checkPermissions("course:listLabs:" + courseId);
+        try {
+            return doGetLabs(courseId);
+        } catch (Exception e) {
+            throw new DAOException("Error while retrieving labs", e);
+        }
+    }
+
     protected abstract ImmutableList<Course> doGetOwnedCourses() throws Exception;
     protected abstract String doAddCourse(Course course) throws Exception;
     protected abstract Course doGetCourse(String courseId) throws Exception;
+    protected abstract ImmutableList<Lab> doGetLabs(String courseId) throws Exception;
 }
