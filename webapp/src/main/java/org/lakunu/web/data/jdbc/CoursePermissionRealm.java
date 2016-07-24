@@ -50,9 +50,11 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                 switch (role.role) {
                     case ROLE_OWNER:
                         permissions.add("course:*:" + role.courseId);
+                        permissions.add("lab:*:" + role.courseId + ":*");
                         break;
                     case ROLE_INSTRUCTOR:
                         permissions.add("course:get,getLabs:" + role.courseId);
+                        permissions.add("lab:*:" + role.courseId + ":*");
                         break;
                 }
             });

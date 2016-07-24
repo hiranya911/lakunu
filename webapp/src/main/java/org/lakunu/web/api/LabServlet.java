@@ -21,9 +21,12 @@ public class LabServlet extends LakunuServlet {
             return;
         }
 
+        // TODO: Improve the path parameter parsing
         String courseId = pathInfo.substring(1, pathInfo.indexOf('/', 1));
         String labId = pathInfo.substring(pathInfo.indexOf('/', 1) + 1);
-        System.out.println("Retrieving lab: " + courseId + ":" + labId);
+        Lab lab = daoCollection.getLabDAO().getLab(courseId, labId);
+        req.setAttribute("lab", lab);
+        req.getRequestDispatcher("/lab.jsp").forward(req, resp);
     }
 
     @Override

@@ -24,6 +24,11 @@ public final class JdbcLabDAO extends LabDAO {
         return String.valueOf(AddLabCommand.execute(dataSource, lab));
     }
 
+    @Override
+    protected Lab doGetLab(String courseId, String labId) throws Exception {
+        return GetLabCommand.execute(dataSource, labId);
+    }
+
     private static final class AddLabCommand extends Command<Long> {
 
         private static final String ADD_LAB_SQL =  "INSERT INTO LAB " +
@@ -64,6 +69,46 @@ public final class JdbcLabDAO extends LabDAO {
                 }
             }
             return insertId;
+        }
+    }
+
+    private static final class GetLabCommand extends Command<Lab> {
+
+        private static final String GET_LAB_SQL =
+                "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, LAB_COURSE_ID, LAB_CREATED_AT, " +
+                        "LAB_CREATED_BY, LAB_CONFIG, LAB_PUBLISHED FROM LAB WHERE LAB_ID = ?";
+
+        private final long labId;
+
+        public static Lab execute(DataSource dataSource, String labId) throws SQLException {
+            return new GetLabCommand(dataSource, Long.parseLong(labId)).run();
+        }
+
+        private GetLabCommand(DataSource dataSource, long labId) {
+            super(dataSource);
+            this.labId = labId;
+        }
+
+        @Override
+        protected Lab doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(GET_LAB_SQL)) {
+                stmt.setLong(1, labId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return Lab.newBuilder().setId(String.valueOf(rs.getLong("LAB_ID")))
+                                .setName(rs.getString("LAB_NAME"))
+                                .setDescription(rs.getString("LAB_DESCRIPTION"))
+                                .setCourseId(String.valueOf(rs.getLong("LAB_COURSE_ID")))
+                                .setCreatedAt(rs.getTimestamp("LAB_CREATED_AT"))
+                                .setCreatedBy(rs.getString("LAB_CREATED_BY"))
+                                .setConfiguration(rs.getBytes("LAB_CONFIG"))
+                                .setPublished(rs.getBoolean("LAB_PUBLISHED"))
+                                .build();
+                    } else {
+                        return null;
+                    }
+                }
+            }
         }
     }
 }
