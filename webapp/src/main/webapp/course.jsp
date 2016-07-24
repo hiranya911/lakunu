@@ -70,7 +70,40 @@
                             </tbody>
                         </table>
                     </c:if>
-                    <a href="/add_lab.jsp?cId=${course.id}&cName=${course.name}">Add Lab</a>
+                    <shiro:hasPermission name="course:addLab:${course.id}">
+                        <div id="addLabModal" class="modal fade" role="dialog">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Add New Lab</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form id="addLab" role="form" method="POST" action="/lab/${course.id}">
+                                            <div class="form-group">
+                                                <label for="labName">Lab Name:</label>
+                                                <input type="text" name="labName" class="form-control" id="labName" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="labVersion">Lab Version:</label>
+                                                <input type="text" name="labVersion" class="form-control" id="labVersion" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="labDescription">Lab Description:</label>
+                                                <textarea class="form-control" rows="3" name="labDescription"
+                                                    id="labDescription" maxlength="512" required></textarea>
+                                            </div>
+                                        </form>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button class="btn btn-primary" type="submit" form="addLab">Create</button>
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="#" data-toggle="modal" data-target="#addLabModal">New Lab</a>
+                    </shiro:hasPermission>
                 </div>
             </div>
         </div>
