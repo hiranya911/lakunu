@@ -1,6 +1,7 @@
 package org.lakunu.web.api;
 
 import com.google.common.base.Strings;
+import org.apache.shiro.SecurityUtils;
 import org.lakunu.web.data.Lab;
 
 import javax.servlet.ServletException;
@@ -26,7 +27,10 @@ public class LabServlet extends LakunuServlet {
         String labId = pathInfo.substring(pathInfo.indexOf('/', 1) + 1);
         Lab lab = daoCollection.getLabDAO().getLab(courseId, labId);
         req.setAttribute("lab", lab);
-        req.setAttribute("course", daoCollection.getCourseDAO().getCourse(courseId));
+        req.setAttribute("course", daoCollection.getCourseDAO().getCourse(lab.getCourseId()));
+
+        String editPermission = "lab:edit:" + lab.getCourseId() + ":" + lab.getId();
+        req.setAttribute("canEdit", SecurityUtils.getSubject().isPermitted(editPermission));
         req.getRequestDispatcher("/lab.jsp").forward(req, resp);
     }
 
