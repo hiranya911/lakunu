@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 @WebServlet("/lab/*")
 public class LabServlet extends LakunuServlet {
 
@@ -35,6 +37,12 @@ public class LabServlet extends LakunuServlet {
     }
 
     @Override
+    protected void doPut(HttpServletRequest req,
+                         HttpServletResponse resp) throws ServletException, IOException {
+        System.out.println("[" + req.getParameter("labConfig") + "]");
+    }
+
+    @Override
     protected void doPost(HttpServletRequest req,
                           HttpServletResponse resp) throws ServletException, IOException {
         String pathInfo = req.getPathInfo();
@@ -45,17 +53,12 @@ public class LabServlet extends LakunuServlet {
 
         // TODO: Improve the path parameter parsing
         String courseId = pathInfo.substring(1);
-        if ("true".equals(req.getParameter("updateConfig"))) {
-            System.out.println("[" + req.getParameter("labConfig") + "]");
-        } else {
-            Lab lab = Lab.newBuilder()
-                    .setName(req.getParameter("labName"))
-                    .setDescription(req.getParameter("labDescription"))
-                    .setCourseId(courseId)
-                    .buildForAddition();
-            String labId = daoCollection.getLabDAO().addLab(lab);
-            resp.sendRedirect("/lab/" + courseId + "/" + labId);
-        }
-
+        Lab lab = Lab.newBuilder()
+                .setName(req.getParameter("labName"))
+                .setDescription(req.getParameter("labDescription"))
+                .setCourseId(courseId)
+                .buildForAddition();
+        String labId = daoCollection.getLabDAO().addLab(lab);
+        resp.sendRedirect("/lab/" + courseId + "/" + labId);
     }
 }
