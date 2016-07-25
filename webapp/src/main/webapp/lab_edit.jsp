@@ -2,34 +2,66 @@
 <%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
 <%--@elvariable id="lab" type="org.lakunu.web.data.Lab"--%>
 <script>
-    function validateForm() {
-        var editor = $('.CodeMirror')[0].CodeMirror;
-        var code = editor.getValue();
-        if (code == null || code == '') {
-            document.getElementById('configErrorMessage').innerHTML = 'No content provided';
-            $('#configErrorModal').modal('show');
-            return false;
-        } else {
-            var parser = new DOMParser();
-            var dom = parser.parseFromString(code, "text/xml");
-            if (dom.getElementsByTagName("parsererror").length > 0) {
-                document.getElementById('configErrorMessage').innerHTML = 'Invalid XML configuration';
-                $('#configErrorModal').modal('show');
+    $(document).ready(function() {
+        $('#updateLabForm').submit(function(e){
+            var postData = $(this).serializeArray();
+            var configValid = null;
+            $.each(postData, function(i, input) {
+               if (input.name == 'labConfig') {
+                   if (input.value == null || input.value == '') {
+                       configValid = 'Lab configuration is empty.';
+                   } else {
+                       var parser = new DOMParser();
+                       var dom = parser.parseFromString(input.value, "text/xml");
+                       if (dom.getElementsByTagName("parsererror").length > 0) {
+                           configValid = 'Invalid XML configuration';
+                       }
+                   }
+               }
+            });
+            if (configValid != null) {
+                var updateDiv = $('#updateResponse');
+                updateDiv.text(configValid);
+                updateDiv.removeClass();
+                updateDiv.addClass('alert');
+                updateDiv.addClass('alert-warning');
                 return false;
             }
-        }
-        return true;
-    }
+            $.ajax(
+                    {
+                        url : '/lab/${course.id}/${lab.id}',
+                        type: 'POST',
+                        data : postData,
+                        success:function(data, textStatus, jqXHR) {
+                            var updateDiv = $('#updateResponse');
+                            updateDiv.text('${lab.name} updated successfully.');
+                            updateDiv.removeClass();
+                            updateDiv.addClass('alert');
+                            updateDiv.addClass('alert-success');
+                        },
+                        error: function(jqXHR, textStatus, errorThrown) {
+                            var updateDiv = $('#updateResponse');
+                            updateDiv.text('Failed to update ${lab.name}.');
+                            updateDiv.removeClass();
+                            updateDiv.addClass('alert');
+                            updateDiv.addClass('alert-danger');
+                        }
+                    });
+            e.preventDefault(); //STOP default action
+            e.unbind(); //unbind. to stop multiple form submit.
+        });
+    });
 </script>
-<form role="form" id="updateLabForm" onsubmit="return validateForm()" method="POST" action="/lab/${course.id}/${lab.id}">
+<form role="form" id="updateLabForm" method="POST" action="">
     <input type="hidden" name="_method" value="PUT">
     <input type="hidden" name="updateLab" value="true">
     <div class="row">
         <div class="col-md-12">
+            <div id="updateResponse"></div>
             <div class="panel panel-primary">
                 <div class="panel-heading">Configuration</div>
                 <div class="panel-body">
-                    <textarea name="labConfig" id="labConfig" class="form-control" rows="10"></textarea>
+                    <textarea name="labConfig" id="labConfig" class="form-control" rows="10">${labConfigString}</textarea>
                 </div>
             </div>
         </div>
@@ -74,7 +106,7 @@
     </div>
     <div class="row">
         <div class="col-md-1">
-            <button type="submit" class="btn btn-primary" form="updateLabForm">Save</button>
+            <button type="submit" class="btn btn-primary">Save</button>
         </div>
     </div>
 </form>

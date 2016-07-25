@@ -29,6 +29,11 @@ public final class JdbcLabDAO extends LabDAO {
         return GetLabCommand.execute(dataSource, labId);
     }
 
+    @Override
+    protected void doUpdateLab(Lab lab) throws Exception {
+        UpdateLabCommand.execute(dataSource, lab);
+    }
+
     private static final class AddLabCommand extends Command<Long> {
 
         private static final String ADD_LAB_SQL =  "INSERT INTO LAB " +
@@ -109,6 +114,35 @@ public final class JdbcLabDAO extends LabDAO {
                     }
                 }
             }
+        }
+    }
+
+    private static final class UpdateLabCommand extends Command<Void> {
+
+        private static final String UPDATE_LAB_SQL =
+                "UPDATE LAB SET LAB_NAME = ?, LAB_DESCRIPTION = ?, LAB_CONFIG = ? WHERE LAB_ID = ?";
+
+        private final Lab lab;
+
+        public static void execute(DataSource dataSource, Lab lab) throws SQLException {
+            new UpdateLabCommand(dataSource, lab).run();
+        }
+
+        private UpdateLabCommand(DataSource dataSource, Lab lab) {
+            super(dataSource);
+            this.lab = lab;
+        }
+
+        @Override
+        protected Void doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(UPDATE_LAB_SQL)) {
+                stmt.setString(1, lab.getName());
+                stmt.setString(2, lab.getDescription());
+                stmt.setBytes(3, lab.getConfiguration());
+                stmt.setLong(4, Long.parseLong(lab.getId()));
+                stmt.executeUpdate();
+            }
+            return null;
         }
     }
 }

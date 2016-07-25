@@ -10,8 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 @WebServlet("/lab/*")
 public class LabServlet extends LakunuServlet {
 
@@ -28,10 +26,19 @@ public class LabServlet extends LakunuServlet {
         String courseId = pathInfo.substring(1, pathInfo.indexOf('/', 1));
         String labId = pathInfo.substring(pathInfo.indexOf('/', 1) + 1);
         Lab lab = daoCollection.getLabDAO().getLab(courseId, labId);
-        req.setAttribute("lab", lab);
-        req.setAttribute("course", daoCollection.getCourseDAO().getCourse(lab.getCourseId()));
+        if (lab == null) {
+            resp.sendError(404, "Lab ID does not exist: " + labId);
+            return;
+        }
 
-        String editPermission = "lab:edit:" + lab.getCourseId() + ":" + lab.getId();
+        req.setAttribute("lab", lab);
+        String labConfig = "";
+        if (lab.getConfiguration() != null) {
+            labConfig = new String(lab.getConfiguration());
+        }
+        req.setAttribute("labConfigString", labConfig);
+        req.setAttribute("course", daoCollection.getCourseDAO().getCourse(lab.getCourseId()));
+        String editPermission = "lab:update:" + lab.getCourseId() + ":" + lab.getId();
         req.setAttribute("canEdit", SecurityUtils.getSubject().isPermitted(editPermission));
         req.getRequestDispatcher("/lab.jsp").forward(req, resp);
     }
@@ -39,7 +46,32 @@ public class LabServlet extends LakunuServlet {
     @Override
     protected void doPut(HttpServletRequest req,
                          HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("[" + req.getParameter("labConfig") + "]");
+        String pathInfo = req.getPathInfo();
+        if (Strings.isNullOrEmpty(pathInfo)) {
+            resp.sendError(404);
+            return;
+        }
+
+        // TODO: Improve the path parameter parsing
+        String courseId = pathInfo.substring(1, pathInfo.indexOf('/', 1));
+        String labId = pathInfo.substring(pathInfo.indexOf('/', 1) + 1);
+        Lab lab = daoCollection.getLabDAO().getLab(courseId, labId);
+        if (lab == null) {
+            resp.sendError(404, "Lab ID does not exist: " + labId);
+            return;
+        }
+
+        Lab.Updater updater = lab.getUpdater().setName(req.getParameter("labName"))
+                .setDescription(req.getParameter("labDescription"));
+        String config = req.getParameter("labConfig");
+        if (!Strings.isNullOrEmpty(config)) {
+            updater.setConfiguration(config.getBytes());
+        } else {
+            updater.setConfiguration(null);
+        }
+        lab = updater.update();
+        daoCollection.getLabDAO().updateLab(lab);
+        logger.info("Updated lab: {}", lab.getId());
     }
 
     @Override

@@ -49,16 +49,8 @@ public final class Lab {
         return name;
     }
 
-    public Lab setName(String name) {
-        return copy().setName(name).build();
-    }
-
     public String getDescription() {
         return description;
-    }
-
-    public Lab setDescription(String description) {
-        return copy().setDescription(description).build();
     }
 
     public String getCreatedBy() {
@@ -77,27 +69,48 @@ public final class Lab {
         return configuration;
     }
 
-    public Lab setConfiguration(byte[] configuration) {
-        return copy().setConfiguration(configuration).build();
-    }
-
     public boolean isPublished() {
         return published;
     }
 
-    public Lab setPublished(boolean published) {
-        return copy().setPublished(published).build();
+    public Updater getUpdater() {
+        return new Updater(this);
     }
 
-    private Builder copy() {
-        return newBuilder().setId(id)
-                .setName(name)
-                .setDescription(description)
-                .setCourseId(courseId)
-                .setCreatedAt(createdAt)
-                .setCreatedBy(createdBy)
-                .setConfiguration(configuration)
-                .setPublished(published);
+    public static class Updater {
+
+        private final Builder builder;
+
+        private Updater(Lab lab) {
+            this.builder = newBuilder().setId(lab.id)
+                    .setName(lab.name)
+                    .setDescription(lab.description)
+                    .setCourseId(lab.courseId)
+                    .setCreatedAt(lab.createdAt)
+                    .setCreatedBy(lab.createdBy)
+                    .setConfiguration(lab.configuration)
+                    .setPublished(lab.published);
+        }
+
+        public Updater setName(String name) {
+            builder.setName(name);
+            return this;
+        }
+
+        public Updater setDescription(String description) {
+            builder.setDescription(description);
+            return this;
+        }
+
+        public Updater setConfiguration(byte[] configuration) {
+            builder.setConfiguration(configuration);
+            return this;
+        }
+
+        public Lab update() {
+            return builder.build();
+        }
+
     }
 
     public static Builder newBuilder() {

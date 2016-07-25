@@ -10,7 +10,7 @@ public abstract class LabDAO {
 
     public final String addLab(Lab lab) {
         checkNotNull(lab, "Lab is required");
-        checkPermissions("course:addLab:" + lab.getCourseId());
+        checkPermissions("lab:add:" + lab.getCourseId());
         try {
             return doAddLab(lab);
         } catch (Exception e) {
@@ -29,7 +29,18 @@ public abstract class LabDAO {
         }
     }
 
+    public final void updateLab(Lab lab) {
+        checkNotNull(lab, "Lab is required");
+        checkPermissions("lab:update:" + lab.getCourseId() + ":" + lab.getId());
+        try {
+            doUpdateLab(lab);
+        } catch (Exception e) {
+            throw new DAOException("Error while updating lab", e);
+        }
+    }
+
     protected abstract String doAddLab(Lab lab) throws Exception;
     protected abstract Lab doGetLab(String courseId, String labId) throws Exception;
+    protected abstract void doUpdateLab(Lab lab) throws Exception;
 
 }
