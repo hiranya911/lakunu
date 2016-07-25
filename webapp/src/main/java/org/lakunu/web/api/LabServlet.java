@@ -41,12 +41,17 @@ public class LabServlet extends LakunuServlet {
 
         // TODO: Improve the path parameter parsing
         String courseId = pathInfo.substring(1);
-        Lab lab = Lab.newBuilder()
-                .setName(req.getParameter("labName"))
-                .setDescription(req.getParameter("labDescription"))
-                .setCourseId(courseId)
-                .buildForAddition();
-        String labId = daoCollection.getLabDAO().addLab(lab);
-        resp.sendRedirect("/lab/" + courseId + "/" + labId);
+        if ("true".equals(req.getParameter("updateConfig"))) {
+            System.out.println("[" + req.getParameter("labConfig") + "]");
+        } else {
+            Lab lab = Lab.newBuilder()
+                    .setName(req.getParameter("labName"))
+                    .setDescription(req.getParameter("labDescription"))
+                    .setCourseId(courseId)
+                    .buildForAddition();
+            String labId = daoCollection.getLabDAO().addLab(lab);
+            resp.sendRedirect("/lab/" + courseId + "/" + labId);
+        }
+
     }
 }
