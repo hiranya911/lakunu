@@ -10,7 +10,7 @@ public abstract class LabDAO {
 
     public final String addLab(Lab lab) {
         checkNotNull(lab, "Lab is required");
-        checkPermissions("lab:add:" + lab.getCourseId());
+        checkPermissions(ADD_PERMISSION(lab.getCourseId()));
         try {
             return doAddLab(lab);
         } catch (Exception e) {
@@ -21,7 +21,7 @@ public abstract class LabDAO {
     public final Lab getLab(String courseId, String labId) {
         checkArgument(!Strings.isNullOrEmpty(courseId), "CourseID is required");
         checkArgument(!Strings.isNullOrEmpty(labId), "LabID is required");
-        checkPermissions("lab:get:" + courseId + ":" + labId);
+        checkPermissions(GET_PERMISSION(courseId, labId));
         try {
             return doGetLab(courseId, labId);
         } catch (Exception e) {
@@ -31,7 +31,7 @@ public abstract class LabDAO {
 
     public final void updateLab(Lab lab) {
         checkNotNull(lab, "Lab is required");
-        checkPermissions("lab:update:" + lab.getCourseId() + ":" + lab.getId());
+        checkPermissions(UPDATE_PERMISSION(lab));
         try {
             doUpdateLab(lab);
         } catch (Exception e) {
@@ -43,4 +43,15 @@ public abstract class LabDAO {
     protected abstract Lab doGetLab(String courseId, String labId) throws Exception;
     protected abstract void doUpdateLab(Lab lab) throws Exception;
 
+    public static String ADD_PERMISSION(String courseId) {
+        return Lab.permission("add", courseId, "*");
+    }
+
+    public static String GET_PERMISSION(String courseId, String labId) {
+        return Lab.permission("get", courseId, labId);
+    }
+
+    public static String UPDATE_PERMISSION(Lab lab) {
+        return Lab.permission("update", lab);
+    }
 }

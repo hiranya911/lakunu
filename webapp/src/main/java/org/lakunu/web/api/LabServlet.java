@@ -1,14 +1,16 @@
 package org.lakunu.web.api;
 
 import com.google.common.base.Strings;
-import org.apache.shiro.SecurityUtils;
 import org.lakunu.web.data.Lab;
+import org.lakunu.web.data.LabDAO;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+
+import static org.lakunu.web.utils.Security.hasPermission;
 
 @WebServlet("/lab/*")
 public class LabServlet extends LakunuServlet {
@@ -38,8 +40,7 @@ public class LabServlet extends LakunuServlet {
         }
         req.setAttribute("labConfigString", labConfig);
         req.setAttribute("course", daoCollection.getCourseDAO().getCourse(lab.getCourseId()));
-        String editPermission = "lab:update:" + lab.getCourseId() + ":" + lab.getId();
-        req.setAttribute("canEdit", SecurityUtils.getSubject().isPermitted(editPermission));
+        req.setAttribute("canEdit", hasPermission(LabDAO.UPDATE_PERMISSION(lab)));
         req.getRequestDispatcher("/lab.jsp").forward(req, resp);
     }
 

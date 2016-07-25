@@ -1,27 +1,26 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%--@elvariable id="labConfigString" type="java.lang.String"--%>
 <%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
 <%--@elvariable id="lab" type="org.lakunu.web.data.Lab"--%>
 <script>
     $(document).ready(function() {
         $('#updateLabForm').submit(function(e){
             var postData = $(this).serializeArray();
-            var configValid = null;
+            var configInValid = null;
             $.each(postData, function(i, input) {
                if (input.name == 'labConfig') {
-                   if (input.value == null || input.value == '') {
-                       configValid = 'Lab configuration is empty.';
-                   } else {
+                   if (input.value != null && input.value != '') {
                        var parser = new DOMParser();
                        var dom = parser.parseFromString(input.value, "text/xml");
                        if (dom.getElementsByTagName("parsererror").length > 0) {
-                           configValid = 'Invalid XML configuration';
+                           configInValid = 'Invalid XML configuration';
                        }
                    }
                }
             });
-            if (configValid != null) {
+            if (configInValid != null) {
                 var updateDiv = $('#updateResponse');
-                updateDiv.text(configValid);
+                updateDiv.text(configInValid);
                 updateDiv.removeClass();
                 updateDiv.addClass('alert');
                 updateDiv.addClass('alert-warning');

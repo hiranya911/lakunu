@@ -12,6 +12,11 @@ public class Security {
         subject.checkPermissions(permissions);
     }
 
+    public static boolean hasPermission(String permission) {
+        Subject subject = SecurityUtils.getSubject();
+        return subject.isPermitted(permission);
+    }
+
     public static String getCurrentUser() {
         return SecurityUtils.getSubject().getPrincipal().toString();
     }

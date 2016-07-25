@@ -10,7 +10,7 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.lakunu.web.data.Lab;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -50,11 +50,11 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                 switch (role.role) {
                     case ROLE_OWNER:
                         permissions.add("course:*:" + role.courseId);
-                        permissions.add("lab:*:" + role.courseId + ":*");
+                        permissions.add(Lab.permission("*", String.valueOf(role.courseId), "*"));
                         break;
                     case ROLE_INSTRUCTOR:
                         permissions.add("course:get,getLabs:" + role.courseId);
-                        permissions.add("lab:*:" + role.courseId + ":*");
+                        permissions.add(Lab.permission("*", String.valueOf(role.courseId), "*"));
                         break;
                 }
             });
@@ -79,11 +79,6 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
 
     public void notifyPermissionChange() {
         clearCachedAuthorizationInfo(SecurityUtils.getSubject().getPrincipals());
-    }
-
-    public void notifyPermissionChange(String userId) {
-        SimplePrincipalCollection principals = new SimplePrincipalCollection(userId, getName());
-        clearCachedAuthorizationInfo(principals);
     }
 
     @Override

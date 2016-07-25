@@ -183,5 +183,17 @@ public final class Lab {
             return new Lab(this);
         }
     }
+
+    public static String permission(String operation, String courseId, String labId) {
+        checkArgument(!Strings.isNullOrEmpty(operation), "operation is required");
+        checkArgument(!Strings.isNullOrEmpty(courseId), "courseId is required");
+        checkArgument(!Strings.isNullOrEmpty(labId), "labId is required");
+        return String.format("lab:%s:%s:%s", operation, courseId, labId);
+    }
+
+    public static String permission(String operation, Lab lab) {
+        return permission(operation, lab.getCourseId(), lab.getId());
+    }
+
 }
 
