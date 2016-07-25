@@ -4,9 +4,9 @@
 <html>
 <head>
     <%@ include file="include/header.html" %>
-    <link rel="stylesheet" href="/codemirror/codemirror.css">
-    <script src="/codemirror/codemirror.js"></script>
-    <script src="/codemirror/xml/xml.js"></script>
+    <link rel="stylesheet" href="<c:url value="/codemirror/codemirror.css"/>">
+    <script src="<c:url value="/codemirror/codemirror.js"/>"></script>
+    <script src="<c:url value="/codemirror/xml/xml.js"/>"></script>
     <title>Lakunu: Lab [${lab.name}]</title>
 </head>
 <body>
@@ -92,6 +92,7 @@
     };
 
     editor = CodeMirror.fromTextArea(document.getElementById("labConfig"), config);
+    editor.setSize(900, 400);
 
     function checkConfig() {
         var code = editor.getValue();
