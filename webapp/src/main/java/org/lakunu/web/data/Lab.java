@@ -5,6 +5,7 @@ import org.lakunu.web.utils.Security;
 
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Date;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -20,7 +21,10 @@ public final class Lab {
     private final Timestamp createdAt;
     private final String courseId;
     private final byte[] configuration;
+
     private final boolean published;
+    private final Timestamp submissionDeadline;
+    private final boolean allowLateSubmissions;
 
     private Lab(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.id), "ID is required");
@@ -39,6 +43,8 @@ public final class Lab {
         this.courseId = builder.courseId;
         this.configuration = builder.configuration;
         this.published = builder.published;
+        this.submissionDeadline = builder.submissionDeadline;
+        this.allowLateSubmissions = builder.allowLateSubmissions;
     }
 
     public String getId() {
@@ -73,8 +79,22 @@ public final class Lab {
         return published;
     }
 
+    public Timestamp getSubmissionDeadline() {
+        return submissionDeadline;
+    }
+
+    public boolean isAllowLateSubmissions() {
+        return allowLateSubmissions;
+    }
+
     public Updater getUpdater() {
         return new Updater(this);
+    }
+
+    public boolean isOpenForSubmissions() {
+        boolean beforeDeadline = (submissionDeadline == null ||
+                submissionDeadline.before(new Timestamp(new Date().getTime())));
+        return published && (beforeDeadline || allowLateSubmissions);
     }
 
     public static class Updater {
@@ -107,6 +127,21 @@ public final class Lab {
             return this;
         }
 
+        public Updater setPublished(boolean published) {
+            builder.setPublished(published);
+            return this;
+        }
+
+        public Updater setSubmissionDeadline(Timestamp submissionDeadline) {
+            builder.setSubmissionDeadline(submissionDeadline);
+            return this;
+        }
+
+        public Updater setAllowLateSubmissions(boolean allowLateSubmissions) {
+            builder.setAllowLateSubmissions(allowLateSubmissions);
+            return this;
+        }
+
         public Lab update() {
             return builder.build();
         }
@@ -126,7 +161,10 @@ public final class Lab {
         private Timestamp createdAt;
         private String courseId;
         private byte[] configuration;
+
         private boolean published;
+        private Timestamp submissionDeadline;
+        private boolean allowLateSubmissions;
 
         private Builder() {
         }
@@ -168,6 +206,16 @@ public final class Lab {
 
         public Builder setPublished(boolean published) {
             this.published = published;
+            return this;
+        }
+
+        public Builder setSubmissionDeadline(Timestamp submissionDeadline) {
+            this.submissionDeadline = submissionDeadline;
+            return this;
+        }
+
+        public Builder setAllowLateSubmissions(boolean allowLateSubmissions) {
+            this.allowLateSubmissions = allowLateSubmissions;
             return this;
         }
 

@@ -1,5 +1,36 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
 <%--@elvariable id="lab" type="org.lakunu.web.data.Lab"--%>
+
+<c:if test="${lab.published}">
+    <shiro:hasPermission name="lab:update:${course.id}:${lab.id}">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    This lab is published. You cannot make changes to the lab while it's published.
+                </div>
+            </div>
+        </div>
+    </shiro:hasPermission>
+    <shiro:lacksPermission name="lab:update:${course.id}:${lab.id}">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    This lab is published. It is available for receiving submissions.
+                </div>
+            </div>
+        </div>
+    </shiro:lacksPermission>
+</c:if>
+<c:if test="${not lab.published}">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                This lab is not yet published. It cannot receive any submissions until it is published.
+            </div>
+        </div>
+    </div>
+</c:if>
 <div class="row">
     <div class="col-md-12">
         <div class="panel panel-primary">
@@ -13,7 +44,6 @@
 <div class="row">
     <div class="col-md-12">
         <div class="panel panel-primary">
-            <%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
             <div class="panel-heading">Details</div>
             <div class="panel-body">
                 <table class="table table-striped">
@@ -37,6 +67,31 @@
                     <tr>
                         <td>Created By</td>
                         <td><c:out value="${lab.createdBy}"/></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12">
+        <div class="panel panel-primary">
+            <div class="panel-heading">Submissions</div>
+            <div class="panel-body">
+                <table class="table table-striped">
+                    <tbody>
+                    <tr>
+                        <td>Published</td>
+                        <td><c:out value="${lab.published}"/></td>
+                    </tr>
+                    <tr>
+                        <td>Submission Deadline</td>
+                        <td><c:out value="${lab.submissionDeadline == null ? 'None' : lab.submissionDeadline}"/></td>
+                    </tr>
+                    <tr>
+                        <td>Allow Late Submissions</td>
+                        <td><c:out value="${lab.allowLateSubmissions}"/></td>
                     </tr>
                     </tbody>
                 </table>

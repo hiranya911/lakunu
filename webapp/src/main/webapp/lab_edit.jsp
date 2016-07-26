@@ -51,6 +51,15 @@
         });
     });
 </script>
+<c:if test="${not lab.published}">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                This lab is not yet published. It cannot receive any submissions until it is published.
+            </div>
+        </div>
+    </div>
+</c:if>
 <form role="form" id="updateLabForm" method="POST" action="">
     <input type="hidden" name="_method" value="PUT">
     <input type="hidden" name="updateLab" value="true">
@@ -79,10 +88,11 @@
                 <div id="collapse1" class="panel-collapse collapse">
                     <div class="panel-body">
                         <div class="form-group">
-                            <label>ID: ${lab.id}</label>
+                            <label style="float:left;margin-right:5px;">ID:</label>
+                            <p>${lab.id}</p>
                         </div>
                         <div class="form-group">
-                            <label for="labName">Name</label>
+                            <label for="labName">Name:</label>
                             <input id="labName" name="labName" type="text" class="form-control" value="${lab.name}" required>
                         </div>
                         <div class="form-group">
@@ -91,11 +101,11 @@
                                   id="labDescription" maxlength="512" required>${lab.description}</textarea>
                         </div>
                         <div class="form-group">
-                            <label>Created At:</label>
+                            <label style="float:left;margin-right:5px;">Created At:</label>
                             <p>${lab.createdAt}</p>
                         </div>
                         <div class="form-group">
-                            <label>Created By:</label>
+                            <label style="float:left;margin-right:5px;">Created By:</label>
                             <p>${lab.createdBy}</p>
                         </div>
                     </div>
@@ -104,24 +114,17 @@
         </div>
     </div>
     <div class="row">
-        <div class="col-md-1">
+        <div class="col-md-3">
             <button type="submit" class="btn btn-primary">Save</button>
+            <shiro:hasPermission name="lab:publish:${course.id}:${lab.id}">
+                <c:if test="${not lab.published}">
+                    <button type="button" class="btn btn-primary"
+                            data-toggle="modal" data-target="#publishLabModal">Publish</button>
+                </c:if>
+                <c:if test="${lab.published}">
+                    <button type="button" class="btn btn-primary">Unpublish</button>
+                </c:if>
+            </shiro:hasPermission>
         </div>
     </div>
 </form>
-<div id="configErrorModal" class="modal fade" role="dialog">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Invalid Input</h4>
-            </div>
-            <div class="modal-body">
-                <p id="configErrorMessage"></p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>

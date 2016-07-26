@@ -40,7 +40,7 @@ public class LabServlet extends LakunuServlet {
         }
         req.setAttribute("labConfigString", labConfig);
         req.setAttribute("course", daoCollection.getCourseDAO().getCourse(lab.getCourseId()));
-        req.setAttribute("canEdit", hasPermission(LabDAO.UPDATE_PERMISSION(lab)));
+        req.setAttribute("canEdit", hasPermission(LabDAO.UPDATE_PERMISSION(lab)) && !lab.isPublished());
         req.getRequestDispatcher("/lab.jsp").forward(req, resp);
     }
 
