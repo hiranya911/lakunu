@@ -15,36 +15,32 @@ public final class Lab {
     private static final String DEFAULT_ID = "_unidentified_";
 
     private final String id;
-    private final String name;
-    private final String description;
+    private String name;
+    private String description;
     private final String createdBy;
     private final Timestamp createdAt;
     private final String courseId;
-    private final byte[] configuration;
+    private byte[] configuration;
 
-    private final boolean published;
-    private final Timestamp submissionDeadline;
-    private final boolean allowLateSubmissions;
+    private boolean published;
+    private Timestamp submissionDeadline;
+    private boolean allowLateSubmissions;
 
     private Lab(Builder builder) {
         checkArgument(!Strings.isNullOrEmpty(builder.id), "ID is required");
-        checkArgument(!Strings.isNullOrEmpty(builder.name), "name is required");
-        checkArgument(builder.name.length() <= 128, "name is too long");
-        checkArgument(!Strings.isNullOrEmpty(builder.description), "description is required");
-        checkArgument(builder.description.length() <= 512, "description is too long");
         checkArgument(!Strings.isNullOrEmpty(builder.createdBy), "createdBy is required");
         checkNotNull(builder.createdAt, "created time is required");
         checkArgument(!Strings.isNullOrEmpty(builder.courseId), "courseId is required");
         this.id = builder.id;
-        this.name = builder.name;
-        this.description = builder.description;
+        this.setName(builder.name);
+        this.setDescription(builder.description);
         this.createdBy = builder.createdBy;
         this.createdAt = builder.createdAt;
         this.courseId = builder.courseId;
-        this.configuration = builder.configuration;
-        this.published = builder.published;
-        this.submissionDeadline = builder.submissionDeadline;
-        this.allowLateSubmissions = builder.allowLateSubmissions;
+        this.setConfiguration(builder.configuration);
+        this.setPublished(builder.published);
+        this.setSubmissionDeadline(builder.submissionDeadline);
+        this.setAllowLateSubmissions(builder.allowLateSubmissions);
     }
 
     public String getId() {
@@ -55,8 +51,20 @@ public final class Lab {
         return name;
     }
 
+    private void setName(String name) {
+        checkArgument(!Strings.isNullOrEmpty(name), "name is required");
+        checkArgument(name.length() <= 128, "name is too long");
+        this.name = name;
+    }
+
     public String getDescription() {
         return description;
+    }
+
+    private void setDescription(String description) {
+        checkArgument(!Strings.isNullOrEmpty(description), "description is required");
+        checkArgument(description.length() <= 512, "description is too long");
+        this.description = description;
     }
 
     public String getCreatedBy() {
@@ -75,20 +83,32 @@ public final class Lab {
         return configuration;
     }
 
+    private void setConfiguration(byte[] configuration) {
+        this.configuration = configuration;
+    }
+
     public boolean isPublished() {
         return published;
+    }
+
+    private void setPublished(boolean published) {
+        this.published = published;
     }
 
     public Timestamp getSubmissionDeadline() {
         return submissionDeadline;
     }
 
+    private void setSubmissionDeadline(Timestamp submissionDeadline) {
+        this.submissionDeadline = submissionDeadline;
+    }
+
     public boolean isAllowLateSubmissions() {
         return allowLateSubmissions;
     }
 
-    public Updater getUpdater() {
-        return new Updater(this);
+    private void setAllowLateSubmissions(boolean allowLateSubmissions) {
+        this.allowLateSubmissions = allowLateSubmissions;
     }
 
     public boolean isOpenForSubmissions() {
@@ -97,55 +117,65 @@ public final class Lab {
         return published && (beforeDeadline || allowLateSubmissions);
     }
 
-    public static class Updater {
+    public void update(Update update) {
+        setName(update.name);
+        setDescription(update.description);
+        setConfiguration(update.configuration);
+    }
 
-        private final Builder builder;
+    public void publish(Publish publish) {
+        setPublished(true);
+        setSubmissionDeadline(publish.submissionDeadline);
+        setAllowLateSubmissions(publish.allowLateSubmissions);
+    }
 
-        private Updater(Lab lab) {
-            this.builder = newBuilder().setId(lab.id)
-                    .setName(lab.name)
-                    .setDescription(lab.description)
-                    .setCourseId(lab.courseId)
-                    .setCreatedAt(lab.createdAt)
-                    .setCreatedBy(lab.createdBy)
-                    .setConfiguration(lab.configuration)
-                    .setPublished(lab.published);
+    public void unpublish() {
+        setPublished(false);
+    }
+
+    public static class Update {
+
+        private String name;
+        private String description;
+        private byte[] configuration;
+
+        public Update(Lab lab) {
+            checkNotNull(lab, "Lab is required");
+            this.name = lab.name;
+            this.description = lab.description;
+            this.configuration = lab.configuration;
         }
 
-        public Updater setName(String name) {
-            builder.setName(name);
+        public Update setName(String name) {
+            this.name = name;
             return this;
         }
 
-        public Updater setDescription(String description) {
-            builder.setDescription(description);
+        public Update setDescription(String description) {
+            this.description = description;
             return this;
         }
 
-        public Updater setConfiguration(byte[] configuration) {
-            builder.setConfiguration(configuration);
+        public Update setConfiguration(byte[] configuration) {
+            this.configuration = configuration;
+            return this;
+        }
+    }
+
+    public static class Publish {
+
+        private Timestamp submissionDeadline;
+        private boolean allowLateSubmissions;
+
+        public Publish setSubmissionDeadline(Timestamp submissionDeadline) {
+            this.submissionDeadline = submissionDeadline;
             return this;
         }
 
-        public Updater setPublished(boolean published) {
-            builder.setPublished(published);
+        public Publish setAllowLateSubmissions(boolean allowLateSubmissions) {
+            this.allowLateSubmissions = allowLateSubmissions;
             return this;
         }
-
-        public Updater setSubmissionDeadline(Timestamp submissionDeadline) {
-            builder.setSubmissionDeadline(submissionDeadline);
-            return this;
-        }
-
-        public Updater setAllowLateSubmissions(boolean allowLateSubmissions) {
-            builder.setAllowLateSubmissions(allowLateSubmissions);
-            return this;
-        }
-
-        public Lab update() {
-            return builder.build();
-        }
-
     }
 
     public static Builder newBuilder() {

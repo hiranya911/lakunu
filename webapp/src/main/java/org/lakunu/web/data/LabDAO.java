@@ -39,9 +39,20 @@ public abstract class LabDAO {
         }
     }
 
+    public final void publishLab(Lab lab) {
+        checkNotNull(lab, "Lab is required");
+        checkPermissions(PUBLISH_PERMISSION(lab));
+        try {
+            doPublishLab(lab);
+        } catch (Exception e) {
+            throw new DAOException("Error while publishing lab", e);
+        }
+    }
+
     protected abstract String doAddLab(Lab lab) throws Exception;
     protected abstract Lab doGetLab(String courseId, String labId) throws Exception;
     protected abstract void doUpdateLab(Lab lab) throws Exception;
+    protected abstract void doPublishLab(Lab lab) throws Exception;
 
     public static String ADD_PERMISSION(String courseId) {
         return Lab.permission("add", courseId, "*");
@@ -53,5 +64,9 @@ public abstract class LabDAO {
 
     public static String UPDATE_PERMISSION(Lab lab) {
         return Lab.permission("update", lab);
+    }
+
+    public static String PUBLISH_PERMISSION(Lab lab) {
+        return Lab.permission("publish", lab);
     }
 }

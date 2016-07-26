@@ -9,6 +9,10 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.sql.Timestamp;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import static org.lakunu.web.utils.Security.hasPermission;
 
@@ -62,17 +66,37 @@ public class LabServlet extends LakunuServlet {
             return;
         }
 
-        Lab.Updater updater = lab.getUpdater().setName(req.getParameter("labName"))
-                .setDescription(req.getParameter("labDescription"));
-        String config = req.getParameter("labConfig");
-        if (!Strings.isNullOrEmpty(config)) {
-            updater.setConfiguration(config.getBytes());
-        } else {
-            updater.setConfiguration(null);
+        if (Boolean.parseBoolean(req.getParameter("updateLab"))) {
+            Lab.Update update = new Lab.Update(lab)
+                    .setName(req.getParameter("labName"))
+                    .setDescription(req.getParameter("labDescription"));
+            String config = req.getParameter("labConfig");
+            if (!Strings.isNullOrEmpty(config)) {
+                update.setConfiguration(config.getBytes());
+            } else {
+                update.setConfiguration(null);
+            }
+            lab.update(update);
+            daoCollection.getLabDAO().updateLab(lab);
+            logger.info("Updated lab: {}", lab.getId());
+        } else if (Boolean.parseBoolean(req.getParameter("publishLab"))) {
+            Lab.Publish publish = new Lab.Publish();
+            String deadline = req.getParameter("labDeadline");
+            if (!Strings.isNullOrEmpty(deadline)) {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                try {
+                    Date deadlineDate = format.parse(deadline);
+                    publish.setSubmissionDeadline(new Timestamp(deadlineDate.getTime()));
+                } catch (ParseException e) {
+                    throw new ServletException(e);
+                }
+            }
+            publish.setAllowLateSubmissions(Boolean.parseBoolean(req.getParameter("labAllowLate")));
+            lab.publish(publish);
+            daoCollection.getLabDAO().publishLab(lab);
+            logger.info("Published lab: {}", lab.getId());
+            resp.sendRedirect("/lab/" + lab.getCourseId() + "/" + lab.getId());
         }
-        lab = updater.update();
-        daoCollection.getLabDAO().updateLab(lab);
-        logger.info("Updated lab: {}", lab.getId());
     }
 
     @Override

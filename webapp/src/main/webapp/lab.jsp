@@ -46,6 +46,8 @@
                     </div>
                     <div class="modal-body">
                         <form id="publishLab" class="form" method="POST" role="form">
+                            <input type="hidden" name="_method" value="PUT">
+                            <input type="hidden" name="publishLab" value="true">
                             <div class="form-group">
                                 <label for="labDeadline">Submission Deadline:</label>
                                 <input id="labDeadline" name="labDeadline" type="text" class="form-control" value="${lab.submissionDeadline}" required>

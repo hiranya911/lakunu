@@ -34,11 +34,16 @@ public final class JdbcLabDAO extends LabDAO {
         UpdateLabCommand.execute(dataSource, lab);
     }
 
+    @Override
+    protected void doPublishLab(Lab lab) throws Exception {
+        PublishLabCommand.execute(dataSource, lab);
+    }
+
     private static final class AddLabCommand extends Command<Long> {
 
         private static final String ADD_LAB_SQL =  "INSERT INTO LAB " +
-                "(LAB_NAME, LAB_DESCRIPTION, LAB_COURSE_ID, LAB_CREATED_AT, LAB_CREATED_BY, LAB_CONFIG, LAB_PUBLISHED) " +
-                "VALUES (?,?,?,?,?,?,?)";
+                "(LAB_NAME, LAB_DESCRIPTION, LAB_COURSE_ID, LAB_CREATED_AT, LAB_CREATED_BY) " +
+                "VALUES (?,?,?,?,?)";
 
         private final Lab lab;
 
@@ -61,8 +66,6 @@ public final class JdbcLabDAO extends LabDAO {
                 stmt.setLong(3, Long.parseLong(lab.getCourseId()));
                 stmt.setTimestamp(4, lab.getCreatedAt());
                 stmt.setString(5, lab.getCreatedBy());
-                stmt.setBytes(6, lab.getConfiguration());
-                stmt.setBoolean(7, lab.isPublished());
                 int rows = stmt.executeUpdate();
                 checkState(rows == 1, "Failed to add the lab to database");
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
@@ -81,7 +84,8 @@ public final class JdbcLabDAO extends LabDAO {
 
         private static final String GET_LAB_SQL =
                 "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, LAB_COURSE_ID, LAB_CREATED_AT, " +
-                        "LAB_CREATED_BY, LAB_CONFIG, LAB_PUBLISHED FROM LAB WHERE LAB_ID = ?";
+                        "LAB_CREATED_BY, LAB_CONFIG, LAB_PUBLISHED, LAB_SUBMISSION_DEADLINE, " +
+                        "LAB_ALLOW_LATE_SUBMISSIONS FROM LAB WHERE LAB_ID = ?";
 
         private final long labId;
 
@@ -108,6 +112,8 @@ public final class JdbcLabDAO extends LabDAO {
                                 .setCreatedBy(rs.getString("LAB_CREATED_BY"))
                                 .setConfiguration(rs.getBytes("LAB_CONFIG"))
                                 .setPublished(rs.getBoolean("LAB_PUBLISHED"))
+                                .setSubmissionDeadline(rs.getTimestamp("LAB_SUBMISSION_DEADLINE"))
+                                .setAllowLateSubmissions(rs.getBoolean("LAB_ALLOW_LATE_SUBMISSIONS"))
                                 .build();
                     } else {
                         return null;
@@ -140,6 +146,35 @@ public final class JdbcLabDAO extends LabDAO {
                 stmt.setString(2, lab.getDescription());
                 stmt.setBytes(3, lab.getConfiguration());
                 stmt.setLong(4, Long.parseLong(lab.getId()));
+                stmt.executeUpdate();
+            }
+            return null;
+        }
+    }
+
+    private static final class PublishLabCommand extends Command<Void> {
+
+        private static final String PUBLISH_LAB_SQL =
+                "UPDATE LAB SET LAB_PUBLISHED = TRUE, LAB_SUBMISSION_DEADLINE = ?, " +
+                        "LAB_ALLOW_LATE_SUBMISSIONS = ? WHERE LAB_ID = ?";
+
+        private final Lab lab;
+
+        public static void execute(DataSource dataSource, Lab lab) throws SQLException {
+            new PublishLabCommand(dataSource, lab).run();
+        }
+
+        private PublishLabCommand(DataSource dataSource, Lab lab) {
+            super(dataSource);
+            this.lab = lab;
+        }
+
+        @Override
+        protected Void doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(PUBLISH_LAB_SQL)) {
+                stmt.setTimestamp(1, lab.getSubmissionDeadline());
+                stmt.setBoolean(2, lab.isAllowLateSubmissions());
+                stmt.setLong(3, Long.parseLong(lab.getId()));
                 stmt.executeUpdate();
             }
             return null;
