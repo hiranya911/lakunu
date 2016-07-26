@@ -1,6 +1,7 @@
 package org.lakunu.web.service;
 
 import org.lakunu.web.dao.CourseDAO;
+import org.lakunu.web.dao.LabDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,5 +12,7 @@ public abstract class DAOFactory {
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     protected abstract CourseDAO getCourseDAO();
+
+    protected abstract LabDAO getLabDAO();
 
 }

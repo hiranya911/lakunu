@@ -1,6 +1,7 @@
 package org.lakunu.web.dao.jdbc;
 
 import org.lakunu.web.dao.CourseDAO;
+import org.lakunu.web.dao.LabDAO;
 import org.lakunu.web.service.DAOFactory;
 import org.lakunu.web.utils.ConfigProperties;
 
@@ -40,5 +41,10 @@ public final class JdbcDAOFactory extends DAOFactory {
     @Override
     protected CourseDAO getCourseDAO() {
         return new JdbcCourseDAO(dataSource);
+    }
+
+    @Override
+    protected LabDAO getLabDAO() {
+        return new JdbcLabDAO(dataSource);
     }
 }

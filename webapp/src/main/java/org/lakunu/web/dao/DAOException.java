@@ -1,4 +1,4 @@
-package org.lakunu.web.data;
+package org.lakunu.web.dao;
 
 public class DAOException extends RuntimeException {
 

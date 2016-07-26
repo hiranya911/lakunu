@@ -3,7 +3,7 @@ package org.lakunu.web.utils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.RealmSecurityManager;
 import org.apache.shiro.subject.Subject;
-import org.lakunu.web.data.jdbc.CoursePermissionRealm;
+import org.lakunu.web.dao.jdbc.CoursePermissionRealm;
 
 public class Security {
 

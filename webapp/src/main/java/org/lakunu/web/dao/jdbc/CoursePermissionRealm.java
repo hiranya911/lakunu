@@ -1,4 +1,4 @@
-package org.lakunu.web.data.jdbc;
+package org.lakunu.web.dao.jdbc;
 
 import com.google.common.collect.ImmutableSet;
 import org.apache.shiro.SecurityUtils;
@@ -10,7 +10,6 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.lakunu.web.data.Lab;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -50,11 +49,11 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                 switch (role.role) {
                     case ROLE_OWNER:
                         permissions.add("course:*:" + role.courseId);
-                        permissions.add(Lab.permission("*", String.valueOf(role.courseId), "*"));
+                        permissions.add("lab:*:" + role.courseId + ":*");
                         break;
                     case ROLE_INSTRUCTOR:
                         permissions.add("course:get,getLabs:" + role.courseId);
-                        permissions.add(Lab.permission("*", String.valueOf(role.courseId), "*"));
+                        permissions.add("lab:*:" + role.courseId + ":*");
                         break;
                 }
             });

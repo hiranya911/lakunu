@@ -2,7 +2,7 @@ package org.lakunu.web.service;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import org.lakunu.web.data.Lab;
+import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Course;
 import org.lakunu.web.utils.Security;
 

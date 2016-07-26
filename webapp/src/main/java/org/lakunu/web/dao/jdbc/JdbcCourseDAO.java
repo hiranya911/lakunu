@@ -2,9 +2,8 @@ package org.lakunu.web.dao.jdbc;
 
 import com.google.common.collect.ImmutableList;
 import org.lakunu.web.dao.CourseDAO;
-import org.lakunu.web.data.DAOException;
-import org.lakunu.web.data.Lab;
-import org.lakunu.web.data.jdbc.Command;
+import org.lakunu.web.dao.DAOException;
+import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Course;
 import org.lakunu.web.utils.Security;
 
@@ -53,7 +52,11 @@ public class JdbcCourseDAO implements CourseDAO {
 
     @Override
     public ImmutableList<Lab> getLabs(String courseId) {
-        return ImmutableList.of();
+        try {
+            return GetLabsCommand.execute(dataSource, Long.parseLong(courseId));
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving labs", e);
+        }
     }
 
     private static final class AddCourseCommand extends Command<Long> {
@@ -159,6 +162,49 @@ public class JdbcCourseDAO implements CourseDAO {
                         course.setOwner(rs.getString("COURSE_OWNER"));
                         course.setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT"));
                         builder.add(course);
+                    }
+                    return builder.build();
+                }
+            }
+        }
+    }
+
+    private static final class GetLabsCommand extends Command<ImmutableList<Lab>> {
+
+        private static final String GET_LABS_SQL =
+                "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, LAB_CREATED_BY, LAB_CREATED_AT, " +
+                        "LAB_CONFIG, LAB_PUBLISHED, LAB_SUBMISSION_DEADLINE, LAB_ALLOW_LATE_SUBMISSIONS FROM LAB WHERE LAB_COURSE_ID = ?";
+
+        private final long courseId;
+
+        private GetLabsCommand(DataSource dataSource, long courseId) {
+            super(dataSource);
+            this.courseId = courseId;
+        }
+
+        private static ImmutableList<Lab> execute(DataSource dataSource, long courseId) throws SQLException {
+            return new GetLabsCommand(dataSource, courseId).run();
+        }
+
+        @Override
+        protected ImmutableList<Lab> doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(GET_LABS_SQL)) {
+                stmt.setLong(1, courseId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    ImmutableList.Builder<Lab> builder = ImmutableList.builder();
+                    while (rs.next()) {
+                        Lab lab = new Lab();
+                        lab.setId(String.valueOf(rs.getLong("LAB_ID")));
+                        lab.setName(rs.getString("LAB_NAME"));
+                        lab.setDescription(rs.getString("LAB_DESCRIPTION"));
+                        lab.setCourseId(String.valueOf(courseId));
+                        lab.setCreatedAt(rs.getTimestamp("LAB_CREATED_AT"));
+                        lab.setCreatedBy(rs.getString("LAB_CREATED_BY"));
+                        lab.setConfiguration(rs.getBytes("LAB_CONFIG"));
+                        lab.setPublished(rs.getBoolean("LAB_PUBLISHED"));
+                        lab.setSubmissionDeadline(rs.getTimestamp("LAB_SUBMISSION_DEADLINE"));
+                        lab.setAllowLateSubmissions(rs.getBoolean("LAB_ALLOW_LATE_SUBMISSIONS"));
+                        builder.add(lab);
                     }
                     return builder.build();
                 }

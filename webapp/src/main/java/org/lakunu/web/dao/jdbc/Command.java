@@ -1,4 +1,4 @@
-package org.lakunu.web.data.jdbc;
+package org.lakunu.web.dao.jdbc;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

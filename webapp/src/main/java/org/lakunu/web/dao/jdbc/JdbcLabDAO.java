@@ -1,7 +1,9 @@
-package org.lakunu.web.data.jdbc;
+package org.lakunu.web.dao.jdbc;
 
-import org.lakunu.web.data.Lab;
-import org.lakunu.web.data.LabDAO;
+
+import org.lakunu.web.dao.LabDAO;
+import org.lakunu.web.dao.DAOException;
+import org.lakunu.web.models.Lab;
 
 import javax.sql.DataSource;
 
@@ -10,33 +12,40 @@ import java.sql.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-public final class JdbcLabDAO extends LabDAO {
+public class JdbcLabDAO implements LabDAO {
 
     private final DataSource dataSource;
 
-    JdbcLabDAO(DataSource dataSource) {
-        checkNotNull(dataSource, "datasource is required");
+    public JdbcLabDAO(DataSource dataSource) {
+        checkNotNull(dataSource, "DataSource is required");
         this.dataSource = dataSource;
     }
 
     @Override
-    protected String doAddLab(Lab lab) throws Exception {
-        return String.valueOf(AddLabCommand.execute(dataSource, lab));
+    public String addLab(Lab lab) {
+        try {
+            return String.valueOf(AddLabCommand.execute(dataSource, lab));
+        } catch (SQLException e) {
+            throw new DAOException("Error while adding lab", e);
+        }
     }
 
     @Override
-    protected Lab doGetLab(String courseId, String labId) throws Exception {
-        return GetLabCommand.execute(dataSource, labId);
+    public Lab getLab(String labId) {
+        try {
+            return GetLabCommand.execute(dataSource, labId);
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving lab", e);
+        }
     }
 
     @Override
-    protected void doUpdateLab(Lab lab) throws Exception {
-        UpdateLabCommand.execute(dataSource, lab);
-    }
-
-    @Override
-    protected void doPublishLab(Lab lab) throws Exception {
-        PublishLabCommand.execute(dataSource, lab);
+    public boolean updateLab(Lab lab) {
+        try {
+            return UpdateLabCommand.execute(dataSource, lab);
+        } catch (SQLException e) {
+            throw new DAOException("Error while updating lab", e);
+        }
     }
 
     private static final class AddLabCommand extends Command<Long> {
@@ -64,7 +73,7 @@ public final class JdbcLabDAO extends LabDAO {
                 stmt.setString(1, lab.getName());
                 stmt.setString(2, lab.getDescription());
                 stmt.setLong(3, Long.parseLong(lab.getCourseId()));
-                stmt.setTimestamp(4, lab.getCreatedAt());
+                stmt.setTimestamp(4, new Timestamp(lab.getCreatedAt().getTime()));
                 stmt.setString(5, lab.getCreatedBy());
                 int rows = stmt.executeUpdate();
                 checkState(rows == 1, "Failed to add the lab to database");
@@ -104,17 +113,18 @@ public final class JdbcLabDAO extends LabDAO {
                 stmt.setLong(1, labId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        return Lab.newBuilder().setId(String.valueOf(rs.getLong("LAB_ID")))
-                                .setName(rs.getString("LAB_NAME"))
-                                .setDescription(rs.getString("LAB_DESCRIPTION"))
-                                .setCourseId(String.valueOf(rs.getLong("LAB_COURSE_ID")))
-                                .setCreatedAt(rs.getTimestamp("LAB_CREATED_AT"))
-                                .setCreatedBy(rs.getString("LAB_CREATED_BY"))
-                                .setConfiguration(rs.getBytes("LAB_CONFIG"))
-                                .setPublished(rs.getBoolean("LAB_PUBLISHED"))
-                                .setSubmissionDeadline(rs.getTimestamp("LAB_SUBMISSION_DEADLINE"))
-                                .setAllowLateSubmissions(rs.getBoolean("LAB_ALLOW_LATE_SUBMISSIONS"))
-                                .build();
+                        Lab lab = new Lab();
+                        lab.setId(String.valueOf(rs.getLong("LAB_ID")));
+                        lab.setName(rs.getString("LAB_NAME"));
+                        lab.setDescription(rs.getString("LAB_DESCRIPTION"));
+                        lab.setCourseId(String.valueOf(rs.getLong("LAB_COURSE_ID")));
+                        lab.setCreatedAt(rs.getTimestamp("LAB_CREATED_AT"));
+                        lab.setCreatedBy(rs.getString("LAB_CREATED_BY"));
+                        lab.setConfiguration(rs.getBytes("LAB_CONFIG"));
+                        lab.setPublished(rs.getBoolean("LAB_PUBLISHED"));
+                        lab.setSubmissionDeadline(rs.getTimestamp("LAB_SUBMISSION_DEADLINE"));
+                        lab.setAllowLateSubmissions(rs.getBoolean("LAB_ALLOW_LATE_SUBMISSIONS"));
+                        return lab;
                     } else {
                         return null;
                     }
@@ -123,15 +133,15 @@ public final class JdbcLabDAO extends LabDAO {
         }
     }
 
-    private static final class UpdateLabCommand extends Command<Void> {
+    private static final class UpdateLabCommand extends Command<Boolean> {
 
         private static final String UPDATE_LAB_SQL =
                 "UPDATE LAB SET LAB_NAME = ?, LAB_DESCRIPTION = ?, LAB_CONFIG = ? WHERE LAB_ID = ?";
 
         private final Lab lab;
 
-        public static void execute(DataSource dataSource, Lab lab) throws SQLException {
-            new UpdateLabCommand(dataSource, lab).run();
+        public static boolean execute(DataSource dataSource, Lab lab) throws SQLException {
+            return new UpdateLabCommand(dataSource, lab).run();
         }
 
         private UpdateLabCommand(DataSource dataSource, Lab lab) {
@@ -140,44 +150,14 @@ public final class JdbcLabDAO extends LabDAO {
         }
 
         @Override
-        protected Void doRun(Connection connection) throws SQLException {
+        protected Boolean doRun(Connection connection) throws SQLException {
             try (PreparedStatement stmt = connection.prepareStatement(UPDATE_LAB_SQL)) {
                 stmt.setString(1, lab.getName());
                 stmt.setString(2, lab.getDescription());
                 stmt.setBytes(3, lab.getConfiguration());
                 stmt.setLong(4, Long.parseLong(lab.getId()));
-                stmt.executeUpdate();
+                return stmt.executeUpdate() == 1;
             }
-            return null;
-        }
-    }
-
-    private static final class PublishLabCommand extends Command<Void> {
-
-        private static final String PUBLISH_LAB_SQL =
-                "UPDATE LAB SET LAB_PUBLISHED = TRUE, LAB_SUBMISSION_DEADLINE = ?, " +
-                        "LAB_ALLOW_LATE_SUBMISSIONS = ? WHERE LAB_ID = ?";
-
-        private final Lab lab;
-
-        public static void execute(DataSource dataSource, Lab lab) throws SQLException {
-            new PublishLabCommand(dataSource, lab).run();
-        }
-
-        private PublishLabCommand(DataSource dataSource, Lab lab) {
-            super(dataSource);
-            this.lab = lab;
-        }
-
-        @Override
-        protected Void doRun(Connection connection) throws SQLException {
-            try (PreparedStatement stmt = connection.prepareStatement(PUBLISH_LAB_SQL)) {
-                stmt.setTimestamp(1, lab.getSubmissionDeadline());
-                stmt.setBoolean(2, lab.isAllowLateSubmissions());
-                stmt.setLong(3, Long.parseLong(lab.getId()));
-                stmt.executeUpdate();
-            }
-            return null;
         }
     }
 }

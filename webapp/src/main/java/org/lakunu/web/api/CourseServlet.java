@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
-import org.lakunu.web.data.Lab;
 import org.lakunu.web.models.Course;
+import org.lakunu.web.models.Lab;
 import org.lakunu.web.service.CourseService;
 
 import javax.servlet.ServletException;
