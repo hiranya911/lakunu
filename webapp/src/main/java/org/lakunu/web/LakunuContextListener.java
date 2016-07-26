@@ -1,7 +1,9 @@
 package org.lakunu.web;
 
+import org.lakunu.web.dao.jdbc.JdbcDAOFactory;
 import org.lakunu.web.data.DAOCollection;
 import org.lakunu.web.data.jdbc.JdbcDAOCollection;
+import org.lakunu.web.service.DAOFactory;
 import org.lakunu.web.utils.ConfigProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +20,7 @@ import java.lang.reflect.Constructor;
 public final class LakunuContextListener implements ServletContextListener {
 
     public static final String DAO_COLLECTION = "daoCollection";
+    public static final String DAO_FACTORY = "daoFactory";
     public static final String LAKUNU_PROPERTIES = "/WEB-INF/lakunu.properties";
 
     private static final Logger logger = LoggerFactory.getLogger(LakunuContextListener.class);
@@ -28,6 +31,7 @@ public final class LakunuContextListener implements ServletContextListener {
         try {
             ConfigProperties properties = new ConfigProperties(servletContext, LAKUNU_PROPERTIES);
             servletContext.setAttribute(DAOCollection.DAO_COLLECTION, initDAOCollection(properties));
+            servletContext.setAttribute(DAOFactory.DAO_FACTORY, initDAOFactory(properties));
             logger.info("Lakunu webapp initialized");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -48,6 +52,17 @@ public final class LakunuContextListener implements ServletContextListener {
         try {
             Class<? extends DAOCollection> clazz = Class.forName(type).asSubclass(DAOCollection.class);
             Constructor<? extends DAOCollection> constructor = clazz.getConstructor(ConfigProperties.class);
+            return constructor.newInstance(properties);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private DAOFactory initDAOFactory(ConfigProperties properties) {
+        String type = properties.getOptional(DAO_FACTORY, JdbcDAOFactory.class.getName());
+        try {
+            Class<? extends DAOFactory> clazz = Class.forName(type).asSubclass(DAOFactory.class);
+            Constructor<? extends DAOFactory> constructor = clazz.getConstructor(ConfigProperties.class);
             return constructor.newInstance(properties);
         } catch (Exception e) {
             throw new RuntimeException(e);

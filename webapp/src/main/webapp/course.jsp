@@ -13,7 +13,7 @@
     <div class="row">
         <div class="col-md-12">
             <div class="panel panel-primary">
-                <%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
+                <%--@elvariable id="course" type="org.lakunu.web.models.Course"--%>
                 <div class="panel-heading">Details</div>
                 <div class="panel-body">
                     <table class="table table-striped">

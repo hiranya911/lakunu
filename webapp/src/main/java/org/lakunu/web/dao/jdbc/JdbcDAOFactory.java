@@ -1,31 +1,26 @@
-package org.lakunu.web.data.jdbc;
+package org.lakunu.web.dao.jdbc;
 
-import org.lakunu.web.data.DAOCollection;
-import org.lakunu.web.data.LabDAO;
+import org.lakunu.web.dao.CourseDAO;
+import org.lakunu.web.service.DAOFactory;
 import org.lakunu.web.utils.ConfigProperties;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
-public final class JdbcDAOCollection implements DAOCollection {
+public final class JdbcDAOFactory extends DAOFactory {
 
     private static final String DAO_COLLECTION_DS = "daoCollection.ds";
 
-    private static final Logger logger = LoggerFactory.getLogger(JdbcDAOCollection.class);
+    private final DataSource dataSource;
 
-    private final JdbcLabDAO labDAO;
-
-    public JdbcDAOCollection(ConfigProperties properties) {
+    public JdbcDAOFactory(ConfigProperties properties) {
         InitialContext context = null;
         try {
             context = new InitialContext();
             String dsName = properties.getRequired(DAO_COLLECTION_DS);
             logger.info("Loading JDBC datasource: {}", dsName);
-            DataSource dataSource = (DataSource) context.lookup(dsName);
-            this.labDAO = new JdbcLabDAO(dataSource);
+            dataSource = (DataSource) context.lookup(dsName);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         } finally {
@@ -43,7 +38,7 @@ public final class JdbcDAOCollection implements DAOCollection {
     }
 
     @Override
-    public LabDAO getLabDAO() {
-        return labDAO;
+    protected CourseDAO getCourseDAO() {
+        return new JdbcCourseDAO(dataSource);
     }
 }

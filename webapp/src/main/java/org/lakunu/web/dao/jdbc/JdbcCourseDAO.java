@@ -1,46 +1,59 @@
-package org.lakunu.web.data.jdbc;
+package org.lakunu.web.dao.jdbc;
 
 import com.google.common.collect.ImmutableList;
-import org.lakunu.web.data.Course;
-import org.lakunu.web.data.CourseDAO;
+import org.lakunu.web.dao.CourseDAO;
+import org.lakunu.web.data.DAOException;
 import org.lakunu.web.data.Lab;
+import org.lakunu.web.data.jdbc.Command;
+import org.lakunu.web.models.Course;
 import org.lakunu.web.utils.Security;
 
 import javax.sql.DataSource;
+
 import java.sql.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-public final class JdbcCourseDAO extends CourseDAO {
+public class JdbcCourseDAO implements CourseDAO {
 
     private final DataSource dataSource;
 
-    JdbcCourseDAO(DataSource dataSource) {
-        checkNotNull(dataSource, "datasource is required");
+    public JdbcCourseDAO(DataSource dataSource) {
+        checkNotNull(dataSource, "DataSource is required");
         this.dataSource = dataSource;
     }
 
     @Override
-    protected ImmutableList<Course> doGetOwnedCourses() throws Exception {
-        return GetOwnedCoursesCommand.execute(dataSource);
+    public String addCourse(Course course) {
+        try {
+            return String.valueOf(AddCourseCommand.execute(dataSource, course));
+        } catch (SQLException e) {
+            throw new DAOException("Error while adding course", e);
+        }
     }
 
     @Override
-    protected String doAddCourse(Course course) throws Exception {
-        long courseId = AddCourseCommand.execute(dataSource, course);
-        Security.clearCoursePermissionCache();
-        return String.valueOf(courseId);
+    public Course getCourse(String courseId) {
+        try {
+            return GetCourseCommand.execute(dataSource, courseId);
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving course", e);
+        }
     }
 
     @Override
-    protected Course doGetCourse(String courseId) throws Exception {
-        return GetCourseCommand.execute(dataSource, courseId);
+    public ImmutableList<Course> getOwnedCourses() {
+        try {
+            return GetOwnedCoursesCommand.execute(dataSource);
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving courses", e);
+        }
     }
 
     @Override
-    protected ImmutableList<Lab> doGetLabs(String courseId) throws Exception {
-        return GetLabsCommand.execute(dataSource, courseId);
+    public ImmutableList<Lab> getLabs(String courseId) {
+        return ImmutableList.of();
     }
 
     private static final class AddCourseCommand extends Command<Long> {
@@ -67,7 +80,7 @@ public final class JdbcCourseDAO extends CourseDAO {
                 stmt.setString(1, course.getName());
                 stmt.setString(2, course.getDescription());
                 stmt.setString(3, course.getOwner());
-                stmt.setTimestamp(4, course.getCreatedAt());
+                stmt.setTimestamp(4, new Timestamp(course.getCreatedAt().getTime()));
                 int rows = stmt.executeUpdate();
                 checkState(rows == 1, "Failed to add the course to database");
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
@@ -104,11 +117,13 @@ public final class JdbcCourseDAO extends CourseDAO {
                 stmt.setLong(1, courseId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        return Course.newBuilder().setId(String.valueOf(rs.getLong("COURSE_ID")))
-                                .setName(rs.getString("COURSE_NAME"))
-                                .setDescription(rs.getString("COURSE_DESCRIPTION"))
-                                .setOwner(rs.getString("COURSE_OWNER"))
-                                .setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT")).build();
+                        Course course = new Course();
+                        course.setId(String.valueOf(rs.getLong("COURSE_ID")));
+                        course.setName(rs.getString("COURSE_NAME"));
+                        course.setDescription(rs.getString("COURSE_DESCRIPTION"));
+                        course.setOwner(rs.getString("COURSE_OWNER"));
+                        course.setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT"));
+                        return course;
                     } else {
                         return null;
                     }
@@ -137,12 +152,12 @@ public final class JdbcCourseDAO extends CourseDAO {
                 try (ResultSet rs = stmt.executeQuery()) {
                     ImmutableList.Builder<Course> builder = ImmutableList.builder();
                     while (rs.next()) {
-                        Course course = Course.newBuilder()
-                                .setId(String.valueOf(rs.getLong("COURSE_ID")))
-                                .setName(rs.getString("COURSE_NAME"))
-                                .setDescription(rs.getString("COURSE_DESCRIPTION"))
-                                .setOwner(rs.getString("COURSE_OWNER"))
-                                .setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT")).build();
+                        Course course = new Course();
+                        course.setId(String.valueOf(rs.getLong("COURSE_ID")));
+                        course.setName(rs.getString("COURSE_NAME"));
+                        course.setDescription(rs.getString("COURSE_DESCRIPTION"));
+                        course.setOwner(rs.getString("COURSE_OWNER"));
+                        course.setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT"));
                         builder.add(course);
                     }
                     return builder.build();
@@ -151,41 +166,5 @@ public final class JdbcCourseDAO extends CourseDAO {
         }
     }
 
-    private static final class GetLabsCommand extends Command<ImmutableList<Lab>> {
 
-        private static final String GET_LABS_SQL =
-                "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, LAB_CREATED_BY, LAB_CREATED_AT FROM LAB WHERE LAB_COURSE_ID = ?";
-
-        private final String courseId;
-
-        private GetLabsCommand(DataSource dataSource, String courseId) {
-            super(dataSource);
-            this.courseId = courseId;
-        }
-
-        private static ImmutableList<Lab> execute(DataSource dataSource, String courseId) throws SQLException {
-            return new GetLabsCommand(dataSource, courseId).run();
-        }
-
-        @Override
-        protected ImmutableList<Lab> doRun(Connection connection) throws SQLException {
-            try (PreparedStatement stmt = connection.prepareStatement(GET_LABS_SQL)) {
-                stmt.setString(1, courseId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    ImmutableList.Builder<Lab> builder = ImmutableList.builder();
-                    while (rs.next()) {
-                        Lab lab = Lab.newBuilder()
-                                .setId(String.valueOf(rs.getLong("LAB_ID")))
-                                .setName(rs.getString("LAB_NAME"))
-                                .setDescription(rs.getString("LAB_DESCRIPTION"))
-                                .setCourseId(courseId)
-                                .setCreatedBy(rs.getString("LAB_CREATED_BY"))
-                                .setCreatedAt(rs.getTimestamp("LAB_CREATED_AT")).build();
-                        builder.add(lab);
-                    }
-                    return builder.build();
-                }
-            }
-        }
-    }
 }

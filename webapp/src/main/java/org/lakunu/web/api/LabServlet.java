@@ -3,6 +3,7 @@ package org.lakunu.web.api;
 import com.google.common.base.Strings;
 import org.lakunu.web.data.Lab;
 import org.lakunu.web.data.LabDAO;
+import org.lakunu.web.service.CourseService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -43,7 +44,8 @@ public class LabServlet extends LakunuServlet {
             labConfig = new String(lab.getConfiguration());
         }
         req.setAttribute("labConfigString", labConfig);
-        req.setAttribute("course", daoCollection.getCourseDAO().getCourse(lab.getCourseId()));
+        CourseService service = CourseService.getInstance(daoFactory);
+        req.setAttribute("course", service.getCourse(lab.getCourseId()));
         req.setAttribute("canEdit", hasPermission(LabDAO.UPDATE_PERMISSION(lab)) && !lab.isPublished());
         req.getRequestDispatcher("/lab.jsp").forward(req, resp);
     }

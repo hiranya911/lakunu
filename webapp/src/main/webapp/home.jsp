@@ -13,8 +13,6 @@
                     <div class="panel panel-primary">
                         <div class="panel-heading">My Courses (Instructor)</div>
                         <div class="panel-body">
-                            <%--@elvariable id="DAO_COLLECTION" type="org.lakunu.web.data.DAOCollection"--%>
-                            <c:set var="courses" value="${DAO_COLLECTION.courseDAO.ownedCourses}"/>
                             <c:if test="${empty courses}">
                                 <p>No courses to display</p>
                             </c:if>
