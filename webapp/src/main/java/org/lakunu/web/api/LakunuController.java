@@ -1,6 +1,8 @@
 package org.lakunu.web.api;
 
+import org.lakunu.web.service.CourseService;
 import org.lakunu.web.service.DAOFactory;
+import org.lakunu.web.service.LabService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,17 +12,21 @@ import javax.servlet.http.HttpServlet;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public abstract class LakunuServlet extends HttpServlet {
+public abstract class LakunuController extends HttpServlet {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected DAOFactory daoFactory;
+
+    protected CourseService courseService;
+    protected LabService labService;
 
     @Override
     public void init(ServletConfig config) throws ServletException {
         super.init(config);
-        this.daoFactory = (DAOFactory) config.getServletContext().getAttribute(
+        DAOFactory daoFactory = (DAOFactory) config.getServletContext().getAttribute(
                 DAOFactory.DAO_FACTORY);
-        checkNotNull(this.daoFactory, "DAOFactory is required");
+        checkNotNull(daoFactory, "DAOFactory is required");
+        this.courseService = new CourseService(daoFactory);
+        this.labService = new LabService(daoFactory);
     }
 }

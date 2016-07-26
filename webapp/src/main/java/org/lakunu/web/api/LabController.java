@@ -2,7 +2,6 @@ package org.lakunu.web.api;
 
 import com.google.common.base.Strings;
 import org.lakunu.web.models.Lab;
-import org.lakunu.web.service.CourseService;
 import org.lakunu.web.service.LabService;
 
 import javax.servlet.ServletException;
@@ -14,7 +13,7 @@ import java.io.IOException;
 import static org.lakunu.web.utils.Security.hasPermission;
 
 @WebServlet("/lab/*")
-public class LabServlet extends LakunuServlet {
+public class LabController extends LakunuController {
 
     @Override
     protected void doGet(HttpServletRequest req,
@@ -28,7 +27,6 @@ public class LabServlet extends LakunuServlet {
         // TODO: Improve the path parameter parsing
         String courseId = pathInfo.substring(1, pathInfo.indexOf('/', 1));
         String labId = pathInfo.substring(pathInfo.indexOf('/', 1) + 1);
-        LabService labService = LabService.getInstance(daoFactory);
         Lab lab = labService.getLab(courseId, labId);
         if (lab == null) {
             resp.sendError(404, "Lab ID does not exist: " + labId);
@@ -41,9 +39,9 @@ public class LabServlet extends LakunuServlet {
             labConfig = new String(lab.getConfiguration());
         }
         req.setAttribute("labConfigString", labConfig);
-        CourseService service = CourseService.getInstance(daoFactory);
-        req.setAttribute("course", service.getCourse(lab.getCourseId()));
-        req.setAttribute("canEdit", hasPermission("lab:update:" + lab.getCourseId() + ":" + lab.getId()) && !lab.isPublished());
+        req.setAttribute("course", courseService.getCourse(lab.getCourseId()));
+        req.setAttribute("canEdit", hasPermission(LabService.UPDATE_PERMISSION(lab)) &&
+                !lab.isPublished());
         req.getRequestDispatcher("/lab.jsp").forward(req, resp);
     }
 
@@ -59,7 +57,6 @@ public class LabServlet extends LakunuServlet {
         // TODO: Improve the path parameter parsing
         String courseId = pathInfo.substring(1, pathInfo.indexOf('/', 1));
         String labId = pathInfo.substring(pathInfo.indexOf('/', 1) + 1);
-        LabService labService = LabService.getInstance(daoFactory);
         Lab lab = labService.getLab(courseId, labId);
         if (lab == null) {
             resp.sendError(404, "Lab ID does not exist: " + labId);
@@ -92,7 +89,6 @@ public class LabServlet extends LakunuServlet {
 
         // TODO: Improve the path parameter parsing
         String courseId = pathInfo.substring(1);
-        LabService labService = LabService.getInstance(daoFactory);
         Lab lab = labService.addLab(req.getParameter("labName"),
                 req.getParameter("labDescription"), courseId);
         resp.sendRedirect("/lab/" + courseId + "/" + lab.getId());

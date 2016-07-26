@@ -10,17 +10,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.lakunu.web.utils.Security.checkPermissions;
 
-public final class LabService {
+public final class LabService extends AbstractDomainService {
 
-    private final DAOFactory daoFactory;
-
-    private LabService(DAOFactory daoFactory) {
-        checkNotNull(daoFactory, "DAOFactory is required");
-        this.daoFactory = daoFactory;
-    }
-
-    public static LabService getInstance(DAOFactory daoFactory) {
-        return new LabService(daoFactory);
+    public LabService(DAOFactory daoFactory) {
+        super(daoFactory);
     }
 
     public Lab addLab(String name, String description, String courseId) {
@@ -29,7 +22,7 @@ public final class LabService {
         checkArgument(!Strings.isNullOrEmpty(description), "description is required");
         checkArgument(description.length() <= 512, "description is too long");
         checkArgument(!Strings.isNullOrEmpty(courseId), "CourseID is required");
-        checkPermissions("lab:add:" + courseId);
+        checkPermissions(ADD_PERMISSION(courseId));
 
         Lab lab = new Lab();
         lab.setName(name);
@@ -45,15 +38,39 @@ public final class LabService {
     public Lab getLab(String courseId, String labId) {
         checkArgument(!Strings.isNullOrEmpty(courseId), "CourseID is required");
         checkArgument(!Strings.isNullOrEmpty(labId), "LabID is required");
-        checkPermissions("lab:get:" + courseId + ":" + labId);
+        checkPermissions(GET_PERMISSION(courseId, labId));
         return daoFactory.getLabDAO().getLab(labId);
     }
 
     public boolean updateLab(Update update) {
+        // TODO: Return a new Lab instance here (Maintain immutability)
         checkNotNull(update, "Update is required");
-        checkPermissions("lab:update:" + update.lab.getCourseId() + ":" + update.lab.getId());
+        checkPermissions(UPDATE_PERMISSION(update.lab.getCourseId(), update.lab.getId()));
         Lab lab = update.apply();
         return daoFactory.getLabDAO().updateLab(lab);
+    }
+
+    public static String permission(String op, String courseId, String labId) {
+        checkArgument(!Strings.isNullOrEmpty(op), "Operation is required");
+        checkArgument(!Strings.isNullOrEmpty(courseId), "CourseID is required");
+        checkArgument(!Strings.isNullOrEmpty(labId), "LabID is required");
+        return String.format("lab:%s:%s:%s", op, courseId, labId);
+    }
+
+    public static String ADD_PERMISSION(String courseId) {
+        return permission("add", courseId, "*");
+    }
+
+    public static String GET_PERMISSION(String courseId, String labId) {
+        return permission("get", courseId, labId);
+    }
+
+    public static String UPDATE_PERMISSION(String courseId, String labId) {
+        return permission("update", courseId, labId);
+    }
+
+    public static String UPDATE_PERMISSION(Lab lab) {
+        return permission("update", lab.getCourseId(), lab.getId());
     }
 
     public static Update newUpdate(Lab lab) {
@@ -69,7 +86,7 @@ public final class LabService {
 
         private Update(Lab lab) {
             checkNotNull(lab, "Lab is required");
-            this.lab= lab;
+            this.lab = lab;
             this.name = lab.getName();
             this.description = lab.getDescription();
             this.configuration = lab.getConfiguration();

@@ -10,6 +10,7 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.lakunu.web.service.LabService;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -49,11 +50,11 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                 switch (role.role) {
                     case ROLE_OWNER:
                         permissions.add("course:*:" + role.courseId);
-                        permissions.add("lab:*:" + role.courseId + ":*");
+                        permissions.add(LabService.permission("*", String.valueOf(role.courseId), "*"));
                         break;
                     case ROLE_INSTRUCTOR:
                         permissions.add("course:get,getLabs:" + role.courseId);
-                        permissions.add("lab:*:" + role.courseId + ":*");
+                        permissions.add(LabService.permission("*", String.valueOf(role.courseId), "*"));
                         break;
                 }
             });

@@ -9,20 +9,12 @@ import org.lakunu.web.utils.Security;
 import java.util.Date;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.lakunu.web.utils.Security.checkPermissions;
 
-public final class CourseService {
+public final class CourseService extends AbstractDomainService {
 
-    private final DAOFactory daoFactory;
-
-    private CourseService(DAOFactory daoFactory) {
-        checkNotNull(daoFactory, "DAOFactory is required");
-        this.daoFactory = daoFactory;
-    }
-
-    public static CourseService getInstance(DAOFactory daoFactory) {
-        return new CourseService(daoFactory);
+    public CourseService(DAOFactory daoFactory) {
+        super(daoFactory);
     }
 
     public Course addCourse(String name, String description) {
@@ -39,6 +31,7 @@ public final class CourseService {
         course.setCreatedAt(new Date());
         String courseId = daoFactory.getCourseDAO().addCourse(course);
         course.setId(courseId);
+        Security.clearCoursePermissionCache();
         return course;
     }
 
@@ -56,6 +49,6 @@ public final class CourseService {
     public ImmutableList<Lab> getLabs(String courseId) {
         checkArgument(!Strings.isNullOrEmpty(courseId), "CourseID is required");
         checkPermissions("course:getLabs:" + courseId);
-        return daoFactory.getCourseDAO().getLabs(courseId);
+        return daoFactory.getLabDAO().getLabs(courseId);
     }
 }
