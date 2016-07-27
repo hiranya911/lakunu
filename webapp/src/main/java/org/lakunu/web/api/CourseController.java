@@ -66,9 +66,9 @@ public class CourseController extends LakunuController {
     @Override
     protected void doPost(HttpServletRequest req,
                           HttpServletResponse resp) throws ServletException, IOException {
-        Course course = courseService.addCourse(req.getParameter("courseName"),
+        String courseId = courseService.addCourse(req.getParameter("courseName"),
                 req.getParameter("courseDescription"));
-        resp.sendRedirect("/course/" + course.getId());
+        resp.sendRedirect("/course/" + courseId);
     }
 
 }

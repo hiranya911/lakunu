@@ -17,22 +17,22 @@ public final class CourseService extends AbstractDomainService {
         super(daoFactory);
     }
 
-    public Course addCourse(String name, String description) {
+    public String addCourse(String name, String description) {
         checkArgument(!Strings.isNullOrEmpty(name), "name is required");
         checkArgument(name.length() <= 128, "name is too long");
         checkArgument(!Strings.isNullOrEmpty(description), "description is required");
         checkArgument(description.length() <= 512, "description is too long");
         checkPermissions("course:add");
 
-        Course course = new Course();
-        course.setName(name);
-        course.setDescription(description);
-        course.setOwner(Security.getCurrentUser());
-        course.setCreatedAt(new Date());
+        Course course = Course.newBuilder()
+                .setName(name)
+                .setDescription(description)
+                .setOwner(Security.getCurrentUser())
+                .setCreatedAt(new Date())
+                .build();
         String courseId = daoFactory.getCourseDAO().addCourse(course);
-        course.setId(courseId);
         Security.clearCoursePermissionCache();
-        return course;
+        return courseId;
     }
 
     public Course getCourse(String courseId) {

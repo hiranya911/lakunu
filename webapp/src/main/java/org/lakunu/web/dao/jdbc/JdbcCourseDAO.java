@@ -13,7 +13,7 @@ import java.sql.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-public class JdbcCourseDAO implements CourseDAO {
+public final class JdbcCourseDAO implements CourseDAO {
 
     private final DataSource dataSource;
 
@@ -25,7 +25,7 @@ public class JdbcCourseDAO implements CourseDAO {
     @Override
     public String addCourse(Course course) {
         try {
-            return String.valueOf(AddCourseCommand.execute(dataSource, course));
+            return AddCourseCommand.execute(dataSource, course);
         } catch (SQLException e) {
             throw new DAOException("Error while adding course", e);
         }
@@ -49,10 +49,10 @@ public class JdbcCourseDAO implements CourseDAO {
         }
     }
 
-    private static final class AddCourseCommand extends Command<Long> {
+    private static final class AddCourseCommand extends Command<String> {
 
-        private static final String ADD_COURSE_SQL =
-                "INSERT INTO COURSE (COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT) VALUES (?,?,?,?)";
+        private static final String ADD_COURSE_SQL = "INSERT INTO COURSE (COURSE_NAME, " +
+                "COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT) VALUES (?,?,?,?)";
 
         private final Course course;
 
@@ -61,12 +61,12 @@ public class JdbcCourseDAO implements CourseDAO {
             this.course = course;
         }
 
-        private static long execute(DataSource dataSource, Course course) throws SQLException {
+        private static String execute(DataSource dataSource, Course course) throws SQLException {
             return new AddCourseCommand(dataSource, course).run();
         }
 
         @Override
-        protected Long doRun(Connection connection) throws SQLException {
+        protected String doRun(Connection connection) throws SQLException {
             long insertId;
             try (PreparedStatement stmt = connection.prepareStatement(ADD_COURSE_SQL,
                     Statement.RETURN_GENERATED_KEYS)) {
@@ -84,14 +84,14 @@ public class JdbcCourseDAO implements CourseDAO {
                     }
                 }
             }
-            return insertId;
+            return String.valueOf(insertId);
         }
     }
 
     private static final class GetCourseCommand extends Command<Course> {
 
-        private static final String GET_COURSE_SQL =
-                "SELECT COURSE_ID, COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_ID = ?";
+        private static final String GET_COURSE_SQL = "SELECT COURSE_ID, COURSE_NAME, " +
+                "COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_ID = ?";
 
         private final long courseId;
 
@@ -110,13 +110,7 @@ public class JdbcCourseDAO implements CourseDAO {
                 stmt.setLong(1, courseId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        Course course = new Course();
-                        course.setId(String.valueOf(rs.getLong("COURSE_ID")));
-                        course.setName(rs.getString("COURSE_NAME"));
-                        course.setDescription(rs.getString("COURSE_DESCRIPTION"));
-                        course.setOwner(rs.getString("COURSE_OWNER"));
-                        course.setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT"));
-                        return course;
+                        return createCourse(rs);
                     } else {
                         return null;
                     }
@@ -127,8 +121,8 @@ public class JdbcCourseDAO implements CourseDAO {
 
     private static final class GetOwnedCoursesCommand extends Command<ImmutableList<Course>> {
 
-        private static final String GET_OWNED_COURSES_SQL =
-                "SELECT COURSE_ID, COURSE_NAME, COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_OWNER = ?";
+        private static final String GET_OWNED_COURSES_SQL = "SELECT COURSE_ID, COURSE_NAME, " +
+                "COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_OWNER = ?";
 
         private GetOwnedCoursesCommand(DataSource dataSource) {
             super(dataSource);
@@ -145,17 +139,21 @@ public class JdbcCourseDAO implements CourseDAO {
                 try (ResultSet rs = stmt.executeQuery()) {
                     ImmutableList.Builder<Course> builder = ImmutableList.builder();
                     while (rs.next()) {
-                        Course course = new Course();
-                        course.setId(String.valueOf(rs.getLong("COURSE_ID")));
-                        course.setName(rs.getString("COURSE_NAME"));
-                        course.setDescription(rs.getString("COURSE_DESCRIPTION"));
-                        course.setOwner(rs.getString("COURSE_OWNER"));
-                        course.setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT"));
-                        builder.add(course);
+                        builder.add(createCourse(rs));
                     }
                     return builder.build();
                 }
             }
         }
+    }
+
+    private static Course createCourse(ResultSet rs) throws SQLException {
+        return Course.newBuilder()
+                .setId(String.valueOf(rs.getLong("COURSE_ID")))
+                .setName(rs.getString("COURSE_NAME"))
+                .setDescription(rs.getString("COURSE_DESCRIPTION"))
+                .setOwner(rs.getString("COURSE_OWNER"))
+                .setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT"))
+                .build();
     }
 }

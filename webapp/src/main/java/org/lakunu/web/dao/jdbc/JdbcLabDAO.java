@@ -13,7 +13,7 @@ import java.sql.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-public class JdbcLabDAO implements LabDAO {
+public final class JdbcLabDAO implements LabDAO {
 
     private final DataSource dataSource;
 
@@ -25,7 +25,7 @@ public class JdbcLabDAO implements LabDAO {
     @Override
     public String addLab(Lab lab) {
         try {
-            return String.valueOf(AddLabCommand.execute(dataSource, lab));
+            return AddLabCommand.execute(dataSource, lab);
         } catch (SQLException e) {
             throw new DAOException("Error while adding lab", e);
         }
@@ -43,7 +43,7 @@ public class JdbcLabDAO implements LabDAO {
     @Override
     public ImmutableList<Lab> getLabs(String courseId) {
         try {
-            return GetLabsCommand.execute(dataSource, Long.parseLong(courseId));
+            return GetLabsCommand.execute(dataSource, courseId);
         } catch (SQLException e) {
             throw new DAOException("Error while retrieving labs", e);
         }
@@ -58,7 +58,7 @@ public class JdbcLabDAO implements LabDAO {
         }
     }
 
-    private static final class AddLabCommand extends Command<Long> {
+    private static final class AddLabCommand extends Command<String> {
 
         private static final String ADD_LAB_SQL =  "INSERT INTO LAB " +
                 "(LAB_NAME, LAB_DESCRIPTION, LAB_COURSE_ID, LAB_CREATED_AT, LAB_CREATED_BY) " +
@@ -71,12 +71,12 @@ public class JdbcLabDAO implements LabDAO {
             this.lab = lab;
         }
 
-        private static long execute(DataSource dataSource, Lab lab) throws SQLException {
+        private static String execute(DataSource dataSource, Lab lab) throws SQLException {
             return new AddLabCommand(dataSource, lab).run();
         }
 
         @Override
-        protected Long doRun(Connection connection) throws SQLException {
+        protected String doRun(Connection connection) throws SQLException {
             long insertId;
             try (PreparedStatement stmt = connection.prepareStatement(ADD_LAB_SQL,
                     Statement.RETURN_GENERATED_KEYS)) {
@@ -95,7 +95,7 @@ public class JdbcLabDAO implements LabDAO {
                     }
                 }
             }
-            return insertId;
+            return String.valueOf(insertId);
         }
     }
 
@@ -181,12 +181,13 @@ public class JdbcLabDAO implements LabDAO {
 
         private final long courseId;
 
-        private GetLabsCommand(DataSource dataSource, long courseId) {
+        private GetLabsCommand(DataSource dataSource, String courseId) {
             super(dataSource);
-            this.courseId = courseId;
+            this.courseId = Long.parseLong(courseId);
         }
 
-        private static ImmutableList<Lab> execute(DataSource dataSource, long courseId) throws SQLException {
+        private static ImmutableList<Lab> execute(DataSource dataSource,
+                                                  String courseId) throws SQLException {
             return new GetLabsCommand(dataSource, courseId).run();
         }
 
