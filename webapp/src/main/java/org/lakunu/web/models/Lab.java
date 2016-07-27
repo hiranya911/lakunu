@@ -87,8 +87,12 @@ public final class Lab implements Serializable {
         return allowLateSubmissions;
     }
 
-    public Update update() {
+    public Update newUpdate() {
         return new Update(this);
+    }
+
+    public PublishSettings newPublishSettings() {
+        return new PublishSettings(this);
     }
 
     public static Builder newBuilder() {
@@ -135,6 +139,50 @@ public final class Lab implements Serializable {
                     .setCourseId(original.courseId)
                     .setSubmissionDeadline(original.submissionDeadline)
                     .setAllowLateSubmissions(original.allowLateSubmissions)
+                    .build();
+        }
+    }
+
+    public static class PublishSettings extends Mutation<Lab> {
+
+        private boolean published;
+        private Date submissionDeadline;
+        private boolean allowLateSubmissions;
+
+        private PublishSettings(Lab original) {
+            super(original);
+            this.published = original.published;
+            this.submissionDeadline = original.submissionDeadline;
+            this.allowLateSubmissions = original.allowLateSubmissions;
+        }
+
+        public PublishSettings setPublished(boolean published) {
+            this.published = published;
+            return this;
+        }
+
+        public PublishSettings setSubmissionDeadline(Date submissionDeadline) {
+            this.submissionDeadline = submissionDeadline;
+            return this;
+        }
+
+        public PublishSettings setAllowLateSubmissions(boolean allowLateSubmissions) {
+            this.allowLateSubmissions = allowLateSubmissions;
+            return this;
+        }
+
+        @Override
+        public Lab apply() {
+            return newBuilder().setId(original.id)
+                    .setName(original.name)
+                    .setDescription(original.description)
+                    .setConfiguration(original.configuration)
+                    .setCreatedAt(original.createdAt)
+                    .setCreatedBy(original.createdBy)
+                    .setPublished(published)
+                    .setCourseId(original.courseId)
+                    .setSubmissionDeadline(submissionDeadline)
+                    .setAllowLateSubmissions(allowLateSubmissions)
                     .build();
         }
     }

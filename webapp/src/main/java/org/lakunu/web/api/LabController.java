@@ -9,6 +9,8 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 
 import static org.lakunu.web.utils.Security.hasPermission;
 
@@ -64,7 +66,7 @@ public class LabController extends LakunuController {
         }
 
         if (Boolean.parseBoolean(req.getParameter("updateLab"))) {
-            Lab.Update update = lab.update()
+            Lab.Update update = lab.newUpdate()
                     .setName(req.getParameter("labName"))
                     .setDescription(req.getParameter("labDescription"));
             String config = req.getParameter("labConfig");
@@ -75,6 +77,24 @@ public class LabController extends LakunuController {
             }
             labService.updateLab(update);
             logger.info("Updated lab: {}", lab.getId());
+        } else if (Boolean.parseBoolean(req.getParameter("publishLab"))) {
+            Lab.PublishSettings publishSettings = lab.newPublishSettings()
+                    .setPublished(true)
+                    .setAllowLateSubmissions(Boolean.parseBoolean(req.getParameter("labAllowLate")));
+            String deadline = req.getParameter("labDeadline");
+            if (!Strings.isNullOrEmpty(deadline)) {
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                try {
+                    publishSettings.setSubmissionDeadline(dateFormat.parse(deadline));
+                } catch (ParseException e) {
+                    throw new ServletException("Invalid date string: " + deadline, e);
+                }
+            }
+            labService.publishLab(publishSettings);
+            logger.info("Published lab: {}", lab.getId());
+            resp.sendRedirect("/lab/" + lab.getCourseId() + "/" + lab.getId());
+        } else {
+            resp.sendError(400, "Invalid update operation");
         }
     }
 

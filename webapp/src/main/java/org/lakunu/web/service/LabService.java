@@ -1,6 +1,7 @@
 package org.lakunu.web.service;
 
 import com.google.common.base.Strings;
+import org.lakunu.web.ant.AntEvaluationBridge;
 import org.lakunu.web.models.Lab;
 import org.lakunu.web.utils.Security;
 
@@ -12,8 +13,12 @@ import static org.lakunu.web.utils.Security.checkPermissions;
 
 public final class LabService extends AbstractDomainService {
 
+    private final EvaluationBridge evaluationBridge;
+
     public LabService(DAOFactory daoFactory) {
         super(daoFactory);
+        // TODO: Make this configurable
+        this.evaluationBridge = new AntEvaluationBridge();
     }
 
     public String addLab(String name, String description, String courseId) {
@@ -39,6 +44,25 @@ public final class LabService extends AbstractDomainService {
         checkNotNull(update, "Update is required");
         Lab lab = update.apply();
         checkPermissions(UPDATE_PERMISSION(lab));
+        daoFactory.getLabDAO().updateLab(lab);
+        return lab;
+    }
+
+    public Lab publishLab(Lab.PublishSettings publishSettings) {
+        checkNotNull(publishSettings);
+        Lab lab = publishSettings.apply();
+        checkArgument(lab.isPublished(), "Publish must be true");
+        Date submissionDeadline = lab.getSubmissionDeadline();
+        if (submissionDeadline != null) {
+            checkArgument(submissionDeadline.after(new Date()),
+                    "Submission deadline must be in the future");
+        }
+
+        try {
+            evaluationBridge.validate(lab);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
         daoFactory.getLabDAO().updateLab(lab);
         return lab;
     }
