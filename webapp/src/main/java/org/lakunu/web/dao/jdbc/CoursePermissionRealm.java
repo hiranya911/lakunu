@@ -89,9 +89,9 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
     private static final class GetCourseRolesCommand extends Command<Set<CourseRole>> {
 
         private static final String GET_OWNED_COURSES_SQL =
-                "SELECT COURSE_ID FROM COURSE WHERE COURSE_OWNER = ?";
+                "SELECT id FROM course WHERE owner = ?";
         private static final String GET_COURSE_PERMISSIONS_SQL =
-                "SELECT COURSE_ID, USER_ROLE FROM COURSE_USER WHERE USER_ID = ?";
+                "SELECT course_id, role FROM course_user WHERE user_id = ?";
 
         private final String userId;
 
@@ -113,7 +113,7 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                 stmt.setString(1, userId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
-                        long courseId = rs.getLong("COURSE_ID");
+                        long courseId = rs.getLong("id");
                         courseRoles.add(new CourseRole(courseId, ROLE_OWNER));
                     }
                 }
@@ -123,8 +123,8 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                 stmt.setString(1, userId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
-                        long courseId = rs.getLong("COURSE_ID");
-                        int role = rs.getShort("USER_ROLE");
+                        long courseId = rs.getLong("course_id");
+                        int role = rs.getShort("role");
                         courseRoles.add(new CourseRole(courseId, role));
                     }
                 }

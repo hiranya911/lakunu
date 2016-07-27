@@ -51,8 +51,8 @@ public final class JdbcCourseDAO implements CourseDAO {
 
     private static final class AddCourseCommand extends Command<String> {
 
-        private static final String ADD_COURSE_SQL = "INSERT INTO COURSE (COURSE_NAME, " +
-                "COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT) VALUES (?,?,?,?)";
+        private static final String ADD_COURSE_SQL = "INSERT INTO course (name, description, " +
+                "owner, created_at) VALUES (?,?,?,?)";
 
         private final Course course;
 
@@ -90,8 +90,8 @@ public final class JdbcCourseDAO implements CourseDAO {
 
     private static final class GetCourseCommand extends Command<Course> {
 
-        private static final String GET_COURSE_SQL = "SELECT COURSE_ID, COURSE_NAME, " +
-                "COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_ID = ?";
+        private static final String GET_COURSE_SQL = "SELECT id, name, description, owner, " +
+                "created_at FROM course WHERE id = ?";
 
         private final long courseId;
 
@@ -121,8 +121,8 @@ public final class JdbcCourseDAO implements CourseDAO {
 
     private static final class GetOwnedCoursesCommand extends Command<ImmutableList<Course>> {
 
-        private static final String GET_OWNED_COURSES_SQL = "SELECT COURSE_ID, COURSE_NAME, " +
-                "COURSE_DESCRIPTION, COURSE_OWNER, COURSE_CREATED_AT FROM COURSE WHERE COURSE_OWNER = ?";
+        private static final String GET_OWNED_COURSES_SQL = "SELECT id, name, description, " +
+                "owner, created_at FROM course WHERE owner = ?";
 
         private GetOwnedCoursesCommand(DataSource dataSource) {
             super(dataSource);
@@ -149,11 +149,11 @@ public final class JdbcCourseDAO implements CourseDAO {
 
     private static Course createCourse(ResultSet rs) throws SQLException {
         return Course.newBuilder()
-                .setId(String.valueOf(rs.getLong("COURSE_ID")))
-                .setName(rs.getString("COURSE_NAME"))
-                .setDescription(rs.getString("COURSE_DESCRIPTION"))
-                .setOwner(rs.getString("COURSE_OWNER"))
-                .setCreatedAt(rs.getTimestamp("COURSE_CREATED_AT"))
+                .setId(String.valueOf(rs.getLong("id")))
+                .setName(rs.getString("name"))
+                .setDescription(rs.getString("description"))
+                .setOwner(rs.getString("owner"))
+                .setCreatedAt(rs.getTimestamp("created_at"))
                 .build();
     }
 }

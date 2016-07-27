@@ -60,9 +60,8 @@ public final class JdbcLabDAO implements LabDAO {
 
     private static final class AddLabCommand extends Command<String> {
 
-        private static final String ADD_LAB_SQL =  "INSERT INTO LAB " +
-                "(LAB_NAME, LAB_DESCRIPTION, LAB_COURSE_ID, LAB_CREATED_AT, LAB_CREATED_BY) " +
-                "VALUES (?,?,?,?,?)";
+        private static final String ADD_LAB_SQL =  "INSERT INTO lab (name, description, " +
+                "course_id, created_at, created_by) VALUES (?,?,?,?,?)";
 
         private final Lab lab;
 
@@ -101,10 +100,9 @@ public final class JdbcLabDAO implements LabDAO {
 
     private static final class GetLabCommand extends Command<Lab> {
 
-        private static final String GET_LAB_SQL = "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, " +
-                "LAB_COURSE_ID, LAB_CREATED_AT, LAB_CREATED_BY, LAB_CONFIG, LAB_PUBLISHED, " +
-                "LAB_SUBMISSION_DEADLINE, LAB_ALLOW_LATE_SUBMISSIONS FROM LAB " +
-                "WHERE LAB_ID = ? AND LAB_COURSE_ID = ?";
+        private static final String GET_LAB_SQL = "SELECT id, name, description, course_id, " +
+                "created_at, created_by, config, published, submission_deadline, " +
+                "allow_late_submissions FROM lab WHERE id = ? AND course_id = ?";
 
         private final long courseId;
         private final long labId;
@@ -138,9 +136,9 @@ public final class JdbcLabDAO implements LabDAO {
 
     private static final class UpdateLabCommand extends Command<Void> {
 
-        private static final String UPDATE_LAB_SQL =  "UPDATE LAB SET LAB_NAME = ?, " +
-                "LAB_DESCRIPTION = ?, LAB_CONFIG = ?, LAB_PUBLISHED = ?, LAB_SUBMISSION_DEADLINE = ?, " +
-                "LAB_ALLOW_LATE_SUBMISSIONS = ? WHERE LAB_ID = ? AND LAB_COURSE_ID = ?";
+        private static final String UPDATE_LAB_SQL =  "UPDATE lab SET name = ?, description = ?, " +
+                "config = ?, published = ?, submission_deadline = ?, allow_late_submissions = ? " +
+                "WHERE id = ? AND course_id = ?";
 
         private final Lab lab;
 
@@ -160,7 +158,11 @@ public final class JdbcLabDAO implements LabDAO {
                 stmt.setString(2, lab.getDescription());
                 stmt.setBytes(3, lab.getConfiguration());
                 stmt.setBoolean(4, lab.isPublished());
-                stmt.setTimestamp(5, new Timestamp(lab.getSubmissionDeadline().getTime()));
+                if (lab.getSubmissionDeadline() != null) {
+                    stmt.setTimestamp(5, new Timestamp(lab.getSubmissionDeadline().getTime()));
+                } else {
+                    stmt.setTimestamp(5, null);
+                }
                 stmt.setBoolean(6, lab.isAllowLateSubmissions());
                 stmt.setLong(7, Long.parseLong(lab.getId()));
                 stmt.setLong(8, Long.parseLong(lab.getCourseId()));
@@ -175,9 +177,9 @@ public final class JdbcLabDAO implements LabDAO {
 
     private static final class GetLabsCommand extends Command<ImmutableList<Lab>> {
 
-        private static final String GET_LABS_SQL = "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, " +
-                "LAB_CREATED_BY, LAB_CREATED_AT, LAB_COURSE_ID, LAB_CONFIG, LAB_PUBLISHED, " +
-                "LAB_SUBMISSION_DEADLINE, LAB_ALLOW_LATE_SUBMISSIONS FROM LAB WHERE LAB_COURSE_ID = ?";
+        private static final String GET_LABS_SQL = "SELECT id, name, description, course_id, " +
+                "created_at, created_by, config, published, submission_deadline, " +
+                "allow_late_submissions FROM lab WHERE course_id = ?";
 
         private final long courseId;
 
@@ -208,16 +210,16 @@ public final class JdbcLabDAO implements LabDAO {
 
     private static Lab createLab(ResultSet rs) throws SQLException {
         return Lab.newBuilder()
-                .setId(String.valueOf(rs.getLong("LAB_ID")))
-                .setName(rs.getString("LAB_NAME"))
-                .setDescription(rs.getString("LAB_DESCRIPTION"))
-                .setCourseId(String.valueOf(rs.getLong("LAB_COURSE_ID")))
-                .setCreatedAt(rs.getTimestamp("LAB_CREATED_AT"))
-                .setCreatedBy(rs.getString("LAB_CREATED_BY"))
-                .setConfiguration(rs.getBytes("LAB_CONFIG"))
-                .setPublished(rs.getBoolean("LAB_PUBLISHED"))
-                .setSubmissionDeadline(rs.getTimestamp("LAB_SUBMISSION_DEADLINE"))
-                .setAllowLateSubmissions(rs.getBoolean("LAB_ALLOW_LATE_SUBMISSIONS"))
+                .setId(String.valueOf(rs.getLong("id")))
+                .setName(rs.getString("name"))
+                .setDescription(rs.getString("description"))
+                .setCourseId(String.valueOf(rs.getLong("course_id")))
+                .setCreatedAt(rs.getTimestamp("created_at"))
+                .setCreatedBy(rs.getString("created_by"))
+                .setConfiguration(rs.getBytes("config"))
+                .setPublished(rs.getBoolean("published"))
+                .setSubmissionDeadline(rs.getTimestamp("submission_deadline"))
+                .setAllowLateSubmissions(rs.getBoolean("allow_late_submissions"))
                 .build();
     }
 }

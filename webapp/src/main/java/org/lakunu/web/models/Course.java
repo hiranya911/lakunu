@@ -21,7 +21,7 @@ public final class Course implements Serializable {
         checkArgument(!Strings.isNullOrEmpty(builder.name), "name is required");
         checkArgument(builder.name.length() <= 128, "name is too long");
         checkArgument(!Strings.isNullOrEmpty(builder.description), "description is required");
-        checkArgument(builder.description.length() <= 512, "description is too long");
+        checkArgument(builder.description.length() <= 64 * 1024, "description is too long");
         checkArgument(!Strings.isNullOrEmpty(builder.owner), "owner is required");
         checkNotNull(builder.createdAt, "createdAt is required");
         this.id = builder.id;
