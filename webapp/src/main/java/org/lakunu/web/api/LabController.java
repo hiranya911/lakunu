@@ -64,7 +64,7 @@ public class LabController extends LakunuController {
         }
 
         if (Boolean.parseBoolean(req.getParameter("updateLab"))) {
-            LabService.Update update = LabService.newUpdate(lab)
+            Lab.Update update = lab.update()
                     .setName(req.getParameter("labName"))
                     .setDescription(req.getParameter("labDescription"));
             String config = req.getParameter("labConfig");
@@ -89,8 +89,8 @@ public class LabController extends LakunuController {
 
         // TODO: Improve the path parameter parsing
         String courseId = pathInfo.substring(1);
-        Lab lab = labService.addLab(req.getParameter("labName"),
+        String labId = labService.addLab(req.getParameter("labName"),
                 req.getParameter("labDescription"), courseId);
-        resp.sendRedirect("/lab/" + courseId + "/" + lab.getId());
+        resp.sendRedirect("/lab/" + courseId + "/" + labId);
     }
 }

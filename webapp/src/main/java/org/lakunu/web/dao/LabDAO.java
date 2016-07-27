@@ -8,6 +8,6 @@ public interface LabDAO {
     String addLab(Lab lab);
     Lab getLab(String labId);
     ImmutableList<Lab> getLabs(String courseId);
-    boolean updateLab(Lab lab);
+    void updateLab(Lab lab);
 
 }

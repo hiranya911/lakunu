@@ -16,23 +16,16 @@ public final class LabService extends AbstractDomainService {
         super(daoFactory);
     }
 
-    public Lab addLab(String name, String description, String courseId) {
-        checkArgument(!Strings.isNullOrEmpty(name), "name is required");
-        checkArgument(name.length() <= 128, "name is too long");
-        checkArgument(!Strings.isNullOrEmpty(description), "description is required");
-        checkArgument(description.length() <= 512, "description is too long");
-        checkArgument(!Strings.isNullOrEmpty(courseId), "CourseID is required");
+    public String addLab(String name, String description, String courseId) {
         checkPermissions(ADD_PERMISSION(courseId));
-
-        Lab lab = new Lab();
-        lab.setName(name);
-        lab.setDescription(description);
-        lab.setCourseId(courseId);
-        lab.setCreatedBy(Security.getCurrentUser());
-        lab.setCreatedAt(new Date());
-        String labId = daoFactory.getLabDAO().addLab(lab);
-        lab.setId(labId);
-        return lab;
+        Lab lab = Lab.newBuilder()
+                .setName(name)
+                .setDescription(description)
+                .setCourseId(courseId)
+                .setCreatedBy(Security.getCurrentUser())
+                .setCreatedAt(new Date())
+                .build();
+        return daoFactory.getLabDAO().addLab(lab);
     }
 
     public Lab getLab(String courseId, String labId) {
@@ -42,12 +35,12 @@ public final class LabService extends AbstractDomainService {
         return daoFactory.getLabDAO().getLab(labId);
     }
 
-    public boolean updateLab(Update update) {
-        // TODO: Return a new Lab instance here (Maintain immutability)
+    public Lab updateLab(Lab.Update update) {
         checkNotNull(update, "Update is required");
-        checkPermissions(UPDATE_PERMISSION(update.lab.getCourseId(), update.lab.getId()));
+        checkPermissions(UPDATE_PERMISSION(update.getCourseId(), update.getId()));
         Lab lab = update.apply();
-        return daoFactory.getLabDAO().updateLab(lab);
+        daoFactory.getLabDAO().updateLab(lab);
+        return lab;
     }
 
     public static String permission(String op, String courseId, String labId) {
@@ -73,49 +66,4 @@ public final class LabService extends AbstractDomainService {
         return permission("update", lab.getCourseId(), lab.getId());
     }
 
-    public static Update newUpdate(Lab lab) {
-        return new Update(lab);
-    }
-
-    public static class Update {
-
-        private final Lab lab;
-        private String name;
-        private String description;
-        private byte[] configuration;
-
-        private Update(Lab lab) {
-            checkNotNull(lab, "Lab is required");
-            this.lab = lab;
-            this.name = lab.getName();
-            this.description = lab.getDescription();
-            this.configuration = lab.getConfiguration();
-        }
-
-        public Update setName(String name) {
-            this.name = name;
-            return this;
-        }
-
-        public Update setDescription(String description) {
-            this.description = description;
-            return this;
-        }
-
-        public Update setConfiguration(byte[] configuration) {
-            this.configuration = configuration;
-            return this;
-        }
-
-        private Lab apply() {
-            checkArgument(!Strings.isNullOrEmpty(name), "name is required");
-            checkArgument(name.length() <= 128, "name is too long");
-            checkArgument(!Strings.isNullOrEmpty(description), "description is required");
-            checkArgument(description.length() <= 512, "description is too long");
-            lab.setName(name);
-            lab.setDescription(description);
-            lab.setConfiguration(configuration);
-            return lab;
-        }
-    }
 }
