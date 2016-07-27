@@ -32,9 +32,9 @@ public class JdbcLabDAO implements LabDAO {
     }
 
     @Override
-    public Lab getLab(String labId) {
+    public Lab getLab(String courseId, String labId) {
         try {
-            return GetLabCommand.execute(dataSource, labId);
+            return GetLabCommand.execute(dataSource, courseId, labId);
         } catch (SQLException e) {
             throw new DAOException("Error while retrieving lab", e);
         }
@@ -101,26 +101,30 @@ public class JdbcLabDAO implements LabDAO {
 
     private static final class GetLabCommand extends Command<Lab> {
 
-        private static final String GET_LAB_SQL =
-                "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, LAB_COURSE_ID, LAB_CREATED_AT, " +
-                        "LAB_CREATED_BY, LAB_CONFIG, LAB_PUBLISHED, LAB_SUBMISSION_DEADLINE, " +
-                        "LAB_ALLOW_LATE_SUBMISSIONS FROM LAB WHERE LAB_ID = ?";
+        private static final String GET_LAB_SQL = "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, " +
+                "LAB_COURSE_ID, LAB_CREATED_AT, LAB_CREATED_BY, LAB_CONFIG, LAB_PUBLISHED, " +
+                "LAB_SUBMISSION_DEADLINE, LAB_ALLOW_LATE_SUBMISSIONS FROM LAB " +
+                "WHERE LAB_ID = ? AND LAB_COURSE_ID = ?";
 
+        private final long courseId;
         private final long labId;
 
-        public static Lab execute(DataSource dataSource, String labId) throws SQLException {
-            return new GetLabCommand(dataSource, Long.parseLong(labId)).run();
+        public static Lab execute(DataSource dataSource, String courseId,
+                                  String labId) throws SQLException {
+            return new GetLabCommand(dataSource, courseId, labId).run();
         }
 
-        private GetLabCommand(DataSource dataSource, long labId) {
+        private GetLabCommand(DataSource dataSource, String courseId, String labId) {
             super(dataSource);
-            this.labId = labId;
+            this.courseId = Long.parseLong(courseId);
+            this.labId = Long.parseLong(labId);
         }
 
         @Override
         protected Lab doRun(Connection connection) throws SQLException {
             try (PreparedStatement stmt = connection.prepareStatement(GET_LAB_SQL)) {
                 stmt.setLong(1, labId);
+                stmt.setLong(2, courseId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
                         return createLab(rs);
@@ -136,7 +140,7 @@ public class JdbcLabDAO implements LabDAO {
 
         private static final String UPDATE_LAB_SQL =  "UPDATE LAB SET LAB_NAME = ?, " +
                 "LAB_DESCRIPTION = ?, LAB_CONFIG = ?, LAB_PUBLISHED = ?, LAB_SUBMISSION_DEADLINE = ?, " +
-                "LAB_ALLOW_LATE_SUBMISSIONS = ? WHERE LAB_ID = ?";
+                "LAB_ALLOW_LATE_SUBMISSIONS = ? WHERE LAB_ID = ? AND LAB_COURSE_ID = ?";
 
         private final Lab lab;
 
@@ -159,6 +163,7 @@ public class JdbcLabDAO implements LabDAO {
                 stmt.setTimestamp(5, new Timestamp(lab.getSubmissionDeadline().getTime()));
                 stmt.setBoolean(6, lab.isAllowLateSubmissions());
                 stmt.setLong(7, Long.parseLong(lab.getId()));
+                stmt.setLong(8, Long.parseLong(lab.getCourseId()));
                 if (stmt.executeUpdate() == 1) {
                     return null;
                 } else {
@@ -170,9 +175,9 @@ public class JdbcLabDAO implements LabDAO {
 
     private static final class GetLabsCommand extends Command<ImmutableList<Lab>> {
 
-        private static final String GET_LABS_SQL =
-                "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, LAB_CREATED_BY, LAB_CREATED_AT, LAB_COURSE_ID, " +
-                        "LAB_CONFIG, LAB_PUBLISHED, LAB_SUBMISSION_DEADLINE, LAB_ALLOW_LATE_SUBMISSIONS FROM LAB WHERE LAB_COURSE_ID = ?";
+        private static final String GET_LABS_SQL = "SELECT LAB_ID, LAB_NAME, LAB_DESCRIPTION, " +
+                "LAB_CREATED_BY, LAB_CREATED_AT, LAB_COURSE_ID, LAB_CONFIG, LAB_PUBLISHED, " +
+                "LAB_SUBMISSION_DEADLINE, LAB_ALLOW_LATE_SUBMISSIONS FROM LAB WHERE LAB_COURSE_ID = ?";
 
         private final long courseId;
 

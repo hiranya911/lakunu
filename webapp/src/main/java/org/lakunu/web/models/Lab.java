@@ -123,14 +123,6 @@ public final class Lab implements Serializable {
             return this;
         }
 
-        public String getCourseId() {
-            return original.getCourseId();
-        }
-
-        public String getId() {
-            return original.getId();
-        }
-
         @Override
         public Lab apply() {
             return newBuilder().setId(original.id)

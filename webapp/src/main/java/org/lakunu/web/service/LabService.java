@@ -32,13 +32,13 @@ public final class LabService extends AbstractDomainService {
         checkArgument(!Strings.isNullOrEmpty(courseId), "CourseID is required");
         checkArgument(!Strings.isNullOrEmpty(labId), "LabID is required");
         checkPermissions(GET_PERMISSION(courseId, labId));
-        return daoFactory.getLabDAO().getLab(labId);
+        return daoFactory.getLabDAO().getLab(courseId, labId);
     }
 
     public Lab updateLab(Lab.Update update) {
         checkNotNull(update, "Update is required");
-        checkPermissions(UPDATE_PERMISSION(update.getCourseId(), update.getId()));
         Lab lab = update.apply();
+        checkPermissions(UPDATE_PERMISSION(lab));
         daoFactory.getLabDAO().updateLab(lab);
         return lab;
     }
@@ -56,10 +56,6 @@ public final class LabService extends AbstractDomainService {
 
     public static String GET_PERMISSION(String courseId, String labId) {
         return permission("get", courseId, labId);
-    }
-
-    public static String UPDATE_PERMISSION(String courseId, String labId) {
-        return permission("update", courseId, labId);
     }
 
     public static String UPDATE_PERMISSION(Lab lab) {
