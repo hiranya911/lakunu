@@ -134,8 +134,9 @@ public class JdbcLabDAO implements LabDAO {
 
     private static final class UpdateLabCommand extends Command<Void> {
 
-        private static final String UPDATE_LAB_SQL =
-                "UPDATE LAB SET LAB_NAME = ?, LAB_DESCRIPTION = ?, LAB_CONFIG = ? WHERE LAB_ID = ?";
+        private static final String UPDATE_LAB_SQL =  "UPDATE LAB SET LAB_NAME = ?, " +
+                "LAB_DESCRIPTION = ?, LAB_CONFIG = ?, LAB_PUBLISHED = ?, LAB_SUBMISSION_DEADLINE = ?, " +
+                "LAB_ALLOW_LATE_SUBMISSIONS = ? WHERE LAB_ID = ?";
 
         private final Lab lab;
 
@@ -154,7 +155,10 @@ public class JdbcLabDAO implements LabDAO {
                 stmt.setString(1, lab.getName());
                 stmt.setString(2, lab.getDescription());
                 stmt.setBytes(3, lab.getConfiguration());
-                stmt.setLong(4, Long.parseLong(lab.getId()));
+                stmt.setBoolean(4, lab.isPublished());
+                stmt.setTimestamp(5, new Timestamp(lab.getSubmissionDeadline().getTime()));
+                stmt.setBoolean(6, lab.isAllowLateSubmissions());
+                stmt.setLong(7, Long.parseLong(lab.getId()));
                 if (stmt.executeUpdate() == 1) {
                     return null;
                 } else {
