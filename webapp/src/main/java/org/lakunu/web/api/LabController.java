@@ -44,7 +44,7 @@ public class LabController extends LakunuController {
         req.setAttribute("course", courseService.getCourse(lab.getCourseId()));
         req.setAttribute("canEdit", hasPermission(LabService.UPDATE_PERMISSION(lab)) &&
                 !lab.isPublished());
-        req.getRequestDispatcher("/lab.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/jsp/lab.jsp").forward(req, resp);
     }
 
     @Override

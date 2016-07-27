@@ -2,7 +2,6 @@ package org.lakunu.web.api;
 
 import com.google.common.base.Strings;
 import org.lakunu.web.models.Lab;
-import org.lakunu.web.service.LabService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -33,6 +32,6 @@ public class SubmitController extends LakunuController {
         }
         req.setAttribute("lab", lab);
         req.setAttribute("course", courseService.getCourse(lab.getCourseId()));
-        req.getRequestDispatcher("/submit.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/jsp/submit.jsp").forward(req, resp);
     }
 }

@@ -2,11 +2,11 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
     <head>
-        <%@ include file="include/header.html" %>
+        <%@ include file="/WEB-INF/include/header.html" %>
         <title>Lakunu: Home</title>
     </head>
     <body>
-        <%@ include file="include/body_top.html" %>
+        <%@ include file="/WEB-INF/include/body_top.html" %>
         <div class="container">
             <div class="row">
                 <div class="col-md-12">

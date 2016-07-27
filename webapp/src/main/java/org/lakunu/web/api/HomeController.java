@@ -13,6 +13,6 @@ public class HomeController extends LakunuController {
     protected void doGet(HttpServletRequest req,
                          HttpServletResponse resp) throws ServletException, IOException {
         req.setAttribute("courses", courseService.getOwnedCourses());
-        req.getRequestDispatcher("home.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/jsp/home.jsp").forward(req, resp);
     }
 }

@@ -39,7 +39,7 @@ public class CourseController extends LakunuController {
         ImmutableList<Lab> labs = courseService.getLabs(courseId);
         req.setAttribute("courseLabs", labs);
         req.setAttribute("labPermissions", computeLabPermissions(labs));
-        req.getRequestDispatcher("/course.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/jsp/course.jsp").forward(req, resp);
     }
 
     private Map<String,String> computeLabPermissions(List<Lab> labs) {

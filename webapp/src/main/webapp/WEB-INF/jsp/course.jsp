@@ -3,11 +3,11 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <html>
 <head>
-    <%@ include file="include/header.html" %>
+    <%@ include file="/WEB-INF/include/header.html" %>
     <title>Lakunu: Course [${course.name}]</title>
 </head>
 <body>
-<%@ include file="include/body_top.html" %>
+<%@ include file="/WEB-INF/include/body_top.html" %>
 <div class="container">
     <h3>${course.name}</h3>
     <div class="row">
