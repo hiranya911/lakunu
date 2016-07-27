@@ -1,6 +1,7 @@
 package org.lakunu.web.models;
 
 import com.google.common.base.Strings;
+import org.lakunu.web.utils.Security;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -85,6 +86,17 @@ public final class Lab implements Serializable {
 
     public boolean isAllowLateSubmissions() {
         return allowLateSubmissions;
+    }
+
+    public boolean isOpenForSubmissions() {
+        if (published) {
+            if (submissionDeadline != null) {
+                return (submissionDeadline.after(new Date()) || allowLateSubmissions);
+            } else {
+                return true;
+            }
+        }
+        return false;
     }
 
     public Update newUpdate() {

@@ -73,8 +73,8 @@
                                                 <a href="/lab/${course.id}/${lab.id}">View/Edit</a>
                                                 <span class="tab-space">&nbsp;</span>
                                             </c:if>
-                                            <c:if test="${fn:contains(labPermissions[lab.id], 's')}">
-                                                Submit
+                                            <c:if test="${fn:contains(labPermissions[lab.id], 's') && lab.openForSubmissions}">
+                                                <a href="/submit/${course.id}/${lab.id}">Submit</a>
                                             </c:if>
                                         </td>
                                     </tr>
