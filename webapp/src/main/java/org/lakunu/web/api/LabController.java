@@ -87,18 +87,22 @@ public class LabController extends LakunuController {
                     .setAllowLateSubmissions(Boolean.parseBoolean(req.getParameter("labAllowLate")));
             String deadline = req.getParameter("labDeadline");
             if (!Strings.isNullOrEmpty(deadline)) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+                String dateInput = deadline.trim() + " " + (Strings.isNullOrEmpty(
+                        req.getParameter("labDeadlineTime")) ? "11:30 PM" : req.getParameter("labDeadlineTime"));
                 try {
-                    publishSettings.setSubmissionDeadline(dateFormat.parse(deadline));
+                    publishSettings.setSubmissionDeadline(dateFormat.parse(dateInput));
                 } catch (ParseException e) {
                     throw new ServletException("Invalid date string: " + deadline, e);
                 }
             }
             labService.publishLab(publishSettings);
             logger.info("Published lab: {}", lab.getId());
+            resp.sendRedirect("/lab/" + courseId + "/" + labId);
         } else if (Boolean.parseBoolean(req.getParameter("unpublishLab"))) {
             labService.unpublishLab(lab);
             logger.info("Unpublished lab: {}", lab.getId());
+            resp.sendRedirect("/lab/" + courseId + "/" + labId);
         } else {
             resp.sendError(400, "Invalid update operation");
         }

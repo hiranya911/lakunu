@@ -67,24 +67,24 @@
                         <table class="table table-striped">
                             <tbody>
                             <tr>
-                                <td>ID</td>
-                                <td><c:out value="${lab.id}"/></td>
+                                <td class="col-md-3">ID</td>
+                                <td>${lab.id}</td>
                             </tr>
                             <tr>
                                 <td>Name</td>
-                                <td><c:out value="${lab.name}"/></td>
+                                <td>${lab.name}</td>
                             </tr>
                             <tr>
                                 <td>Description</td>
-                                <td><c:out value="${lab.description}"/></td>
+                                <td>${lab.description}</td>
                             </tr>
                             <tr>
                                 <td>Created</td>
-                                <td><c:out value="${lab.createdAt}"/></td>
+                                <td>${lab.createdAt}</td>
                             </tr>
                             <tr>
                                 <td>Created By</td>
-                                <td><c:out value="${lab.createdBy}"/></td>
+                                <td>${lab.createdBy}</td>
                             </tr>
                             </tbody>
                         </table>

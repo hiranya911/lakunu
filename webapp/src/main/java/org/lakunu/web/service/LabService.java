@@ -73,7 +73,7 @@ public final class LabService extends AbstractDomainService {
         checkNotNull(lab, "Lab is required");
         checkPermissions(PUBLISH_PERMISSION(lab));
         checkState(lab.isPublished(), "Lab is not in published state");
-        lab = lab.newPublishSettings().setPublished(false).apply();
+        lab = lab.newPublishSettings().setPublished(false).setSubmissionDeadline(null).apply();
         checkArgument(!lab.isPublished(), "Publish must be false");
         daoFactory.getLabDAO().updateLab(lab);
         return lab;
