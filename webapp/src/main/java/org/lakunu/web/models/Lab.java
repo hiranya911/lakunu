@@ -1,7 +1,6 @@
 package org.lakunu.web.models;
 
 import com.google.common.base.Strings;
-import org.lakunu.web.utils.Security;
 
 import java.io.Serializable;
 import java.util.Date;

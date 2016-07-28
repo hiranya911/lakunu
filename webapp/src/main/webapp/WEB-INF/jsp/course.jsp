@@ -49,43 +49,7 @@
             <div class="panel panel-primary">
                 <div class="panel-heading">Labs</div>
                 <div class="panel-body">
-                    <%--@elvariable id="courseLabs" type="java.util.List<Lab>"--%>
-                    <%--@elvariable id="labPermissions" type="java.util.Map<String,String>"--%>
-                    <c:if test="${not empty labPermissions}">
-                        <table class="table table-striped">
-                            <thead class="thead-inverse">
-                            <tr>
-                                <th>Name</th>
-                                <th>Description</th>
-                                <th>Created</th>
-                                <th></th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <c:forEach items="${courseLabs}" var="lab">
-                                <c:if test="${not empty labPermissions[lab.id]}">
-                                    <tr>
-                                        <td><c:out value="${lab.name}"/></td>
-                                        <td><c:out value="${lab.description}"/></td>
-                                        <td><c:out value="${lab.createdAt}"/></td>
-                                        <td>
-                                            <c:if test="${fn:contains(labPermissions[lab.id], 'v')}">
-                                                <a href="/lab/${course.id}/${lab.id}">View/Edit</a>
-                                                <span class="tab-space">&nbsp;</span>
-                                            </c:if>
-                                            <c:if test="${fn:contains(labPermissions[lab.id], 's') && lab.openForSubmissions}">
-                                                <a href="/submit/${course.id}/${lab.id}">Submit</a>
-                                            </c:if>
-                                        </td>
-                                    </tr>
-                                </c:if>
-                            </c:forEach>
-                            </tbody>
-                        </table>
-                    </c:if>
-                    <c:if test="${empty labPermissions}">
-                        <p>No labs to display</p>
-                    </c:if>
+                    <jsp:include page="list_labs.jsp"/>
                     <shiro:hasPermission name="course:addLab:${course.id}">
                         <div id="addLabModal" class="modal fade" role="dialog">
                             <div class="modal-dialog">

@@ -116,15 +116,6 @@
     <div class="row">
         <div class="col-md-3">
             <button type="submit" class="btn btn-primary">Save</button>
-            <shiro:hasPermission name="lab:publish:${course.id}:${lab.id}">
-                <c:if test="${not lab.published}">
-                    <button type="button" class="btn btn-primary"
-                            data-toggle="modal" data-target="#publishLabModal">Publish</button>
-                </c:if>
-                <c:if test="${lab.published}">
-                    <button type="button" class="btn btn-primary">Unpublish</button>
-                </c:if>
-            </shiro:hasPermission>
         </div>
     </div>
 </form>

@@ -92,7 +92,9 @@ public class LabController extends LakunuController {
             }
             labService.publishLab(publishSettings);
             logger.info("Published lab: {}", lab.getId());
-            resp.sendRedirect("/lab/" + lab.getCourseId() + "/" + lab.getId());
+        } else if (Boolean.parseBoolean(req.getParameter("unpublishLab"))) {
+            labService.unpublishLab(lab);
+            logger.info("Unpublished lab: {}", lab.getId());
         } else {
             resp.sendError(400, "Invalid update operation");
         }

@@ -42,6 +42,8 @@ public class CourseController extends LakunuController {
         ImmutableList<Lab> labs = courseService.getLabs(courseId);
         req.setAttribute("courseLabs", labs);
         req.setAttribute("labPermissions", computeLabPermissions(labs));
+        req.setAttribute("publishOptions", labs.stream()
+                .anyMatch(lab -> hasPermission(LabService.PUBLISH_PERMISSION(lab))));
         req.getRequestDispatcher("/WEB-INF/jsp/course.jsp").forward(req, resp);
     }
 

@@ -75,12 +75,3 @@
         </div>
     </div>
 </div>
-<div class="row">
-    <div class="col-md-3">
-        <shiro:hasPermission name="lab:publish:${course.id}:${lab.id}">
-            <c:if test="${lab.published}">
-                <button type="button" class="btn btn-primary">Unpublish</button>
-            </c:if>
-        </shiro:hasPermission>
-    </div>
-</div>

@@ -9,6 +9,7 @@ import java.util.Date;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static org.lakunu.web.utils.Security.checkPermissions;
 
 public final class LabService extends AbstractDomainService {
@@ -49,7 +50,7 @@ public final class LabService extends AbstractDomainService {
     }
 
     public Lab publishLab(Lab.PublishSettings publishSettings) {
-        checkNotNull(publishSettings);
+        checkNotNull(publishSettings, "PublishSettings are requried");
         Lab lab = publishSettings.apply();
         checkArgument(lab.isPublished(), "Publish must be true");
         checkPermissions(PUBLISH_PERMISSION(lab));
@@ -64,6 +65,16 @@ public final class LabService extends AbstractDomainService {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        daoFactory.getLabDAO().updateLab(lab);
+        return lab;
+    }
+
+    public Lab unpublishLab(Lab lab) {
+        checkNotNull(lab, "Lab is required");
+        checkPermissions(PUBLISH_PERMISSION(lab));
+        checkState(lab.isPublished(), "Lab is not in published state");
+        lab = lab.newPublishSettings().setPublished(false).apply();
+        checkArgument(!lab.isPublished(), "Publish must be false");
         daoFactory.getLabDAO().updateLab(lab);
         return lab;
     }
