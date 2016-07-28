@@ -52,6 +52,7 @@ public final class LabService extends AbstractDomainService {
         checkNotNull(publishSettings);
         Lab lab = publishSettings.apply();
         checkArgument(lab.isPublished(), "Publish must be true");
+        checkPermissions(PUBLISH_PERMISSION(lab));
         Date submissionDeadline = lab.getSubmissionDeadline();
         if (submissionDeadline != null) {
             checkArgument(submissionDeadline.after(new Date()),
@@ -86,8 +87,12 @@ public final class LabService extends AbstractDomainService {
         return permission("update", lab.getCourseId(), lab.getId());
     }
 
-    public static String SUBMIT_PERMISSION(String courseId, String labId) {
-        return permission("submit", courseId, labId);
+    public static String PUBLISH_PERMISSION(Lab lab) {
+        return permission("publish", lab.getCourseId(), lab.getId());
+    }
+
+    public static String SUBMIT_PERMISSION(Lab lab) {
+        return permission("submit", lab.getCourseId(), lab.getId());
     }
 
 }

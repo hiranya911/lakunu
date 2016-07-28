@@ -7,6 +7,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.lakunu.web.models.Course;
 import org.lakunu.web.models.Lab;
+import org.lakunu.web.service.LabService;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -15,6 +16,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+
+import static org.lakunu.web.utils.Security.hasPermission;
 
 @WebServlet("/course/*")
 public class CourseController extends LakunuController {
@@ -47,13 +50,16 @@ public class CourseController extends LakunuController {
         Subject subject = SecurityUtils.getSubject();
         labs.forEach(lab -> {
             String permission = "";
-            if (subject.isPermitted("lab:view:" + lab.getCourseId() + ":" + lab.getId())) {
+            if (hasPermission(LabService.GET_PERMISSION(lab.getCourseId(), lab.getId()))) {
                 permission += "v";
             }
-            if (subject.isPermitted("lab:edit:" + lab.getCourseId() + ":" + lab.getId())) {
+            if (subject.isPermitted(LabService.UPDATE_PERMISSION(lab))) {
                 permission += "e";
             }
-            if (subject.isPermitted("lab:submit:" + lab.getCourseId() + ":" + lab.getId())) {
+            if (subject.isPermitted(LabService.PUBLISH_PERMISSION(lab))) {
+                permission += "p";
+            }
+            if (subject.isPermitted(LabService.SUBMIT_PERMISSION(lab))) {
                 permission += "s";
             }
             if (permission.length() > 0) {
