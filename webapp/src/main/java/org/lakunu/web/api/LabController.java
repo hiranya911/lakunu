@@ -65,10 +65,8 @@ public class LabController extends LakunuController {
             return;
         }
 
-        if (Boolean.parseBoolean(req.getParameter("updateLab"))) {
-            Lab.Update update = lab.newUpdate()
-                    .setName(req.getParameter("labName"))
-                    .setDescription(req.getParameter("labDescription"));
+        if (Boolean.parseBoolean(req.getParameter("updateLabConfig"))) {
+            Lab.Update update = lab.newUpdate();
             String config = req.getParameter("labConfig");
             if (!Strings.isNullOrEmpty(config)) {
                 update.setConfiguration(config.getBytes());
@@ -76,7 +74,13 @@ public class LabController extends LakunuController {
                 update.setConfiguration(null);
             }
             labService.updateLab(update);
-            logger.info("Updated lab: {}", lab.getId());
+            logger.info("Updated lab configuration: {}", lab.getId());
+        } else if (Boolean.parseBoolean(req.getParameter("updateLabDetails"))) {
+            Lab.Update update = lab.newUpdate()
+                    .setName(req.getParameter("labName"))
+                    .setDescription(req.getParameter("labDescription"));
+            labService.updateLab(update);
+            logger.info("Updated lab details: {}", lab.getId());
         } else if (Boolean.parseBoolean(req.getParameter("publishLab"))) {
             Lab.PublishSettings publishSettings = lab.newPublishSettings()
                     .setPublished(true)

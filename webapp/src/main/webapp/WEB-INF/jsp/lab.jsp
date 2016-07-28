@@ -15,25 +15,40 @@
 <%@ include file="/WEB-INF/include/body_top.html" %>
 <div class="container">
     <h3>${lab.name} <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
-    <c:if test="${canEdit}">
-        <jsp:include page="lab_edit.jsp"/>
+    <c:if test="${not lab.published}">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-info">
+                    This lab is not yet published. It cannot receive any submissions until it is published.
+                </div>
+            </div>
+        </div>
     </c:if>
-    <c:if test="${not canEdit}">
-        <jsp:include page="lab_view.jsp"/>
+    <c:if test="${lab.published}">
+        <shiro:hasPermission name="lab:update:${course.id}:${lab.id}">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-info">
+                        This lab is published. You cannot make changes to the lab while it's published.
+                    </div>
+                </div>
+            </div>
+        </shiro:hasPermission>
+        <shiro:lacksPermission name="lab:update:${course.id}:${lab.id}">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-info">
+                        This lab is published. It is available for receiving submissions.
+                    </div>
+                </div>
+            </div>
+        </shiro:lacksPermission>
     </c:if>
+
+    <shiro:hasPermission name="lab:view:${course.id}:${lab.id}">
+        <jsp:include page="lab_config.jsp"/>
+    </shiro:hasPermission>
+    <jsp:include page="lab_details.jsp"/>
 </div>
-<script>
-    var config, editor;
-
-    config = {
-        lineNumbers: true,
-        mode: "xml",
-        indentWithTabs: false,
-        readOnly: ${not canEdit}
-    };
-
-    editor = CodeMirror.fromTextArea(document.getElementById("labConfig"), config);
-    editor.setSize(900, 300);
-</script>
 </body>
 </html>
