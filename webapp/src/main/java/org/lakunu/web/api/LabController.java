@@ -17,6 +17,10 @@ import static org.lakunu.web.utils.Security.hasPermission;
 @WebServlet("/lab/*")
 public class LabController extends LakunuController {
 
+    private static final SimpleDateFormat DEADLINE_DATETIME_FORMAT =
+            new SimpleDateFormat("MM/dd/yyyy hh:mm a");
+    private static final String DEFAULT_DEADLINE_TIME = "11:30 PM";
+
     @Override
     protected void doGet(HttpServletRequest req,
                          HttpServletResponse resp) throws ServletException, IOException {
@@ -85,15 +89,17 @@ public class LabController extends LakunuController {
             Lab.PublishSettings publishSettings = lab.newPublishSettings()
                     .setPublished(true)
                     .setAllowLateSubmissions(Boolean.parseBoolean(req.getParameter("labAllowLate")));
-            String deadline = req.getParameter("labDeadline");
-            if (!Strings.isNullOrEmpty(deadline)) {
-                SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy hh:mm a");
-                String dateInput = deadline.trim() + " " + (Strings.isNullOrEmpty(
-                        req.getParameter("labDeadlineTime")) ? "11:30 PM" : req.getParameter("labDeadlineTime"));
+            String deadlineDate = req.getParameter("labDeadline");
+            if (!Strings.isNullOrEmpty(deadlineDate)) {
+                String deadlineTime = req.getParameter("labDeadlineTime");
+                if (Strings.isNullOrEmpty(deadlineTime)) {
+                    deadlineTime = DEFAULT_DEADLINE_TIME;
+                }
+                String dateInput = deadlineDate.trim() + " " + deadlineTime.trim();
                 try {
-                    publishSettings.setSubmissionDeadline(dateFormat.parse(dateInput));
+                    publishSettings.setSubmissionDeadline(DEADLINE_DATETIME_FORMAT.parse(dateInput));
                 } catch (ParseException e) {
-                    throw new ServletException("Invalid date string: " + deadline, e);
+                    throw new ServletException("Invalid date string: " + dateInput, e);
                 }
             }
             labService.publishLab(publishSettings);

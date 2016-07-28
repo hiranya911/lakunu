@@ -42,8 +42,6 @@ public class CourseController extends LakunuController {
         ImmutableList<Lab> labs = courseService.getLabs(courseId);
         req.setAttribute("courseLabs", labs);
         req.setAttribute("labPermissions", computeLabPermissions(labs));
-        req.setAttribute("publishOptions", labs.stream()
-                .anyMatch(lab -> hasPermission(LabService.PUBLISH_PERMISSION(lab))));
         req.getRequestDispatcher("/WEB-INF/jsp/course.jsp").forward(req, resp);
     }
 
@@ -52,11 +50,8 @@ public class CourseController extends LakunuController {
         Subject subject = SecurityUtils.getSubject();
         labs.forEach(lab -> {
             String permission = "";
-            if (hasPermission(LabService.GET_PERMISSION(lab.getCourseId(), lab.getId()))) {
-                permission += "v";
-            }
             if (subject.isPermitted(LabService.UPDATE_PERMISSION(lab))) {
-                permission += "e";
+                permission += "u";
             }
             if (subject.isPermitted(LabService.PUBLISH_PERMISSION(lab))) {
                 permission += "p";

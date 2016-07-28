@@ -6,9 +6,9 @@
 <html>
 <head>
     <%@ include file="/WEB-INF/include/header.html" %>
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.date.css">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.time.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.date.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.time.css">
     <link rel="stylesheet" href="<c:url value="/codemirror/codemirror.css"/>">
     <script src="<c:url value="/codemirror/codemirror.js"/>"></script>
     <script src="<c:url value="/codemirror/xml/xml.js"/>"></script>
@@ -48,11 +48,10 @@
         </shiro:lacksPermission>
     </c:if>
 
-    <shiro:hasPermission name="lab:view:${course.id}:${lab.id}">
+    <shiro:hasPermission name="lab:update:${course.id}:${lab.id}">
         <jsp:include page="lab_config.jsp"/>
+        <jsp:include page="lab_details.jsp"/>
     </shiro:hasPermission>
-
-    <jsp:include page="lab_details.jsp"/>
 
     <shiro:hasPermission name="lab:publish:${course.id}:${lab.id}">
         <jsp:include page="lab_publish.jsp"/>
