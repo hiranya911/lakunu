@@ -1,3 +1,6 @@
+<%--@elvariable id="lab" type="org.lakunu.web.data.Lab"--%>
+<%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
+<%--@elvariable id="canEdit" type="java.lang.Boolean"--%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <div class="row">
     <div class="col-md-12">
@@ -71,6 +74,8 @@
         </div>
     </div>
 </div>
+<script src="<c:url value="/codemirror/codemirror.js"/>"></script>
+<script src="<c:url value="/codemirror/xml/xml.js"/>"></script>
 <script>
     var config, editor;
 

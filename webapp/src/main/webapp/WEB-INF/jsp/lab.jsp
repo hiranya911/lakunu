@@ -6,12 +6,12 @@
 <html>
 <head>
     <%@ include file="/WEB-INF/include/header.html" %>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.date.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.time.css">
+    <shiro:hasPermission name="lab:publish:${course.id}:${lab.id}">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.date.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pickadate.js/3.5.3/themes/default.time.css">
+    </shiro:hasPermission>
     <link rel="stylesheet" href="<c:url value="/codemirror/codemirror.css"/>">
-    <script src="<c:url value="/codemirror/codemirror.js"/>"></script>
-    <script src="<c:url value="/codemirror/xml/xml.js"/>"></script>
     <title>Lakunu: Lab [${lab.name}]</title>
 </head>
 <body>
