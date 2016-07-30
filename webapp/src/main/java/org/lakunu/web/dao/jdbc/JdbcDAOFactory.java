@@ -11,7 +11,7 @@ import javax.sql.DataSource;
 
 public final class JdbcDAOFactory extends DAOFactory {
 
-    private static final String DAO_COLLECTION_DS = "daoCollection.ds";
+    private static final String DAO_FACTORY_DATA_SOURCE = "daoFactory.ds";
 
     private final DataSource dataSource;
 
@@ -19,7 +19,7 @@ public final class JdbcDAOFactory extends DAOFactory {
         InitialContext context = null;
         try {
             context = new InitialContext();
-            String dsName = properties.getRequired(DAO_COLLECTION_DS);
+            String dsName = properties.getRequired(DAO_FACTORY_DATA_SOURCE);
             logger.info("Loading JDBC datasource: {}", dsName);
             dataSource = (DataSource) context.lookup(dsName);
         } catch (NamingException e) {
