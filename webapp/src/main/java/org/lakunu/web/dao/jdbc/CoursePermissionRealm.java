@@ -47,14 +47,16 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                     principals.getPrimaryPrincipal());
             ImmutableSet.Builder<String> permissions = ImmutableSet.builder();
             courseRoles.forEach(role -> {
+                String courseId = String.valueOf(role.courseId);
                 switch (role.role) {
                     case ROLE_OWNER:
                         permissions.add("course:*:" + role.courseId);
-                        permissions.add(LabService.permission("*", String.valueOf(role.courseId), "*"));
+                        permissions.add(LabService.permission("*", courseId, "*"));
+                        permissions.add("submission:*:" + courseId + ":*");
                         break;
                     case ROLE_INSTRUCTOR:
                         permissions.add("course:get,getLabs:" + role.courseId);
-                        permissions.add(LabService.permission("*", String.valueOf(role.courseId), "*"));
+                        permissions.add(LabService.permission("*", courseId, "*"));
                         break;
                 }
             });

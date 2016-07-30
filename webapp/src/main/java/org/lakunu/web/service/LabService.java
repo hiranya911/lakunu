@@ -3,7 +3,6 @@ package org.lakunu.web.service;
 import com.google.common.base.Strings;
 import org.lakunu.web.ant.AntEvaluationBridge;
 import org.lakunu.web.models.Lab;
-import org.lakunu.web.models.Submission;
 import org.lakunu.web.utils.Security;
 
 import java.util.Date;
@@ -78,19 +77,6 @@ public final class LabService extends AbstractDomainService {
         checkArgument(!lab.isPublished(), "Publish must be false");
         daoFactory.getLabDAO().updateLab(lab);
         return lab;
-    }
-
-    public String submitLab(Lab lab, String type, byte[] data) {
-        checkNotNull(lab, "Lab is required");
-        checkPermissions(SUBMIT_PERMISSION(lab));
-        Submission submission = Submission.newBuilder()
-                .setLabId(lab.getId())
-                .setUserId(Security.getCurrentUser())
-                .setSubmittedAt(new Date())
-                .setType(type)
-                .setData(data)
-                .build();
-        return daoFactory.getLabDAO().submitLab(submission);
     }
 
     public static String permission(String op, String courseId, String labId) {

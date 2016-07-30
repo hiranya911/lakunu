@@ -11,11 +11,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
-@WebServlet("/eval/*")
-public class EvaluationController extends LakunuController {
+@WebServlet("/submission/*")
+public class SubmissionController extends LakunuController {
 
     @Override
     protected void doGet(HttpServletRequest req,
@@ -35,13 +34,13 @@ public class EvaluationController extends LakunuController {
             return;
         }
 
-        List<Submission> ownedSubmissions = new ArrayList<>(evaluationService.getOwnedSubmissions(
+        List<Submission> ownedSubmissions = new ArrayList<>(submissionService.getOwnedSubmissions(
                 courseId, labId));
         ownedSubmissions.sort((o1, o2) -> o2.getSubmittedAt().compareTo(o1.getSubmittedAt()));
 
         req.setAttribute("lab", lab);
         req.setAttribute("course", courseService.getCourse(courseId));
         req.setAttribute("submissions", ImmutableList.copyOf(ownedSubmissions));
-        req.getRequestDispatcher("/WEB-INF/jsp/eval.jsp").forward(req, resp);
+        req.getRequestDispatcher("/WEB-INF/jsp/submissions.jsp").forward(req, resp);
     }
 }

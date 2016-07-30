@@ -2,26 +2,33 @@ package org.lakunu.web.dao.jdbc;
 
 import com.google.common.collect.ImmutableList;
 import org.lakunu.web.dao.DAOException;
-import org.lakunu.web.dao.EvaluationDAO;
+import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.models.Submission;
 import org.lakunu.web.utils.Security;
 
 import javax.sql.DataSource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
-public final class JdbcEvaluationDAO implements EvaluationDAO {
+public final class JdbcSubmissionDAO implements SubmissionDAO {
 
     private final DataSource dataSource;
 
-    public JdbcEvaluationDAO(DataSource dataSource) {
+    public JdbcSubmissionDAO(DataSource dataSource) {
         checkNotNull(dataSource, "DataSource is required");
         this.dataSource = dataSource;
+    }
+
+    @Override
+    public String addSubmission(Submission submission) {
+        try {
+            return AddSubmissionCommand.execute(dataSource, submission);
+        } catch (SQLException e) {
+            throw new DAOException("Error while submitting lab", e);
+        }
     }
 
     @Override
@@ -30,6 +37,45 @@ public final class JdbcEvaluationDAO implements EvaluationDAO {
             return GetOwnedSubmissionsCommand.execute(dataSource, labId);
         } catch (SQLException e) {
             throw new DAOException("Error while retrieving submissions", e);
+        }
+    }
+
+    private static final class AddSubmissionCommand extends Command<String> {
+
+        private static final String SUBMIT_LAB_SQL = "INSERT INTO submission (user_id, " +
+                "lab_id, submitted_at, submission_type, submission_data) VALUES (?,?,?,?,?)";
+
+        private final Submission submission;
+
+        private AddSubmissionCommand(DataSource dataSource, Submission submission) {
+            super(dataSource);
+            this.submission = submission;
+        }
+
+        private static String execute(DataSource dataSource,
+                                      Submission submission) throws SQLException {
+            return new AddSubmissionCommand(dataSource, submission).run();
+        }
+
+        @Override
+        protected String doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(SUBMIT_LAB_SQL,
+                    Statement.RETURN_GENERATED_KEYS)) {
+                stmt.setString(1, submission.getUserId());
+                stmt.setLong(2, Long.parseLong(submission.getLabId()));
+                stmt.setTimestamp(3, new Timestamp(submission.getSubmittedAt().getTime()));
+                stmt.setString(4, submission.getType());
+                stmt.setBytes(5, submission.getData());
+                int rows = stmt.executeUpdate();
+                checkState(rows == 1, "Failed to add the lab to database");
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return String.valueOf(rs.getLong(1));
+                    } else {
+                        throw new IllegalStateException("Failed to retrieve new lab ID");
+                    }
+                }
+            }
         }
     }
 

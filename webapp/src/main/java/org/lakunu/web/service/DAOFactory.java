@@ -1,7 +1,7 @@
 package org.lakunu.web.service;
 
 import org.lakunu.web.dao.CourseDAO;
-import org.lakunu.web.dao.EvaluationDAO;
+import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.dao.LabDAO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +16,6 @@ public abstract class DAOFactory {
 
     protected abstract LabDAO getLabDAO();
 
-    protected abstract EvaluationDAO getEvaluationDAO();
+    protected abstract SubmissionDAO getSubmissionDAO();
 
 }

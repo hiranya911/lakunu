@@ -73,11 +73,11 @@ public class SubmitController extends LakunuController {
                     try (InputStream in = item.openStream()) {
                         IOUtils.copy(in, buffer);
                     }
-                    labService.submitLab(lab, "FileUpload", buffer.getData());
+                    submissionService.addSubmission(lab, "FileUpload", buffer.getData());
                     break;
                 }
             }
-            resp.sendRedirect("/lab/" + courseId + "/" + labId);
+            resp.sendRedirect("/submission/" + courseId + "/" + labId);
         } catch (FileUploadException e) {
             throw new ServletException(e);
         }

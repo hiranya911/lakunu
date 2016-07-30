@@ -10,6 +10,5 @@ public interface LabDAO {
     Lab getLab(String courseId, String labId);
     ImmutableList<Lab> getLabs(String courseId);
     void updateLab(Lab lab);
-    String submitLab(Submission submission);
 
 }

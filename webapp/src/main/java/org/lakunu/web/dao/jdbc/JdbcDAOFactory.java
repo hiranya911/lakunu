@@ -1,7 +1,7 @@
 package org.lakunu.web.dao.jdbc;
 
 import org.lakunu.web.dao.CourseDAO;
-import org.lakunu.web.dao.EvaluationDAO;
+import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.dao.LabDAO;
 import org.lakunu.web.service.DAOFactory;
 import org.lakunu.web.utils.ConfigProperties;
@@ -50,7 +50,7 @@ public final class JdbcDAOFactory extends DAOFactory {
     }
 
     @Override
-    protected EvaluationDAO getEvaluationDAO() {
-        return new JdbcEvaluationDAO(dataSource);
+    protected SubmissionDAO getSubmissionDAO() {
+        return new JdbcSubmissionDAO(dataSource);
     }
 }
