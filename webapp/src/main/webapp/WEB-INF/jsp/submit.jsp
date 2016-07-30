@@ -29,7 +29,7 @@
                     <table class="table table-striped">
                         <tbody>
                         <tr>
-                            <td>Name</td>
+                            <td class="col-md-3">Name</td>
                             <td><c:out value="${lab.name}"/></td>
                         </tr>
                         <tr>
@@ -44,6 +44,14 @@
                             <td>Created By</td>
                             <td><c:out value="${lab.createdBy}"/></td>
                         </tr>
+                        <tr>
+                            <td>Submission Deadline</td>
+                            <td><c:out value="${lab.submissionDeadline}"/></td>
+                        </tr>
+                        <tr>
+                            <td>Allow Late</td>
+                            <td><c:out value="${lab.allowLateSubmissions}"/></td>
+                        </tr>
                         </tbody>
                     </table>
                 </div>
@@ -52,7 +60,21 @@
     </div>
     <shiro:hasPermission name="lab:submit:${course.id}:${lab.id}">
         <c:if test="${lab.openForSubmissions}">
-            Submission form goes here
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">Upload Submission</div>
+                        <div class="panel-body">
+                            <form id="submitLabForm" method="POST" enctype="multipart/form-data" action="/submit/${course.id}/${lab.id}">
+                                <div class="form-group">
+                                    <input id="submissionFile" name="submissionFile" type="file">
+                                </div>
+                                <button type="submit" form="submitLabForm" class="btn btn-primary">Upload</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </c:if>
     </shiro:hasPermission>
 </div>

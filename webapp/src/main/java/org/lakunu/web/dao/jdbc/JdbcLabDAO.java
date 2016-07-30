@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import org.lakunu.web.dao.LabDAO;
 import org.lakunu.web.dao.DAOException;
 import org.lakunu.web.models.Lab;
+import org.lakunu.web.models.Submission;
 
 import javax.sql.DataSource;
 
@@ -58,6 +59,15 @@ public final class JdbcLabDAO implements LabDAO {
         }
     }
 
+    @Override
+    public String submitLab(Submission submission) {
+        try {
+            return SubmitLabCommand.execute(dataSource, submission);
+        } catch (SQLException e) {
+            throw new DAOException("Error while submitting lab", e);
+        }
+    }
+
     private static final class AddLabCommand extends Command<String> {
 
         private static final String ADD_LAB_SQL =  "INSERT INTO lab (name, description, " +
@@ -76,7 +86,6 @@ public final class JdbcLabDAO implements LabDAO {
 
         @Override
         protected String doRun(Connection connection) throws SQLException {
-            long insertId;
             try (PreparedStatement stmt = connection.prepareStatement(ADD_LAB_SQL,
                     Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, lab.getName());
@@ -88,13 +97,12 @@ public final class JdbcLabDAO implements LabDAO {
                 checkState(rows == 1, "Failed to add the lab to database");
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (rs.next()) {
-                        insertId = rs.getLong(1);
+                        return String.valueOf(rs.getLong(1));
                     } else {
                         throw new IllegalStateException("Failed to retrieve new lab ID");
                     }
                 }
             }
-            return String.valueOf(insertId);
         }
     }
 
@@ -203,6 +211,45 @@ public final class JdbcLabDAO implements LabDAO {
                         builder.add(createLab(rs));
                     }
                     return builder.build();
+                }
+            }
+        }
+    }
+
+    private static final class SubmitLabCommand extends Command<String> {
+
+        private static final String SUBMIT_LAB_SQL = "INSERT INTO submission (user_id, " +
+                "lab_id, submitted_at, submission_type, submission_data) VALUES (?,?,?,?,?)";
+
+        private final Submission submission;
+
+        private SubmitLabCommand(DataSource dataSource, Submission submission) {
+            super(dataSource);
+            this.submission = submission;
+        }
+
+        private static String execute(DataSource dataSource,
+                                                  Submission submission) throws SQLException {
+            return new SubmitLabCommand(dataSource, submission).run();
+        }
+
+        @Override
+        protected String doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(SUBMIT_LAB_SQL,
+                    Statement.RETURN_GENERATED_KEYS)) {
+                stmt.setString(1, submission.getUserId());
+                stmt.setLong(2, Long.parseLong(submission.getLabId()));
+                stmt.setTimestamp(3, new Timestamp(submission.getSubmittedAt().getTime()));
+                stmt.setString(4, submission.getType());
+                stmt.setBytes(5, submission.getData());
+                int rows = stmt.executeUpdate();
+                checkState(rows == 1, "Failed to add the lab to database");
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        return String.valueOf(rs.getLong(1));
+                    } else {
+                        throw new IllegalStateException("Failed to retrieve new lab ID");
+                    }
                 }
             }
         }

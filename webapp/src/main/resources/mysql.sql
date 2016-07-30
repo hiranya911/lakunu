@@ -28,3 +28,12 @@ CREATE TABLE lab (
   KEY lab_key_id (id),
   CONSTRAINT lab_unique_course_id_name UNIQUE(course_id, name)
 );
+
+CREATE TABLE submission (
+  id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  user_id VARCHAR(128) NOT NULL,
+  lab_id BIGINT NOT NULL REFERENCES lab(id) ON DELETE CASCADE ON UPDATE CASCADE,
+  submitted_at DATETIME NOT NULL,
+  submission_type VARCHAR(32) NOT NULL,
+  submission_data MEDIUMBLOB NOT NULL
+);
