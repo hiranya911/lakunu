@@ -38,6 +38,13 @@ CREATE TABLE submission (
   submission_data MEDIUMBLOB NOT NULL
 );
 
+CREATE TABLE job_queue (
+  submission_id BIGINT NOT NULL REFERENCES submission(id),
+  status INT NOT NULL DEFAULT 0,
+  started_at DATETIME DEFAULT NULL,
+  KEY job_queue_status (status)
+);
+
 CREATE TABLE evaluation (
   id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   submission_id BIGINT NOT NULL REFERENCES submission(id),

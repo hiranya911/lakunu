@@ -45,17 +45,5 @@
         <res-ref-name>jdbc/lakunu</res-ref-name>
         <res-type>javax.sql.DataSource</res-type>
     </resource-ref>
-    <resource-ref>
-        <res-ref-name>jms/ConnectionFactory</res-ref-name>
-        <res-type>javax.jms.ConnectionFactory</res-type>
-        <res-auth>Container</res-auth>
-        <res-sharing-scope>Shareable</res-sharing-scope>
-    </resource-ref>
-    <message-destination-ref>
-        <message-destination-ref-name>jms/MyTestQueue</message-destination-ref-name>
-        <message-destination-type>javax.jms.Queue</message-destination-type>
-        <message-destination-usage>Produces</message-destination-usage>
-        <message-destination-link>jms/MyTestQueue</message-destination-link>
-    </message-destination-ref>
 
 </web-app>
