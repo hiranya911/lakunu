@@ -37,3 +37,14 @@ CREATE TABLE submission (
   submission_type VARCHAR(32) NOT NULL,
   submission_data MEDIUMBLOB NOT NULL
 );
+
+CREATE TABLE evaluation (
+  id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  submission_id BIGINT NOT NULL REFERENCES submission(id),
+  status INT NOT NULL,
+  started_at DATETIME NOT NULL,
+  finished_at DATETIME DEFAULT NULL,
+  finishing_status INT DEFAULT NULL,
+  grade DOUBLE DEFAULT 0,
+  log MEDIUMTEXT DEFAULT NULL
+);

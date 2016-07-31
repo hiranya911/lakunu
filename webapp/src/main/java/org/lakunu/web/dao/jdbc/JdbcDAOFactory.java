@@ -3,6 +3,7 @@ package org.lakunu.web.dao.jdbc;
 import org.lakunu.web.dao.CourseDAO;
 import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.dao.LabDAO;
+import org.lakunu.web.dao.jms.JmsEvaluationJobQueue;
 import org.lakunu.web.service.DAOFactory;
 import org.lakunu.web.utils.ConfigProperties;
 
@@ -15,6 +16,7 @@ public final class JdbcDAOFactory extends DAOFactory {
     private static final String DAO_FACTORY_DATA_SOURCE = "daoFactory.ds";
 
     private final DataSource dataSource;
+    private final JmsEvaluationJobQueue jobQueue;
 
     public JdbcDAOFactory(ConfigProperties properties) {
         InitialContext context = null;
@@ -28,6 +30,8 @@ public final class JdbcDAOFactory extends DAOFactory {
         } finally {
             closeContext(context);
         }
+
+        jobQueue = new JmsEvaluationJobQueue(properties);
     }
 
     private void closeContext(InitialContext context) {
@@ -51,6 +55,6 @@ public final class JdbcDAOFactory extends DAOFactory {
 
     @Override
     protected SubmissionDAO getSubmissionDAO() {
-        return new JdbcSubmissionDAO(dataSource);
+        return new JdbcSubmissionDAO(dataSource, jobQueue);
     }
 }
