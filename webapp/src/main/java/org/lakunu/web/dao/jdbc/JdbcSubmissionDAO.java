@@ -3,20 +3,19 @@ package org.lakunu.web.dao.jdbc;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.web.dao.DAOException;
 import org.lakunu.web.dao.SubmissionDAO;
+import org.lakunu.web.models.JobEntry;
 import org.lakunu.web.models.Submission;
 import org.lakunu.web.utils.Security;
 
 import javax.sql.DataSource;
 
 import java.sql.*;
+import java.util.*;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 public final class JdbcSubmissionDAO implements SubmissionDAO {
-
-    private static final int JOB_QUEUE_STATUS_READY = 0;
-    private static final int JOB_QUEUE_STATUS_PROCESSING = 1;
 
     private final DataSource dataSource;
 
@@ -26,11 +25,20 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
     }
 
     @Override
-    public String addSubmission(Submission submission) {
+    public String addAndEnqueueSubmission(Submission submission) {
         try {
             return AddSubmissionCommand.execute(dataSource, submission);
         } catch (SQLException e) {
             throw new DAOException("Error while submitting lab", e);
+        }
+    }
+
+    @Override
+    public JobEntry getNextEntryForProcessing() {
+        try {
+            return GetNextEntryCommand.execute(dataSource);
+        } catch (SQLException e) {
+            throw new DAOException("Error while polling job queue", e);
         }
     }
 
@@ -85,11 +93,63 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
 
             try (PreparedStatement stmt = connection.prepareStatement(ENQUEUE_SUBMISSION_SQL)) {
                 stmt.setLong(1, submissionId);
-                stmt.setInt(2, JOB_QUEUE_STATUS_READY);
+                stmt.setInt(2, JobEntry.JOB_ENTRY_STATUS_READY);
                 int rows = stmt.executeUpdate();
                 checkState(rows == 1, "Failed to add the lab to the job queue");
             }
             return String.valueOf(submissionId);
+        }
+    }
+
+    private static final class GetNextEntryCommand extends TxCommand<JobEntry> {
+
+        private static final String GET_NEXT_ENTRY_SQL = "SELECT id, submission_id, status, " +
+                "started_at FROM job_queue WHERE status = ? OR (status = ? AND started_at < ?) LIMIT 1";
+        private static final String UPDATE_ENTRY_SQL = "UPDATE job_queue SET status = ?, " +
+                "started_at = ? WHERE id = ?";
+
+        private GetNextEntryCommand(DataSource dataSource) {
+            super(dataSource, Connection.TRANSACTION_SERIALIZABLE);
+        }
+
+        private static JobEntry execute(DataSource dataSource) throws SQLException {
+            return new GetNextEntryCommand(dataSource).run();
+        }
+
+        @Override
+        protected JobEntry doTransaction(Connection connection) throws SQLException {
+            Calendar calendar = Calendar.getInstance();
+            Timestamp now = new Timestamp(calendar.getTime().getTime());
+            calendar.add(Calendar.HOUR_OF_DAY, -1);
+            Timestamp oneHourAgo = new Timestamp(calendar.getTime().getTime());
+
+            JobEntry jobEntry = null;
+            try (PreparedStatement stmt = connection.prepareStatement(GET_NEXT_ENTRY_SQL)) {
+                stmt.setInt(1, JobEntry.JOB_ENTRY_STATUS_READY);
+                stmt.setInt(2, JobEntry.JOB_ENTRY_STATUS_PROCESSING);
+                stmt.setTimestamp(3, oneHourAgo);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        jobEntry = JobEntry.newBuilder()
+                                .setId(String.valueOf(rs.getLong("id")))
+                                .setSubmissionId(String.valueOf(rs.getLong("submission_id")))
+                                .setStatus(rs.getInt("status"))
+                                .setStartedAt(rs.getTimestamp("started_at"))
+                                .build();
+                    }
+                }
+            }
+
+            if (jobEntry != null) {
+                try (PreparedStatement stmt = connection.prepareStatement(UPDATE_ENTRY_SQL)) {
+                    stmt.setInt(1, JobEntry.JOB_ENTRY_STATUS_PROCESSING);
+                    stmt.setTimestamp(2, now);
+                    stmt.setLong(3, Long.parseLong(jobEntry.getId()));
+                    stmt.executeUpdate();
+                }
+            }
+
+            return jobEntry;
         }
     }
 

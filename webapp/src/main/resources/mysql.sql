@@ -39,6 +39,7 @@ CREATE TABLE submission (
 );
 
 CREATE TABLE job_queue (
+  id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   submission_id BIGINT NOT NULL REFERENCES submission(id),
   status INT NOT NULL DEFAULT 0,
   started_at DATETIME DEFAULT NULL,
