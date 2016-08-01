@@ -2,6 +2,7 @@ package org.lakunu.web.dao.jdbc;
 
 import com.google.common.collect.ImmutableList;
 import org.lakunu.web.dao.DAOException;
+import org.lakunu.web.dao.EvaluationJobQueue;
 import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.models.Submission;
 import org.lakunu.web.utils.Security;
@@ -15,20 +16,20 @@ import static com.google.common.base.Preconditions.checkState;
 
 public final class JdbcSubmissionDAO implements SubmissionDAO {
 
-    private static final int JOB_QUEUE_STATUS_READY = 0;
-    private static final int JOB_QUEUE_STATUS_PROCESSING = 1;
-
     private final DataSource dataSource;
+    private final EvaluationJobQueue jobQueue;
 
-    public JdbcSubmissionDAO(DataSource dataSource) {
+    public JdbcSubmissionDAO(DataSource dataSource, EvaluationJobQueue jobQueue) {
         checkNotNull(dataSource, "DataSource is required");
+        checkNotNull(jobQueue, "JobQueue is required");
         this.dataSource = dataSource;
+        this.jobQueue = jobQueue;
     }
 
     @Override
     public String addSubmission(Submission submission) {
         try {
-            return AddSubmissionCommand.execute(dataSource, submission);
+            return AddSubmissionCommand.execute(dataSource, submission, jobQueue);
         } catch (SQLException e) {
             throw new DAOException("Error while submitting lab", e);
         }
@@ -47,23 +48,24 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
 
         private static final String SUBMIT_LAB_SQL = "INSERT INTO submission (user_id, " +
                 "lab_id, submitted_at, submission_type, submission_data) VALUES (?,?,?,?,?)";
-        private static final String ENQUEUE_SUBMISSION_SQL = "INSERT INTO job_queue " +
-                "(submission_id, status) VALUES (?,?)";
 
         private final Submission submission;
+        private final EvaluationJobQueue jobQueue;
 
-        private AddSubmissionCommand(DataSource dataSource, Submission submission) {
+        private AddSubmissionCommand(DataSource dataSource, Submission submission,
+                                     EvaluationJobQueue jobQueue) {
             super(dataSource);
             this.submission = submission;
+            this.jobQueue = jobQueue;
         }
 
-        private static String execute(DataSource dataSource, Submission submission) throws SQLException {
-            return new AddSubmissionCommand(dataSource, submission).run();
+        private static String execute(DataSource dataSource, Submission submission,
+                                      EvaluationJobQueue jobQueue) throws SQLException {
+            return new AddSubmissionCommand(dataSource, submission, jobQueue).run();
         }
 
         @Override
         protected String doTransaction(Connection connection) throws SQLException {
-            long submissionId;
             try (PreparedStatement stmt = connection.prepareStatement(SUBMIT_LAB_SQL,
                     Statement.RETURN_GENERATED_KEYS)) {
                 stmt.setString(1, submission.getUserId());
@@ -73,23 +75,18 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
                 stmt.setBytes(5, submission.getData());
                 int rows = stmt.executeUpdate();
                 checkState(rows == 1, "Failed to add the lab to database");
+                String submissionId;
                 try (ResultSet rs = stmt.getGeneratedKeys()) {
                     if (rs.next()) {
-                        submissionId = rs.getLong(1);
+                        submissionId = String.valueOf(rs.getLong(1));
                     } else {
                         throw new IllegalStateException("Failed to retrieve new lab ID");
                     }
                 }
 
+                jobQueue.enqueue(submissionId);
+                return submissionId;
             }
-
-            try (PreparedStatement stmt = connection.prepareStatement(ENQUEUE_SUBMISSION_SQL)) {
-                stmt.setLong(1, submissionId);
-                stmt.setInt(2, JOB_QUEUE_STATUS_READY);
-                int rows = stmt.executeUpdate();
-                checkState(rows == 1, "Failed to add the lab to the job queue");
-            }
-            return String.valueOf(submissionId);
         }
     }
 
