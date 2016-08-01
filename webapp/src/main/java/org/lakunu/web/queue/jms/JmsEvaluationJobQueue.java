@@ -12,7 +12,6 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
@@ -42,20 +41,16 @@ public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
     }
 
     @Override
-    public void enqueue(String submissionId) {
-        enqueue(Collections.singleton(submissionId));
-    }
-
-    @Override
     public void enqueue(Collection<String> submissionIds) {
         if (submissionIds.isEmpty()) {
             return;
         }
 
         QueueConnection connection = null;
+        Session session = null;
         try {
             connection = connectionFactory.createQueueConnection();
-            Session session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+            session = connection.createQueueSession(true, Session.SESSION_TRANSACTED);
             MessageProducer producer = session.createProducer(queue);
             for (String submissionId : submissionIds) {
                 TextMessage message = session.createTextMessage();
@@ -63,10 +58,22 @@ public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
                 producer.send(message);
             }
             logger.info("Enqueued {} submissions for evaluation", submissionIds.size());
+            session.commit();
         } catch (JMSException e) {
+            rollback(session);
             throw new DAOException("Error during enqueue", e);
         } finally {
             closeConnection(connection);
+        }
+    }
+
+    private void rollback(Session session) {
+        if (session != null) {
+            try {
+                session.rollback();
+            } catch (JMSException e) {
+                logger.error("Error while rolling back session", e);
+            }
         }
     }
 

@@ -8,7 +8,6 @@ public interface EvaluationJobQueue {
 
     String JOB_QUEUE = "JOB_QUEUE";
 
-    void enqueue(String submissionId);
     void enqueue(Collection<String> submissionIds);
     void addWorker(EvaluationJobWorker worker);
     void cleanup();

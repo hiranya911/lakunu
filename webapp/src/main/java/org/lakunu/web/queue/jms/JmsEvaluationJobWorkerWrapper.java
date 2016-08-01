@@ -24,7 +24,7 @@ public final class JmsEvaluationJobWorkerWrapper implements MessageListener {
         this.worker = worker;
         connection = connectionFactory.createQueueConnection();
         try {
-            session = connection.createSession(false, Session.CLIENT_ACKNOWLEDGE);
+            session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
             consumer = session.createConsumer(queue);
             consumer.setMessageListener(this);
             connection.start();
@@ -44,12 +44,6 @@ public final class JmsEvaluationJobWorkerWrapper implements MessageListener {
             }
         } catch (Exception e) {
             logger.error("Error while processing message", e);
-        } finally {
-            try {
-                message.acknowledge();
-            } catch (JMSException e) {
-                logger.error("Error while acknowledging receipt of message", e);
-            }
         }
     }
 
