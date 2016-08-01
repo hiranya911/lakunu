@@ -1,8 +1,8 @@
 package org.lakunu.web.dao.jdbc;
 
-import org.lakunu.web.dao.DAOException;
-import org.lakunu.web.dao.EnqueueWorker;
 import org.lakunu.web.queue.EvaluationJobQueue;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.sql.DataSource;
 import java.sql.Connection;
@@ -11,26 +11,55 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class JdbcEnqueueWorker extends EnqueueWorker {
+final class JdbcEnqueueWorker implements Runnable {
+
+    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final DataSource dataSource;
+    private final EvaluationJobQueue jobQueue;
+    private final ExecutorService executor;
+    private final Future<?> future;
+
+    private boolean proceed;
 
     public JdbcEnqueueWorker(DataSource dataSource, EvaluationJobQueue jobQueue) {
-        super(jobQueue);
-        checkNotNull(dataSource, "DataSource is required");
         this.dataSource = dataSource;
+        checkNotNull(jobQueue, "JobQueue is required");
+        this.jobQueue = jobQueue;
+        this.executor = Executors.newSingleThreadExecutor();
+        this.proceed = true;
+        this.future = this.executor.submit(this);
     }
 
     @Override
-    protected int enqueue(EvaluationJobQueue jobQueue) {
-        try {
-            return new EnqueueCommand(dataSource, jobQueue).run();
-        } catch (SQLException e) {
-            throw new DAOException("Error while enqueuing jobs", e);
+    public final void run() {
+        logger.info("Initializing enqueue worker");
+        while (proceed) {
+            try {
+                int count = new EnqueueCommand(dataSource, jobQueue).run();
+                if (count == 0) {
+                    try {
+                        Thread.sleep(15000);
+                    } catch (InterruptedException ignored) {
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("Error while executing enqueue operation", e);
+            }
         }
+    }
+
+    public void cleanup() {
+        this.proceed = false;
+        this.future.cancel(true);
+        this.executor.shutdownNow();
+        logger.info("Enqueue worker terminated");
     }
 
     private static class EnqueueCommand extends TxCommand<Integer> {

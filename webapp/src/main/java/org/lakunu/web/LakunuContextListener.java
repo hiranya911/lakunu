@@ -1,6 +1,5 @@
 package org.lakunu.web;
 
-import org.lakunu.web.dao.EnqueueWorker;
 import org.lakunu.web.queue.jms.JmsEvaluationJobQueue;
 import org.lakunu.web.queue.EvaluationJobQueue;
 import org.lakunu.web.dao.jdbc.JdbcDAOFactory;
@@ -37,16 +36,15 @@ public final class LakunuContextListener implements ServletContextListener {
             throw new RuntimeException(e);
         }
 
-        DAOFactory daoFactory = initDAOFactory(properties);
-        servletContext.setAttribute(DAOFactory.DAO_FACTORY, daoFactory);
-
         EvaluationJobQueue jobQueue = initJobQueue(properties);
-        // TODO: Make this configurable
-        jobQueue.addWorker(new SimpleWorker(daoFactory));
         servletContext.setAttribute(EvaluationJobQueue.JOB_QUEUE, jobQueue);
 
-        EnqueueWorker enqueueWorker = daoFactory.newEnqueueWorker(jobQueue);
-        servletContext.setAttribute(EnqueueWorker.ENQUEUE_WORKER, enqueueWorker);
+        DAOFactory daoFactory = initDAOFactory(properties, jobQueue);
+        servletContext.setAttribute(DAOFactory.DAO_FACTORY, daoFactory);
+
+        // TODO: Make this configurable
+        jobQueue.addWorker(new SimpleWorker(daoFactory));
+
         logger.info("Lakunu webapp initialized");
     }
 
@@ -54,9 +52,8 @@ public final class LakunuContextListener implements ServletContextListener {
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
         ServletContext servletContext = servletContextEvent.getServletContext();
 
-        EnqueueWorker enqueueWorker = (EnqueueWorker) servletContext.getAttribute(
-                EnqueueWorker.ENQUEUE_WORKER);
-        enqueueWorker.cleanup();
+        DAOFactory daoFactory = (DAOFactory) servletContext.getAttribute(DAOFactory.DAO_FACTORY);
+        daoFactory.cleanup();
 
         EvaluationJobQueue jobQueue = (EvaluationJobQueue) servletContext.getAttribute(
                 EvaluationJobQueue.JOB_QUEUE);
@@ -64,13 +61,14 @@ public final class LakunuContextListener implements ServletContextListener {
         logger.info("Lakunu webapp terminated");
     }
 
-    private DAOFactory initDAOFactory(ConfigProperties properties) {
+    private DAOFactory initDAOFactory(ConfigProperties properties, EvaluationJobQueue jobQueue) {
         logger.info("Initializing DAO factory");
         String type = properties.getOptional(DAO_FACTORY, JdbcDAOFactory.class.getName());
         try {
             Class<? extends DAOFactory> clazz = Class.forName(type).asSubclass(DAOFactory.class);
-            Constructor<? extends DAOFactory> constructor = clazz.getConstructor(ConfigProperties.class);
-            return constructor.newInstance(properties);
+            Constructor<? extends DAOFactory> constructor = clazz.getConstructor(
+                    ConfigProperties.class, EvaluationJobQueue.class);
+            return constructor.newInstance(properties, jobQueue);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

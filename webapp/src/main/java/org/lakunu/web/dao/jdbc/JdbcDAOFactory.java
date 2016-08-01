@@ -1,7 +1,6 @@
 package org.lakunu.web.dao.jdbc;
 
 import org.lakunu.web.dao.CourseDAO;
-import org.lakunu.web.dao.EnqueueWorker;
 import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.dao.LabDAO;
 import org.lakunu.web.queue.EvaluationJobQueue;
@@ -17,14 +16,16 @@ public final class JdbcDAOFactory extends DAOFactory {
     private static final String DAO_FACTORY_DATA_SOURCE = "daoFactory.ds";
 
     private final DataSource dataSource;
+    private final JdbcEnqueueWorker enqueueWorker;
 
-    public JdbcDAOFactory(ConfigProperties properties) {
+    public JdbcDAOFactory(ConfigProperties properties, EvaluationJobQueue jobQueue) {
         InitialContext context = null;
         try {
             context = new InitialContext();
             String dsName = properties.getRequired(DAO_FACTORY_DATA_SOURCE);
             logger.info("Loading JDBC datasource: {}", dsName);
             dataSource = (DataSource) context.lookup(dsName);
+            enqueueWorker = new JdbcEnqueueWorker(dataSource, jobQueue);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         } finally {
@@ -57,7 +58,7 @@ public final class JdbcDAOFactory extends DAOFactory {
     }
 
     @Override
-    public EnqueueWorker newEnqueueWorker(EvaluationJobQueue jobQueue) {
-        return new JdbcEnqueueWorker(dataSource, jobQueue);
+    public void cleanup() {
+        enqueueWorker.cleanup();
     }
 }

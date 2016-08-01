@@ -80,7 +80,7 @@ public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
     }
 
     @Override
-    public void cleanup() {
+    public synchronized void cleanup() {
         workers.forEach(JmsEvaluationJobWorkerWrapper::cleanup);
     }
 
