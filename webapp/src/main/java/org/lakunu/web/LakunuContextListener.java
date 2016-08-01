@@ -5,6 +5,7 @@ import org.lakunu.web.queue.EvaluationJobQueue;
 import org.lakunu.web.dao.jdbc.JdbcDAOFactory;
 import org.lakunu.web.service.DAOFactory;
 import org.lakunu.web.utils.ConfigProperties;
+import org.lakunu.web.workers.SimpleWorker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,13 +36,22 @@ public final class LakunuContextListener implements ServletContextListener {
             throw new RuntimeException(e);
         }
 
-        servletContext.setAttribute(DAOFactory.DAO_FACTORY, initDAOFactory(properties));
-        servletContext.setAttribute(EvaluationJobQueue.JOB_QUEUE, initJobQueue(properties));
+        DAOFactory daoFactory = initDAOFactory(properties);
+        servletContext.setAttribute(DAOFactory.DAO_FACTORY, daoFactory);
+
+        EvaluationJobQueue jobQueue = initJobQueue(properties);
+        // TODO: Make this configurable
+        jobQueue.addWorker(new SimpleWorker(daoFactory));
+        servletContext.setAttribute(EvaluationJobQueue.JOB_QUEUE, jobQueue);
         logger.info("Lakunu webapp initialized");
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
+        ServletContext servletContext = servletContextEvent.getServletContext();
+        EvaluationJobQueue jobQueue = (EvaluationJobQueue) servletContext.getAttribute(
+                EvaluationJobQueue.JOB_QUEUE);
+        jobQueue.cleanup();
         logger.info("Lakunu webapp terminated");
     }
 

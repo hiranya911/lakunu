@@ -8,5 +8,6 @@ public interface SubmissionDAO {
 
     String addSubmission(Submission submission, EvaluationJobQueue jobQueue);
     ImmutableList<Submission> getOwnedSubmissions(String courseId, String labId);
+    Submission getSubmission(String submissionId);
 
 }

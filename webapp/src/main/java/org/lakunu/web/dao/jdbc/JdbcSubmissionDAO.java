@@ -41,6 +41,15 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
         }
     }
 
+    @Override
+    public Submission getSubmission(String submissionId) {
+        try {
+            return GetSubmissionCommand.execute(dataSource, submissionId);
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving submission", e);
+        }
+    }
+
     private static final class AddSubmissionCommand extends TxCommand<String> {
 
         private static final String SUBMIT_LAB_SQL = "INSERT INTO submission (user_id, " +
@@ -112,19 +121,54 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
                 try (ResultSet rs = stmt.executeQuery()) {
                     ImmutableList.Builder<Submission> builder = ImmutableList.builder();
                     while (rs.next()) {
-                        Submission submission = Submission.newBuilder()
-                                .setLabId(String.valueOf(rs.getLong("id")))
-                                .setUserId(rs.getString("user_id"))
-                                .setLabId(String.valueOf(rs.getLong("lab_id")))
-                                .setType(rs.getString("submission_type"))
-                                .setSubmittedAt(rs.getTimestamp("submitted_at"))
-                                .setData(rs.getBytes("submission_data"))
-                                .build();
-                        builder.add(submission);
+                        builder.add(createSubmission(rs));
                     }
                     return builder.build();
                 }
             }
         }
+    }
+
+    private static final class GetSubmissionCommand extends Command<Submission> {
+
+        private static final String GET_SUBMISSION_SQL = "SELECT id, user_id, lab_id, submitted_at, " +
+                "submission_type, submission_data FROM submission WHERE id = ?";
+
+        private final long submissionId;
+
+        private GetSubmissionCommand(DataSource dataSource, String submissionId) {
+            super(dataSource);
+            this.submissionId = Long.parseLong(submissionId);
+        }
+
+        private static Submission execute(DataSource dataSource,
+                                          String submissionId) throws SQLException {
+            return new GetSubmissionCommand(dataSource, submissionId).run();
+        }
+
+        @Override
+        protected Submission doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(GET_SUBMISSION_SQL)) {
+                stmt.setLong(1, submissionId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        return createSubmission(rs);
+                    } else {
+                        return null;
+                    }
+                }
+            }
+        }
+    }
+
+    private static Submission createSubmission(ResultSet rs) throws SQLException {
+        return Submission.newBuilder()
+                .setId(String.valueOf(rs.getLong("id")))
+                .setUserId(rs.getString("user_id"))
+                .setLabId(String.valueOf(rs.getLong("lab_id")))
+                .setType(rs.getString("submission_type"))
+                .setSubmittedAt(rs.getTimestamp("submitted_at"))
+                .setData(rs.getBytes("submission_data"))
+                .build();
     }
 }
