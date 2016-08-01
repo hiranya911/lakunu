@@ -2,9 +2,9 @@ package org.lakunu.web.dao.jdbc;
 
 import com.google.common.collect.ImmutableList;
 import org.lakunu.web.dao.DAOException;
-import org.lakunu.web.dao.EvaluationJobQueue;
 import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.models.Submission;
+import org.lakunu.web.queue.EvaluationJobQueue;
 import org.lakunu.web.utils.Security;
 
 import javax.sql.DataSource;
@@ -17,17 +17,14 @@ import static com.google.common.base.Preconditions.checkState;
 public final class JdbcSubmissionDAO implements SubmissionDAO {
 
     private final DataSource dataSource;
-    private final EvaluationJobQueue jobQueue;
 
-    public JdbcSubmissionDAO(DataSource dataSource, EvaluationJobQueue jobQueue) {
+    public JdbcSubmissionDAO(DataSource dataSource) {
         checkNotNull(dataSource, "DataSource is required");
-        checkNotNull(jobQueue, "JobQueue is required");
         this.dataSource = dataSource;
-        this.jobQueue = jobQueue;
     }
 
     @Override
-    public String addSubmission(Submission submission) {
+    public String addSubmission(Submission submission, EvaluationJobQueue jobQueue) {
         try {
             return AddSubmissionCommand.execute(dataSource, submission, jobQueue);
         } catch (SQLException e) {
