@@ -205,7 +205,7 @@ public final class JdbcLabDAO implements LabDAO {
         }
     }
 
-    private static Lab createLab(ResultSet rs) throws SQLException {
+    public static Lab createLab(ResultSet rs) throws SQLException {
         return Lab.newBuilder()
                 .setId(String.valueOf(rs.getLong("id")))
                 .setName(rs.getString("name"))

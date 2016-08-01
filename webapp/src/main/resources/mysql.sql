@@ -50,7 +50,6 @@ INSERT INTO job_queue_lock (id) VALUES (1);
 CREATE TABLE evaluation (
   id BIGINT PRIMARY KEY NOT NULL AUTO_INCREMENT,
   submission_id BIGINT NOT NULL REFERENCES submission(id),
-  status INT NOT NULL,
   started_at DATETIME NOT NULL,
   finished_at DATETIME DEFAULT NULL,
   finishing_status INT DEFAULT NULL,
