@@ -28,7 +28,7 @@ public final class SubmissionService extends AbstractDomainService {
                 .setType(type)
                 .setData(data)
                 .build();
-        return daoFactory.getSubmissionDAO().addAndEnqueueSubmission(submission);
+        return daoFactory.getSubmissionDAO().addSubmission(submission);
     }
 
     public ImmutableList<Submission> getOwnedSubmissions(String courseId, String labId) {
