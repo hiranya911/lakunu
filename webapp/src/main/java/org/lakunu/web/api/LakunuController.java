@@ -1,6 +1,5 @@
 package org.lakunu.web.api;
 
-import org.lakunu.web.queue.EvaluationJobQueue;
 import org.lakunu.web.service.CourseService;
 import org.lakunu.web.service.DAOFactory;
 import org.lakunu.web.service.SubmissionService;
@@ -25,10 +24,8 @@ public abstract class LakunuController extends HttpServlet {
         super.init(config);
         DAOFactory daoFactory = (DAOFactory) config.getServletContext().getAttribute(
                 DAOFactory.DAO_FACTORY);
-        EvaluationJobQueue jobQueue = (EvaluationJobQueue) config.getServletContext().getAttribute(
-                EvaluationJobQueue.JOB_QUEUE) ;
         this.courseService = new CourseService(daoFactory);
         this.labService = new LabService(daoFactory);
-        this.submissionService = new SubmissionService(daoFactory, jobQueue);
+        this.submissionService = new SubmissionService(daoFactory);
     }
 }

@@ -6,7 +6,7 @@ import org.lakunu.web.queue.EvaluationJobQueue;
 
 public interface SubmissionDAO {
 
-    String addSubmission(Submission submission, EvaluationJobQueue jobQueue);
+    String addSubmission(Submission submission);
     ImmutableList<Submission> getOwnedSubmissions(String courseId, String labId);
     Submission getSubmission(String submissionId);
 

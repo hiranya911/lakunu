@@ -1,5 +1,6 @@
 package org.lakunu.web;
 
+import org.lakunu.web.dao.EnqueueWorker;
 import org.lakunu.web.queue.jms.JmsEvaluationJobQueue;
 import org.lakunu.web.queue.EvaluationJobQueue;
 import org.lakunu.web.dao.jdbc.JdbcDAOFactory;
@@ -43,12 +44,20 @@ public final class LakunuContextListener implements ServletContextListener {
         // TODO: Make this configurable
         jobQueue.addWorker(new SimpleWorker(daoFactory));
         servletContext.setAttribute(EvaluationJobQueue.JOB_QUEUE, jobQueue);
+
+        EnqueueWorker enqueueWorker = daoFactory.newEnqueueWorker(jobQueue);
+        servletContext.setAttribute(EnqueueWorker.ENQUEUE_WORKER, enqueueWorker);
         logger.info("Lakunu webapp initialized");
     }
 
     @Override
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
         ServletContext servletContext = servletContextEvent.getServletContext();
+
+        EnqueueWorker enqueueWorker = (EnqueueWorker) servletContext.getAttribute(
+                EnqueueWorker.ENQUEUE_WORKER);
+        enqueueWorker.cleanup();
+
         EvaluationJobQueue jobQueue = (EvaluationJobQueue) servletContext.getAttribute(
                 EvaluationJobQueue.JOB_QUEUE);
         jobQueue.cleanup();

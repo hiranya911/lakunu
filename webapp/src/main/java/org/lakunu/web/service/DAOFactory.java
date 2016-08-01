@@ -1,8 +1,10 @@
 package org.lakunu.web.service;
 
 import org.lakunu.web.dao.CourseDAO;
+import org.lakunu.web.dao.EnqueueWorker;
 import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.dao.LabDAO;
+import org.lakunu.web.queue.EvaluationJobQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,5 +19,7 @@ public abstract class DAOFactory {
     protected abstract LabDAO getLabDAO();
 
     protected abstract SubmissionDAO getSubmissionDAO();
+
+    public abstract EnqueueWorker newEnqueueWorker(EvaluationJobQueue jobQueue);
 
 }

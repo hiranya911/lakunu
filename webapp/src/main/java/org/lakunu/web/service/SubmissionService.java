@@ -4,7 +4,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Submission;
-import org.lakunu.web.queue.EvaluationJobQueue;
 import org.lakunu.web.utils.Security;
 
 import java.util.Date;
@@ -15,12 +14,8 @@ import static org.lakunu.web.utils.Security.checkPermissions;
 
 public final class SubmissionService extends AbstractDomainService {
 
-    private final EvaluationJobQueue jobQueue;
-
-    public SubmissionService(DAOFactory daoFactory, EvaluationJobQueue jobQueue) {
+    public SubmissionService(DAOFactory daoFactory) {
         super(daoFactory);
-        checkNotNull(jobQueue, "Job queue is required");
-        this.jobQueue = jobQueue;
     }
 
     public String addSubmission(Lab lab, String type, byte[] data) {
@@ -33,7 +28,7 @@ public final class SubmissionService extends AbstractDomainService {
                 .setType(type)
                 .setData(data)
                 .build();
-        return daoFactory.getSubmissionDAO().addSubmission(submission, jobQueue);
+        return daoFactory.getSubmissionDAO().addSubmission(submission);
     }
 
     public ImmutableList<Submission> getOwnedSubmissions(String courseId, String labId) {

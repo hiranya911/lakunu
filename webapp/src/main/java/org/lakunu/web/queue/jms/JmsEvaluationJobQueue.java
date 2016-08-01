@@ -48,6 +48,10 @@ public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
 
     @Override
     public void enqueue(Collection<String> submissionIds) {
+        if (submissionIds.isEmpty()) {
+            return;
+        }
+
         QueueConnection connection = null;
         try {
             connection = connectionFactory.createQueueConnection();
@@ -58,6 +62,7 @@ public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
                 message.setText(submissionId);
                 producer.send(message);
             }
+            logger.info("Enqueued {} submissions for evaluation", submissionIds.size());
         } catch (JMSException e) {
             throw new DAOException("Error during enqueue", e);
         } finally {
