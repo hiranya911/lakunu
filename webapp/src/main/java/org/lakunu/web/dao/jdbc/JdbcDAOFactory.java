@@ -13,7 +13,8 @@ import javax.sql.DataSource;
 
 public final class JdbcDAOFactory extends DAOFactory {
 
-    private static final String DAO_FACTORY_DATA_SOURCE = "daoFactory.ds";
+    private static final String DAO_FACTORY_DATA_SOURCE = "daoFactory.dataSource";
+    private static final String DAO_FACTORY_ENQUEUE_WORKER = "daoFactory.enqueueWorker";
 
     private final DataSource dataSource;
     private final JdbcEnqueueWorker enqueueWorker;
@@ -25,7 +26,11 @@ public final class JdbcDAOFactory extends DAOFactory {
             String dsName = properties.getRequired(DAO_FACTORY_DATA_SOURCE);
             logger.info("Loading JDBC datasource: {}", dsName);
             dataSource = (DataSource) context.lookup(dsName);
-            enqueueWorker = new JdbcEnqueueWorker(dataSource, jobQueue);
+            if (Boolean.parseBoolean(properties.getOptional(DAO_FACTORY_ENQUEUE_WORKER, "true"))) {
+                enqueueWorker = new JdbcEnqueueWorker(dataSource, jobQueue);
+            } else {
+                enqueueWorker = null;
+            }
         } catch (NamingException e) {
             throw new RuntimeException(e);
         } finally {
@@ -59,6 +64,8 @@ public final class JdbcDAOFactory extends DAOFactory {
 
     @Override
     public void cleanup() {
-        enqueueWorker.cleanup();
+        if (enqueueWorker != null) {
+            enqueueWorker.cleanup();
+        }
     }
 }
