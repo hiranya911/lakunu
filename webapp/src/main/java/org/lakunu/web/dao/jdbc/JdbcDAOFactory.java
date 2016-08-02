@@ -1,6 +1,7 @@
 package org.lakunu.web.dao.jdbc;
 
 import org.lakunu.web.dao.CourseDAO;
+import org.lakunu.web.dao.EvaluationDAO;
 import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.dao.LabDAO;
 import org.lakunu.web.queue.EvaluationJobQueue;
@@ -60,6 +61,11 @@ public final class JdbcDAOFactory extends DAOFactory {
     @Override
     protected SubmissionDAO getSubmissionDAO() {
         return new JdbcSubmissionDAO(dataSource);
+    }
+
+    @Override
+    protected EvaluationDAO getEvaluationDAO() {
+        return new JdbcEvaluationDAO(dataSource);
     }
 
     @Override

@@ -69,7 +69,7 @@ public class SubmitController extends LakunuController {
                 FileItemStream item = iterator.next();
                 if ("submissionFile".equals(item.getFieldName()) && !item.isFormField()) {
                     logger.info("Received file input field: " + item.getName());
-                    FileUploadBuffer buffer = new FileUploadBuffer(1024 * 1024);
+                    FileUploadBuffer buffer = new FileUploadBuffer(4 * 1024 * 1024);
                     try (InputStream in = item.openStream()) {
                         IOUtils.copy(in, buffer);
                     }

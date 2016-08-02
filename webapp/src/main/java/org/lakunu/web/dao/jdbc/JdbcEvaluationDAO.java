@@ -1,6 +1,7 @@
 package org.lakunu.web.dao.jdbc;
 
 import org.lakunu.web.dao.DAOException;
+import org.lakunu.web.dao.EvaluationDAO;
 import org.lakunu.web.models.Evaluation;
 import org.lakunu.web.models.EvaluationRecord;
 import org.lakunu.web.models.Lab;
@@ -11,7 +12,7 @@ import java.sql.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-public final class JdbcEvaluationDAO {
+public final class JdbcEvaluationDAO implements EvaluationDAO {
 
     private final DataSource dataSource;
 
@@ -37,8 +38,8 @@ public final class JdbcEvaluationDAO {
                 "(submission_id, started_at) VALUES (?,?)";
 
         private final Evaluation evaluation;
-        
-        private static EvaluationRecord execute(DataSource dataSource, 
+
+        private static EvaluationRecord execute(DataSource dataSource,
                                                 Evaluation evaluation) throws SQLException {
             return new StartEvaluationCommand(dataSource, evaluation).run();
         }

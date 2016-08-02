@@ -161,7 +161,11 @@ public final class Evaluation {
         private EvaluationContext(Evaluation eval) {
             this.workingDirectory = eval.workingDirectory;
             this.outputHandler = eval.outputHandler;
-            this.submissionDirectory = eval.submission.prepare(this);
+            try {
+                this.submissionDirectory = eval.submission.prepare(this);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to prepare the submission", e);
+            }
             checkNotNull(submissionDirectory, "Submission directory is required");
             checkArgument(submissionDirectory.isDirectory() && submissionDirectory.exists(),
                     "Submission directory path is not a directory or does not exist");
