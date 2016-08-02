@@ -1,11 +1,11 @@
 package org.lakunu.labs.submit;
 
+import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.Evaluation;
 import org.lakunu.labs.resources.ArchiveFile;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 
 public final class ArchiveSubmission extends Submission {
 
@@ -17,8 +17,8 @@ public final class ArchiveSubmission extends Submission {
 
     @Override
     public File prepare(Evaluation.Context context) throws IOException {
-        File tempDir = Files.createTempDirectory(
-                context.getEvaluationDirectory().toPath(), "_submission").toFile();
+        File tempDir = new File(context.getEvaluationDirectory(), "_submission");
+        FileUtils.forceMkdir(tempDir);
         archiveFile.extract(tempDir);
         File[] entries = tempDir.listFiles();
         if (entries != null && entries.length == 1 && entries[0].isDirectory()) {

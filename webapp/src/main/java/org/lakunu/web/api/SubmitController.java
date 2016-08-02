@@ -6,8 +6,7 @@ import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.apache.commons.io.output.ThresholdingOutputStream;
+import org.lakunu.labs.utils.ThresholdByteArrayOutputStream;
 import org.lakunu.web.models.Lab;
 
 import javax.servlet.ServletException;
@@ -16,7 +15,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 
 @WebServlet("/submit/*")
 public class SubmitController extends LakunuController {
@@ -69,40 +67,18 @@ public class SubmitController extends LakunuController {
                 FileItemStream item = iterator.next();
                 if ("submissionFile".equals(item.getFieldName()) && !item.isFormField()) {
                     logger.info("Received file input field: " + item.getName());
-                    FileUploadBuffer buffer = new FileUploadBuffer(4 * 1024 * 1024);
+                    ThresholdByteArrayOutputStream buffer = new ThresholdByteArrayOutputStream(
+                            4 * 1024 * 1024, true);
                     try (InputStream in = item.openStream()) {
                         IOUtils.copy(in, buffer);
                     }
-                    submissionService.addSubmission(lab, "FileUpload", buffer.getData());
+                    submissionService.addSubmission(lab, "FileUpload", buffer.toByteArray());
                     break;
                 }
             }
             resp.sendRedirect("/submission/" + courseId + "/" + labId);
         } catch (FileUploadException e) {
             throw new ServletException(e);
-        }
-    }
-
-    private static class FileUploadBuffer extends ThresholdingOutputStream {
-
-        private final ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-
-        public FileUploadBuffer(int threshold) {
-            super(threshold);
-        }
-
-        @Override
-        protected OutputStream getStream() throws IOException {
-            return buffer;
-        }
-
-        @Override
-        protected void thresholdReached() throws IOException {
-            throw new IOException("Upload larger than threshold: " + getThreshold());
-        }
-
-        protected  byte[] getData() {
-            return buffer.toByteArray();
         }
     }
 }

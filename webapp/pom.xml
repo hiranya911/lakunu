@@ -102,6 +102,7 @@
                 <configuration>
                     <jettyXml>src/main/resources/jetty.xml,src/main/resources/jetty-ssl.xml,src/main/resources/jetty-https.xml</jettyXml>
                     <webApp>
+                        <extraClasspath>${env.JAVA_HOME}/lib/tools.jar;${env.ANT_HOME}/lib/ant-junit.jar</extraClasspath>
                         <jettyEnvXml>src/main/resources/jetty-env.xml</jettyEnvXml>
                         <contextPath>/</contextPath>
                     </webApp>

@@ -158,19 +158,20 @@ public abstract class ArchiveFile<T extends ArchiveEntry> {
 
         @Override
         protected void doExtract(File dest) throws IOException {
-            ZipFile zip = new ZipFile(file);
-            Enumeration<ZipArchiveEntry> entries = zip.getEntries();
-            while (entries.hasMoreElements()) {
-                ZipArchiveEntry entry = entries.nextElement();
-                logger.debug("Extracting zip file entry {}", entry.getName());
-                File file = new File(dest, entry.getName());
-                if (entry.isDirectory()) {
-                    FileUtils.forceMkdir(file);
-                } else {
-                    FileUtils.forceMkdir(file.getParentFile());
-                    copyStream(zip.getInputStream(entry), file);
+            try (ZipFile zip = new ZipFile(file)) {
+                Enumeration<ZipArchiveEntry> entries = zip.getEntries();
+                while (entries.hasMoreElements()) {
+                    ZipArchiveEntry entry = entries.nextElement();
+                    logger.debug("Extracting zip file entry {}", entry.getName());
+                    File file = new File(dest, entry.getName());
+                    if (entry.isDirectory()) {
+                        FileUtils.forceMkdir(file);
+                    } else {
+                        FileUtils.forceMkdir(file.getParentFile());
+                        copyStream(zip.getInputStream(entry), file);
+                    }
+                    mapFileMode(entry, file);
                 }
-                mapFileMode(entry, file);
             }
         }
 
