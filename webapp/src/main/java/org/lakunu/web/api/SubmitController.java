@@ -8,6 +8,7 @@ import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.IOUtils;
 import org.lakunu.labs.utils.ThresholdByteArrayOutputStream;
 import org.lakunu.web.models.Lab;
+import org.lakunu.web.service.submissions.FileUploadSubmission;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -72,7 +73,8 @@ public class SubmitController extends LakunuController {
                     try (InputStream in = item.openStream()) {
                         IOUtils.copy(in, buffer);
                     }
-                    submissionService.addSubmission(lab, "FileUpload", buffer.toByteArray());
+                    submissionService.addSubmission(lab, new FileUploadSubmission(item.getName(),
+                            buffer.toByteArray()));
                     break;
                 }
             }

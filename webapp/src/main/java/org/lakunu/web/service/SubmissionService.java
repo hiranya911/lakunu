@@ -4,6 +4,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Submission;
+import org.lakunu.web.service.submissions.UserSubmission;
 import org.lakunu.web.utils.Security;
 
 import java.util.Date;
@@ -18,15 +19,16 @@ public final class SubmissionService extends AbstractDomainService {
         super(daoFactory);
     }
 
-    public String addSubmission(Lab lab, String type, byte[] data) {
+    public String addSubmission(Lab lab, UserSubmission userSubmission) {
         checkNotNull(lab, "Lab is required");
+        checkNotNull(userSubmission, "UserSubmission is required");
         checkPermissions(LabService.SUBMIT_PERMISSION(lab));
         Submission submission = Submission.newBuilder()
                 .setLabId(lab.getId())
                 .setUserId(Security.getCurrentUser())
                 .setSubmittedAt(new Date())
-                .setType(type)
-                .setData(data)
+                .setType(userSubmission.getType())
+                .setData(userSubmission.getData())
                 .build();
         return daoFactory.getSubmissionDAO().addSubmission(submission);
     }

@@ -4,12 +4,13 @@ import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.Evaluation;
 import org.lakunu.labs.Lab;
 import org.lakunu.labs.ant.AntEvaluationPlan;
-import org.lakunu.labs.submit.ArchiveSubmission;
 import org.lakunu.labs.utils.BufferingOutputHandler;
 import org.lakunu.web.models.EvaluationRecord;
 import org.lakunu.web.models.Submission;
 import org.lakunu.web.service.DAOFactory;
 import org.lakunu.web.service.EvaluationJobWorker;
+import org.lakunu.web.service.submissions.UserSubmission;
+import org.lakunu.web.service.submissions.UserSubmissionFactory;
 
 import java.io.File;
 import java.nio.file.Files;
@@ -27,10 +28,8 @@ public final class SimpleWorker extends EvaluationJobWorker {
             tempDir = Files.createTempDirectory("lakunu_simple_eval_").toFile();
             logger.info("Created temporary directory: {}", tempDir.getPath());
 
-            File submissionFile = new File(tempDir, "submission.zip");
-            FileUtils.writeByteArrayToFile(submissionFile, submission.getData());
-            logger.info("Wrote submission archive file to: {}", submissionFile.getPath());
-
+            UserSubmission userSubmission = UserSubmissionFactory.create(submission.getType(),
+                    submission.getData());
             File labFile = new File(tempDir, "lab.xml");
             FileUtils.writeByteArrayToFile(labFile, record.getLab().getConfiguration());
             logger.info("Wrote lab configuration to: {}", labFile.getPath());
@@ -42,7 +41,7 @@ public final class SimpleWorker extends EvaluationJobWorker {
                     .build();
             BufferingOutputHandler outputHandler = new BufferingOutputHandler(64 * 1024);
             Evaluation evaluation = Evaluation.newBuilder()
-                    .setSubmission(new ArchiveSubmission(submissionFile))
+                    .setSubmission(userSubmission.toSubmission(tempDir))
                     .setWorkingDirectory(FileUtils.getTempDirectory())
                     .setLab(lab)
                     .setCleanUpAfterFinish(true)

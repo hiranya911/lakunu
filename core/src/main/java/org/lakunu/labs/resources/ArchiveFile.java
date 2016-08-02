@@ -1,6 +1,7 @@
 package org.lakunu.labs.resources;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
@@ -26,6 +27,18 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class ArchiveFile<T extends ArchiveEntry> {
+
+    public static final String ZIP_FILE_TYPE = ".zip";
+    public static final String TAR_FILE_TYPE = ".tar";
+    public static final String TAR_GZ_FILE_TYPE = ".tar.gz";
+    public static final String TGZ_FILE_TYPE = ".tgz";
+
+    public static final ImmutableList<String> SUPPORTED_FILE_TYPES = ImmutableList.of(
+            ZIP_FILE_TYPE,
+            TAR_FILE_TYPE,
+            TAR_GZ_FILE_TYPE,
+            TGZ_FILE_TYPE
+    );
 
     private static final Logger logger = LoggerFactory.getLogger(ArchiveFile.class);
 
@@ -185,15 +198,19 @@ public abstract class ArchiveFile<T extends ArchiveEntry> {
         checkArgument(!Strings.isNullOrEmpty(path), "Path is required");
         File file = new File(path);
         String name = file.getName().toLowerCase();
-        if (name.endsWith(".zip")) {
+        if (name.endsWith(ZIP_FILE_TYPE)) {
             return new ZipArchiveFile(file);
-        } else if (name.endsWith(".tar")) {
+        } else if (name.endsWith(TAR_FILE_TYPE)) {
             return new TarBallArchiveFile(file, null);
-        } else if (name.endsWith("tar.gz") || name.endsWith(".tgz")) {
+        } else if (name.endsWith(TAR_GZ_FILE_TYPE) || name.endsWith(TGZ_FILE_TYPE)) {
             return new TarBallArchiveFile(file, CompressorStreamFactory.GZIP);
         } else {
             throw new IllegalArgumentException("Unsupported archive file: " + file.getAbsolutePath());
         }
+    }
+
+    public static boolean isSupported(String path) {
+        return SUPPORTED_FILE_TYPES.stream().anyMatch(s -> path.toLowerCase().endsWith(s));
     }
 
 }
