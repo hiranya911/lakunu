@@ -47,6 +47,7 @@ public final class SimpleWorker extends EvaluationJobWorker {
                     .setLab(lab)
                     .setCleanUpAfterFinish(true)
                     .setOutputHandler(outputHandler)
+                    .setEndMarker(LabOutputParser.END_MARKER)
                     .build();
             evaluation.run();
 

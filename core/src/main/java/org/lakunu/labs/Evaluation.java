@@ -30,6 +30,7 @@ public final class Evaluation {
     private final File workingDirectory;
     private final LabOutputHandler outputHandler;
     private final boolean outputSummary;
+    private final String endMarker;
     private final boolean cleanUpAfterFinish;
 
     private Evaluation(Builder builder) {
@@ -43,6 +44,7 @@ public final class Evaluation {
         this.lab = builder.lab;
         this.workingDirectory = builder.workingDirectory;
         this.outputSummary = builder.outputSummary;
+        this.endMarker = builder.endMarker;
         this.cleanUpAfterFinish = builder.cleanUpAfterFinish;
         this.outputHandler = builder.outputHandler;
     }
@@ -57,6 +59,9 @@ public final class Evaluation {
             exception = true;
             throw e;
         } finally {
+            if (endMarker != null) {
+                outputHandler.info(endMarker);
+            }
             if (outputSummary) {
                 dumpSummary(start, exception, context);
             }
@@ -212,6 +217,7 @@ public final class Evaluation {
         private LabOutputHandler outputHandler;
         private boolean cleanUpAfterFinish = true;
         private boolean outputSummary = true;
+        private String endMarker;
 
         private Builder() {
         }
@@ -243,6 +249,11 @@ public final class Evaluation {
 
         public Builder setOutputSummary(boolean outputSummary) {
             this.outputSummary = outputSummary;
+            return this;
+        }
+
+        public Builder setEndMarker(String endMarker) {
+            this.endMarker = endMarker;
             return this;
         }
 

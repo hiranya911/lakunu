@@ -1,6 +1,7 @@
 package org.lakunu.labs;
 
 import com.google.common.base.Strings;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
 
@@ -51,6 +52,20 @@ public final class Score {
     public static Score newPenalty(String name, double value) {
         checkArgument(value <= 0, "value must not be positive");
         return new Score(name, value, 0D);
+    }
+
+    public static Score fromString(String str) {
+        String[] segments = StringUtils.split(str);
+        if (segments.length == 4) {
+            // name 100.0 / 100.0
+            return newPoints(segments[0], Double.parseDouble(segments[1]),
+                    Double.parseDouble(segments[3]));
+        } else if (segments.length == 2) {
+            // name -20.0
+            return newPenalty(segments[0], Double.parseDouble(segments[1]));
+        } else {
+            throw new IllegalArgumentException("Invalid score string: " + str);
+        }
     }
 
     @Override

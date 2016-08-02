@@ -8,6 +8,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class LabOutputParser {
 
+    public static final String END_MARKER = "@@@END_OF_LAB@@@";
+    public static final String SCORE_PREFIX = "Score:";
     private final String output;
 
     public LabOutputParser(String output) {
@@ -21,16 +23,10 @@ public final class LabOutputParser {
         String[] lines = StringUtils.split(output, "\r\n");
         for (String line : lines) {
             line = line.trim();
-            if ("Evaluation complete".equals(line)) {
+            if (line.contains(END_MARKER)) {
                 summary = true;
-            } else if (summary && line.startsWith("Score:")) {
-                String[] segments = StringUtils.split(line);
-                if (segments.length == 5) {
-                    scores.add(Score.newPoints(segments[1], Double.parseDouble(segments[2]),
-                            Double.parseDouble(segments[4])));
-                } else if (segments.length == 3) {
-                    scores.add(Score.newPenalty(segments[1], Double.parseDouble(segments[2])));
-                }
+            } else if (summary && line.startsWith(SCORE_PREFIX)) {
+                scores.add(Score.fromString(line.substring(SCORE_PREFIX.length()).trim()));
             }
         }
         return scores.build();
