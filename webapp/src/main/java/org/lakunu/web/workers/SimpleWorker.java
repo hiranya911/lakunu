@@ -49,6 +49,9 @@ public final class SimpleWorker extends EvaluationJobWorker {
                     .setOutputHandler(outputHandler)
                     .build();
             evaluation.run();
+
+            LabOutputParser outputParser = new LabOutputParser(new String(outputHandler.getBufferedOutput()));
+            outputParser.getScores().forEach(s -> logger.info("Score: {} {}", s.getName(), s.toString()));
         } catch (Exception e) {
             logger.error("Error while evaluating submission: {}", submission.getId(), e);
         } finally {
