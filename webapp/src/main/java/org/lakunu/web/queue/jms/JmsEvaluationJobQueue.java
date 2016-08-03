@@ -23,7 +23,7 @@ public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
 
     private final QueueConnectionFactory connectionFactory;
     private final Queue queue;
-    private final List<JmsEvaluationJobWorkerWrapper> workers = new ArrayList<>();
+    private final List<JmsConsumerClient> workers = new ArrayList<>();
 
     public JmsEvaluationJobQueue(ConfigProperties properties) {
         InitialContext context = null;
@@ -79,16 +79,12 @@ public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
 
     @Override
     public synchronized void addWorker(EvaluationJobWorker worker) {
-        try {
-            workers.add(new JmsEvaluationJobWorkerWrapper(connectionFactory, queue, worker));
-        } catch (JMSException e) {
-            throw new DAOException("Error while adding worker", e);
-        }
+        workers.add(new JmsConsumerClient(connectionFactory, queue, worker));
     }
 
     @Override
     public synchronized void cleanup() {
-        workers.forEach(JmsEvaluationJobWorkerWrapper::cleanup);
+        workers.forEach(JmsConsumerClient::cleanup);
     }
 
     private void closeConnection(Connection connection) {
