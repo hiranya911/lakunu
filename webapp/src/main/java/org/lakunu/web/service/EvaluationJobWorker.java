@@ -1,6 +1,6 @@
 package org.lakunu.web.service;
 
-import org.lakunu.web.models.Evaluation;
+import org.lakunu.web.dao.EvaluationDAO;
 import org.lakunu.web.models.EvaluationRecord;
 import org.lakunu.web.models.Submission;
 import org.slf4j.Logger;
@@ -28,18 +28,14 @@ public abstract class EvaluationJobWorker {
             return;
         }
 
-        evaluate(submission);
-    }
-
-    private void evaluate(Submission submission) {
         logger.info("Processing submission: {}", submission.getId());
-        Evaluation evaluation = Evaluation.newBuilder()
-                .setSubmissionId(submission.getId())
-                .setStartedAt(new Date())
-                .build();
-        EvaluationRecord record = daoFactory.getEvaluationDAO().startEvaluation(evaluation);
-        doEvaluate(record, submission);
+        EvaluationDAO evaluationDAO = daoFactory.getEvaluationDAO();
+        EvaluationRecord record = evaluationDAO.startEvaluation(submission.getId(), new Date());
+        EvaluationRecord.Completion finish = doEvaluate(record, submission);
+        evaluationDAO.finishEvaluation(finish.apply());
+        logger.info("Finished evaluating submission: {}", submission.getId());
     }
 
-    protected abstract void doEvaluate(EvaluationRecord record, Submission submission);
+    protected abstract EvaluationRecord.Completion doEvaluate(EvaluationRecord record,
+                                                              Submission submission);
 }

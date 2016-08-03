@@ -6,6 +6,7 @@ import org.lakunu.labs.Lab;
 import org.lakunu.labs.ant.AntEvaluationPlan;
 import org.lakunu.labs.utils.BufferingOutputHandler;
 import org.lakunu.web.models.EvaluationRecord;
+import org.lakunu.web.models.EvaluationStatus;
 import org.lakunu.web.models.Submission;
 import org.lakunu.web.service.DAOFactory;
 import org.lakunu.web.service.EvaluationJobWorker;
@@ -14,6 +15,7 @@ import org.lakunu.web.service.submissions.UserSubmissionFactory;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.util.Date;
 
 public final class SimpleWorker extends EvaluationJobWorker {
 
@@ -22,8 +24,10 @@ public final class SimpleWorker extends EvaluationJobWorker {
     }
 
     @Override
-    protected void doEvaluate(EvaluationRecord record, Submission submission) {
+    protected EvaluationRecord.Completion doEvaluate(EvaluationRecord record, Submission submission) {
         File tempDir = null;
+        BufferingOutputHandler outputHandler = new BufferingOutputHandler(64 * 1024);
+        boolean exception = false;
         try {
             tempDir = Files.createTempDirectory("lakunu_simple_eval_").toFile();
             logger.info("Created temporary directory: {}", tempDir.getPath());
@@ -39,7 +43,7 @@ public final class SimpleWorker extends EvaluationJobWorker {
                     .setName(record.getLab().getName())
                     .setEvaluationPlan(new AntEvaluationPlan(labFile, null))
                     .build();
-            BufferingOutputHandler outputHandler = new BufferingOutputHandler(64 * 1024);
+
             Evaluation evaluation = Evaluation.newBuilder()
                     .setSubmission(userSubmission.toSubmission(tempDir))
                     .setWorkingDirectory(FileUtils.getTempDirectory())
@@ -49,14 +53,21 @@ public final class SimpleWorker extends EvaluationJobWorker {
                     .setEndMarker(LabOutputParser.END_MARKER)
                     .build();
             evaluation.run();
-
-            LabOutputParser outputParser = new LabOutputParser(new String(outputHandler.getBufferedOutput()));
-            outputParser.getScores().forEach(s -> logger.info("Score: {} {}", s.getName(), s.toString()));
         } catch (Exception e) {
+            exception = true;
             logger.error("Error while evaluating submission: {}", submission.getId(), e);
         } finally {
             FileUtils.deleteQuietly(tempDir);
         }
+
+        String logOutput = new String(outputHandler.getBufferedOutput());
+        int finishingStatus = exception ? EvaluationStatus.FAILED.getStatus() :
+                EvaluationStatus.SUCCESS.getStatus();
+        return record.finishEvaluation()
+                .setFinishedAt(new Date())
+                .setLog(logOutput)
+                .setScores(new LabOutputParser(logOutput).getScores())
+                .setFinishingStatus(finishingStatus);
     }
 
 }
