@@ -7,7 +7,6 @@ import org.lakunu.web.models.Submission;
 public interface EvaluationDAO {
 
     Lab getLabForEvaluation(Submission submission);
-
     boolean addEvaluation(Evaluation evaluation, Lab lab);
 
 }

@@ -74,6 +74,10 @@ public final class JdbcEvaluationDAO implements EvaluationDAO {
 
     private static class AddEvaluationCommand extends TxCommand<Boolean> {
 
+        private static final String GET_LAB_SQL = "SELECT id, name, description, course_id, " +
+                "created_at, created_by, config, published, submission_deadline, " +
+                "allow_late_submissions FROM lab WHERE id = (SELECT lab_id from submission " +
+                "where id = ?) FOR UPDATE";
         private static final String ADD_EVAL_SQL = "INSERT INTO evaluation (submission_id, " +
                 "started_at, finished_at, finishing_status, log) VALUES (?,?,?,?,?)";
         private static final String ADD_GRADE_SQL = "INSERT INTO grade (evaluation_id, label, " +
@@ -95,20 +99,18 @@ public final class JdbcEvaluationDAO implements EvaluationDAO {
 
         @Override
         protected Boolean doTransaction(Connection connection) throws SQLException {
-            Lab currentLab;
-            try (PreparedStatement stmt = connection.prepareStatement(
-                    GetLabForEvaluationCommand.GET_LAB_SQL)) {
+            try (PreparedStatement stmt = connection.prepareStatement(GET_LAB_SQL)) {
                 stmt.setLong(1, Long.parseLong(evaluation.getSubmissionId()));
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        currentLab = JdbcLabDAO.createLab(rs);
+                        Lab currentLab = JdbcLabDAO.createLab(rs);
+                        if (currentLab.getHash() != lab.getHash()) {
+                            return false;
+                        }
                     } else {
                         throw new DAOException("Failed to find lab for submission");
                     }
                 }
-            }
-            if (currentLab.getHash() != lab.getHash()) {
-                return false;
             }
 
             long evaluationId;
