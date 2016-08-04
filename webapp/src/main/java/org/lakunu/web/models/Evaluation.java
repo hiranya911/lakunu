@@ -28,6 +28,7 @@ public class Evaluation implements Serializable {
         checkArgument(!Strings.isNullOrEmpty(builder.submissionId), "SubmissionID is required");
         checkNotNull(builder.startedAt, "Start time is required");
         checkNotNull(builder.finishedAt, "Finish time is required");
+        checkArgument(!builder.startedAt.after(builder.finishedAt), "Timestamp mismatch");
         checkNotNull(builder.log, "Log is required");
         checkNotNull(builder.finishingStatus, "Finish status is required");
         this.id = builder.id;
@@ -65,6 +66,10 @@ public class Evaluation implements Serializable {
 
     public ImmutableList<Score> getScores() {
         return scores;
+    }
+
+    public double getTotalScore() {
+        return scores.stream().mapToDouble(Score::getValue).sum();
     }
 
     public static Builder newBuilder() {

@@ -15,4 +15,14 @@ public enum EvaluationStatus implements Serializable {
     public int getStatus() {
         return status;
     }
+
+    public static EvaluationStatus fromInt(int i) {
+        switch (i) {
+            case 1:
+                return SUCCESS;
+            case 2:
+                return FAILED;
+        }
+        throw new IllegalArgumentException("Invalid status: " + i);
+    }
 }

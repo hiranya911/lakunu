@@ -17,7 +17,12 @@
                 <div class="panel panel-primary">
                     <div class="panel-heading">Submission at: ${sub.submittedAt}</div>
                     <div class="panel-body">
-                        Evaluation details go here
+                        <c:if test="${empty sub.evaluations}">
+                            <p class="bg-info">Pending evaluation</p>
+                        </c:if>
+                        <c:forEach items="${sub.evaluations}" var="eval">
+                            <p>${eval.id} - ${eval.totalScore}</p>
+                        </c:forEach>
                     </div>
                 </div>
             </div>

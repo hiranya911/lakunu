@@ -44,9 +44,9 @@ public final class JdbcEvaluationDAO implements EvaluationDAO {
 
         private static final String GET_LAB_SQL = "SELECT id, name, description, course_id, " +
                 "created_at, created_by, config, published, submission_deadline, " +
-                "allow_late_submissions FROM lab WHERE id = (SELECT lab_id from submission where id = ?)";
+                "allow_late_submissions FROM lab WHERE id = ?";
 
-        private final long submissionId;
+        private final long labId;
 
         private static Lab execute(DataSource dataSource, Submission submission) throws SQLException {
             return new GetLabForEvaluationCommand(dataSource, submission).run();
@@ -54,13 +54,13 @@ public final class JdbcEvaluationDAO implements EvaluationDAO {
 
         private GetLabForEvaluationCommand(DataSource dataSource, Submission submission) {
             super(dataSource);
-            this.submissionId = Long.parseLong(submission.getId());
+            this.labId = Long.parseLong(submission.getLabId());
         }
 
         @Override
         protected Lab doRun(Connection connection) throws SQLException {
             try (PreparedStatement stmt = connection.prepareStatement(GET_LAB_SQL)) {
-                stmt.setLong(1, submissionId);
+                stmt.setLong(1, labId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
                         return JdbcLabDAO.createLab(rs);

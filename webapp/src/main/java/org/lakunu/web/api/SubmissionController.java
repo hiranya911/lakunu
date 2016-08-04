@@ -3,7 +3,7 @@ package org.lakunu.web.api;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.web.models.Lab;
-import org.lakunu.web.models.Submission;
+import org.lakunu.web.models.SubmissionView;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -34,7 +34,7 @@ public class SubmissionController extends LakunuController {
             return;
         }
 
-        List<Submission> ownedSubmissions = new ArrayList<>(submissionService.getOwnedSubmissions(
+        List<SubmissionView> ownedSubmissions = new ArrayList<>(submissionService.getOwnedSubmissions(
                 courseId, labId));
         ownedSubmissions.sort((o1, o2) -> o2.getSubmittedAt().compareTo(o1.getSubmittedAt()));
 

@@ -1,14 +1,23 @@
 package org.lakunu.web.dao.jdbc;
 
 import com.google.common.collect.ImmutableList;
+import org.lakunu.labs.Score;
+import org.lakunu.labs.utils.LabUtils;
 import org.lakunu.web.dao.DAOException;
 import org.lakunu.web.dao.SubmissionDAO;
+import org.lakunu.web.models.Evaluation;
+import org.lakunu.web.models.EvaluationStatus;
 import org.lakunu.web.models.Submission;
+import org.lakunu.web.models.SubmissionView;
 import org.lakunu.web.utils.Security;
 
 import javax.sql.DataSource;
 
 import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -32,20 +41,20 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
     }
 
     @Override
-    public ImmutableList<Submission> getOwnedSubmissions(String courseId, String labId) {
-        try {
-            return GetOwnedSubmissionsCommand.execute(dataSource, labId);
-        } catch (SQLException e) {
-            throw new DAOException("Error while retrieving submissions", e);
-        }
-    }
-
-    @Override
     public Submission getSubmission(String submissionId) {
         try {
             return GetSubmissionCommand.execute(dataSource, submissionId);
         } catch (SQLException e) {
             throw new DAOException("Error while retrieving submission", e);
+        }
+    }
+
+    @Override
+    public ImmutableList<SubmissionView> getOwnedSubmissions(String courseId, String labId) {
+        try {
+            return GetOwnedSubmissionViewsCommand.execute(dataSource, labId);
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving submissions", e);
         }
     }
 
@@ -98,39 +107,6 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
         }
     }
 
-    private static final class GetOwnedSubmissionsCommand extends Command<ImmutableList<Submission>> {
-
-        private static final String GET_OWNED_SUBMISSIONS_SQL = "SELECT id, user_id, lab_id, submitted_at, " +
-                "submission_type, submission_data FROM submission WHERE user_id = ? AND lab_id = ?";
-
-        private final long labId;
-
-        private GetOwnedSubmissionsCommand(DataSource dataSource, String labId) {
-            super(dataSource);
-            this.labId = Long.parseLong(labId);
-        }
-
-        private static ImmutableList<Submission> execute(DataSource dataSource,
-                                                         String labId) throws SQLException {
-            return new GetOwnedSubmissionsCommand(dataSource, labId).run();
-        }
-
-        @Override
-        protected ImmutableList<Submission> doRun(Connection connection) throws SQLException {
-            try (PreparedStatement stmt = connection.prepareStatement(GET_OWNED_SUBMISSIONS_SQL)) {
-                stmt.setString(1, Security.getCurrentUser());
-                stmt.setLong(2, labId);
-                try (ResultSet rs = stmt.executeQuery()) {
-                    ImmutableList.Builder<Submission> builder = ImmutableList.builder();
-                    while (rs.next()) {
-                        builder.add(createSubmission(rs));
-                    }
-                    return builder.build();
-                }
-            }
-        }
-    }
-
     private static final class GetSubmissionCommand extends Command<Submission> {
 
         private static final String GET_SUBMISSION_SQL = "SELECT id, user_id, lab_id, submitted_at, " +
@@ -160,6 +136,123 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
                     }
                 }
             }
+        }
+    }
+
+    private static String prepareArrayQuery(String sql, int args) {
+        String params = IntStream.range(0, args).mapToObj(i -> "?").collect(Collectors.joining(","));
+        return String.format(sql, params);
+    }
+
+    private static class GetOwnedSubmissionViewsCommand extends Command<ImmutableList<SubmissionView>> {
+
+        private static final String GET_OWNED_SUBMISSIONS_SQL = "SELECT id, user_id, lab_id, submitted_at, " +
+                "submission_type FROM submission WHERE user_id = ? AND lab_id = ?";
+        private static final String GET_EVALUATIONS_SQL = "SELECT id, submission_id, " +
+                "started_at, finished_at, finishing_status, log FROM evaluation WHERE " +
+                "submission_id IN (%s)";
+        private static final String GET_GRADES_SQL = "SELECT id, evaluation_id, label, score, " +
+                "score_limit FROM grade WHERE evaluation_id IN (%s)";
+
+        private final long labId;
+
+        private GetOwnedSubmissionViewsCommand(DataSource dataSource, String labId) {
+            super(dataSource);
+            this.labId = Long.parseLong(labId);
+        }
+
+        private static ImmutableList<SubmissionView> execute(DataSource dataSource,
+                                                         String submissionId) throws SQLException {
+            return new GetOwnedSubmissionViewsCommand(dataSource, submissionId).run();
+        }
+
+        private Map<Long,SubmissionView.Builder> getSubmissions(Connection connection) throws SQLException {
+            Map<Long,SubmissionView.Builder> views = new HashMap<>();
+            try (PreparedStatement stmt = connection.prepareStatement(GET_OWNED_SUBMISSIONS_SQL)) {
+                stmt.setString(1, Security.getCurrentUser());
+                stmt.setLong(2, labId);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        long submissionId = rs.getLong("id");
+                        SubmissionView.Builder view = SubmissionView.newBuilder()
+                                .setId(String.valueOf(submissionId))
+                                .setLabId(String.valueOf(rs.getLong("lab_id")))
+                                .setSubmittedAt(rs.getTimestamp("submitted_at"))
+                                .setType(rs.getString("submission_type"))
+                                .setUserId(rs.getString("user_id"));
+                        views.put(submissionId, view);
+                    }
+                }
+            }
+            return views;
+        }
+
+        private ImmutableList<Evaluation> getEvaluations(Connection connection,
+                                                         Long[] submissionIds) throws SQLException {
+            Map<Long,Evaluation.Builder> evaluations = new HashMap<>();
+            try (PreparedStatement stmt = connection.prepareStatement(
+                    prepareArrayQuery(GET_EVALUATIONS_SQL, submissionIds.length))) {
+                for (int i = 0; i < submissionIds.length; i++) {
+                    stmt.setLong(i + 1, submissionIds[i]);
+                }
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        long id = rs.getLong("id");
+                        Evaluation.Builder builder = Evaluation.newBuilder()
+                                .setId(String.valueOf(id))
+                                .setSubmissionId(String.valueOf(rs.getLong("submission_id")))
+                                .setStartedAt(rs.getTimestamp("started_at"))
+                                .setFinishedAt(rs.getTimestamp("finished_at"))
+                                .setFinishingStatus(EvaluationStatus.fromInt(rs.getInt("finishing_status")))
+                                .setLog(rs.getString("log"));
+                        evaluations.put(id, builder);
+                    }
+                }
+            }
+            if (evaluations.isEmpty()) {
+                return ImmutableList.of();
+            }
+
+            Long[] evaluationIds = evaluations.keySet().stream().toArray(Long[]::new);
+            try (PreparedStatement stmt = connection.prepareStatement(
+                    prepareArrayQuery(GET_GRADES_SQL, evaluationIds.length))) {
+                for (int i = 0; i < evaluationIds.length; i++) {
+                    stmt.setLong(i + 1, evaluationIds[i]);
+                }
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        Evaluation.Builder builder = evaluations.get(rs.getLong("evaluation_id"));
+                        if (builder != null) {
+                            String label = rs.getString("label");
+                            double score = rs.getDouble("score");
+                            double limit = rs.getDouble("score_limit");
+                            Score scoreObj;
+                            if (score < 0D && limit == 0D) {
+                                scoreObj = Score.newPenalty(label, score);
+                            } else {
+                                scoreObj = Score.newPoints(label, score, limit);
+                            }
+                            builder.addScore(scoreObj);
+                        }
+
+                    }
+                }
+            }
+            return evaluations.values().stream().map(Evaluation.Builder::build)
+                    .collect(LabUtils.immutableList());
+        }
+
+        @Override
+        protected ImmutableList<SubmissionView> doRun(Connection connection) throws SQLException {
+            Map<Long,SubmissionView.Builder> views = getSubmissions(connection);
+            if (!views.isEmpty()) {
+                ImmutableList<Evaluation> evaluations = getEvaluations(connection, views.keySet()
+                        .stream().toArray(Long[]::new));
+                evaluations.forEach(e ->
+                        views.get(Long.parseLong(e.getSubmissionId())).addEvaluation(e));
+            }
+            return views.values().stream().map(SubmissionView.Builder::build)
+                    .collect(LabUtils.immutableList());
         }
     }
 
