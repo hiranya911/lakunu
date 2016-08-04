@@ -2,11 +2,10 @@ package org.lakunu.web.workers;
 
 import org.apache.commons.io.FileUtils;
 import org.lakunu.labs.Evaluation;
-import org.lakunu.labs.Lab;
 import org.lakunu.labs.ant.AntEvaluationPlan;
 import org.lakunu.labs.utils.BufferingOutputHandler;
-import org.lakunu.web.models.EvaluationRecord;
 import org.lakunu.web.models.EvaluationStatus;
+import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Submission;
 import org.lakunu.web.service.DAOFactory;
 import org.lakunu.web.service.EvaluationJobWorker;
@@ -24,7 +23,7 @@ public final class SimpleWorker extends EvaluationJobWorker {
     }
 
     @Override
-    protected EvaluationRecord.Completion doEvaluate(EvaluationRecord record, Submission submission) {
+    protected EvaluationResult doEvaluate(Lab lab, Submission submission) {
         File tempDir = null;
         BufferingOutputHandler outputHandler = new BufferingOutputHandler(64 * 1024);
         boolean exception = false;
@@ -35,19 +34,19 @@ public final class SimpleWorker extends EvaluationJobWorker {
             UserSubmission userSubmission = UserSubmissionFactory.create(submission.getType(),
                     submission.getData());
             File labFile = new File(tempDir, "lab.xml");
-            FileUtils.writeByteArrayToFile(labFile, record.getLab().getConfiguration());
+            FileUtils.writeByteArrayToFile(labFile, lab.getConfiguration());
             logger.info("Wrote lab configuration to: {}", labFile.getPath());
 
             new AntEvaluationPlan(labFile, null);
-            Lab lab = Lab.newBuilder()
-                    .setName(record.getLab().getName())
+            org.lakunu.labs.Lab evaluationLab = org.lakunu.labs.Lab.newBuilder()
+                    .setName(lab.getName())
                     .setEvaluationPlan(new AntEvaluationPlan(labFile, null))
                     .build();
 
             Evaluation evaluation = Evaluation.newBuilder()
                     .setSubmission(userSubmission.toSubmission(tempDir))
                     .setWorkingDirectory(FileUtils.getTempDirectory())
-                    .setLab(lab)
+                    .setLab(evaluationLab)
                     .setCleanUpAfterFinish(true)
                     .setOutputHandler(outputHandler)
                     .setEndMarker(LabOutputParser.END_MARKER)
@@ -61,13 +60,11 @@ public final class SimpleWorker extends EvaluationJobWorker {
         }
 
         String logOutput = new String(outputHandler.getBufferedOutput());
-        int finishingStatus = exception ? EvaluationStatus.FAILED.getStatus() :
-                EvaluationStatus.SUCCESS.getStatus();
-        return record.finishEvaluation()
-                .setFinishedAt(new Date())
+        return newResultBuilder()
                 .setLog(logOutput)
                 .setScores(new LabOutputParser(logOutput).getScores())
-                .setFinishingStatus(finishingStatus);
+                .setFinishingStatus(exception ? EvaluationStatus.FAILED : EvaluationStatus.SUCCESS)
+                .build();
     }
 
 }

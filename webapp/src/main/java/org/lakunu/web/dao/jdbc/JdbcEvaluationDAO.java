@@ -3,12 +3,12 @@ package org.lakunu.web.dao.jdbc;
 import org.lakunu.labs.Score;
 import org.lakunu.web.dao.DAOException;
 import org.lakunu.web.dao.EvaluationDAO;
-import org.lakunu.web.models.EvaluationRecord;
+import org.lakunu.web.models.Evaluation;
 import org.lakunu.web.models.Lab;
+import org.lakunu.web.models.Submission;
 
 import javax.sql.DataSource;
 import java.sql.*;
-import java.util.Date;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -22,112 +22,118 @@ public final class JdbcEvaluationDAO implements EvaluationDAO {
         this.dataSource = dataSource;
     }
 
-    public EvaluationRecord startEvaluation(String submissionId, Date startedAt) {
+    @Override
+    public Lab getLabForEvaluation(Submission submission) {
         try {
-            return StartEvaluationCommand.execute(dataSource, submissionId, startedAt);
+            return GetLabForEvaluationCommand.execute(dataSource, submission);
         } catch (SQLException e) {
-            throw new DAOException("Error while opening evaluation record", e);
+            throw new DAOException("Error while retrieving lab", e);
         }
     }
 
     @Override
-    public void finishEvaluation(EvaluationRecord record) {
+    public boolean addEvaluation(Evaluation evaluation, Lab lab) {
         try {
-            FinishEvaluationCommand.execute(dataSource, record);
+            return AddEvaluationCommand.execute(dataSource, evaluation, lab);
         } catch (SQLException e) {
-            throw new DAOException("Error while closing evaluation record", e);
+            throw new DAOException("Error while adding evaluation", e);
         }
     }
 
-    private static class StartEvaluationCommand extends TxCommand<EvaluationRecord> {
+    private static class GetLabForEvaluationCommand extends Command<Lab> {
 
         private static final String GET_LAB_SQL = "SELECT id, name, description, course_id, " +
                 "created_at, created_by, config, published, submission_deadline, " +
                 "allow_late_submissions FROM lab WHERE id = (SELECT lab_id from submission where id = ?)";
-        private static final String OPEN_EVAL_RECORD_SQL = "INSERT INTO evaluation " +
-                "(submission_id, started_at) VALUES (?,?)";
 
         private final long submissionId;
-        private final Timestamp startedAt;
 
-        private static EvaluationRecord execute(DataSource dataSource, String submissionId,
-                                                Date startedAt) throws SQLException {
-            return new StartEvaluationCommand(dataSource, submissionId, startedAt).run();
+        private static Lab execute(DataSource dataSource, Submission submission) throws SQLException {
+            return new GetLabForEvaluationCommand(dataSource, submission).run();
         }
 
-        private StartEvaluationCommand(DataSource dataSource, String submissionId, Date startedAt) {
+        private GetLabForEvaluationCommand(DataSource dataSource, Submission submission) {
             super(dataSource);
-            this.submissionId = Long.parseLong(submissionId);
-            this.startedAt = new Timestamp(startedAt.getTime());
+            this.submissionId = Long.parseLong(submission.getId());
         }
 
         @Override
-        protected EvaluationRecord doTransaction(Connection connection) throws SQLException {
-            Lab lab;
+        protected Lab doRun(Connection connection) throws SQLException {
             try (PreparedStatement stmt = connection.prepareStatement(GET_LAB_SQL)) {
                 stmt.setLong(1, submissionId);
                 try (ResultSet rs = stmt.executeQuery()) {
                     if (rs.next()) {
-                        lab = JdbcLabDAO.createLab(rs);
+                        return JdbcLabDAO.createLab(rs);
                     } else {
                         throw new DAOException("Failed to find lab for submission");
                     }
                 }
             }
-
-            long evalId;
-            try (PreparedStatement stmt = connection.prepareStatement(OPEN_EVAL_RECORD_SQL,
-                    Statement.RETURN_GENERATED_KEYS)) {
-                stmt.setLong(1, submissionId);
-                stmt.setTimestamp(2, startedAt);
-                int rows = stmt.executeUpdate();
-                checkState(rows == 1, "Failed to open evaluation record");
-                try (ResultSet rs = stmt.getGeneratedKeys()) {
-                    if (rs.next()) {
-                        evalId = rs.getLong(1);
-                    } else {
-                        throw new DAOException("Failed to find evaluation ID");
-                    }
-                }
-            }
-            return new EvaluationRecord(String.valueOf(evalId), lab);
         }
     }
 
-    private static class FinishEvaluationCommand extends TxCommand<Void> {
+    private static class AddEvaluationCommand extends TxCommand<Boolean> {
 
-        private static final String CLOSE_EVAL_RECORD_SQL = "UPDATE evaluation set " +
-                "finished_at = ?, finishing_status = ?, log = ? WHERE id = ?";
+        private static final String ADD_EVAL_SQL = "INSERT INTO evaluation (submission_id, " +
+                "started_at, finished_at, finishing_status, log) VALUES (?,?,?,?,?)";
         private static final String ADD_GRADE_SQL = "INSERT INTO grade (evaluation_id, label, " +
                 "score, score_limit) VALUES (?,?,?,?)";
 
-        private final EvaluationRecord record;
+        private final Evaluation evaluation;
+        private final Lab lab;
 
-        private FinishEvaluationCommand(DataSource dataSource, EvaluationRecord record) {
+        public AddEvaluationCommand(DataSource dataSource, Evaluation evaluation, Lab lab) {
             super(dataSource);
-            this.record = record;
+            this.evaluation = evaluation;
+            this.lab = lab;
         }
 
-        public static void execute(DataSource dataSource,
-                                   EvaluationRecord record) throws SQLException {
-            new FinishEvaluationCommand(dataSource, record).run();
+        public static boolean execute(DataSource dataSource, Evaluation evaluation,
+                                      Lab lab) throws SQLException {
+            return new AddEvaluationCommand(dataSource, evaluation, lab).run();
         }
 
         @Override
-        protected Void doTransaction(Connection connection) throws SQLException {
-            try (PreparedStatement stmt = connection.prepareStatement(CLOSE_EVAL_RECORD_SQL)) {
-                stmt.setTimestamp(1, new Timestamp(record.getFinishedAt().getTime()));
-                stmt.setInt(2, record.getFinishingStatus());
-                stmt.setString(3, record.getLog());
-                stmt.setLong(4, Long.parseLong(record.getId()));
-                int rows = stmt.executeUpdate();
-                checkState(rows == 1, "Failed to close evaluation record");
+        protected Boolean doTransaction(Connection connection) throws SQLException {
+            Lab currentLab;
+            try (PreparedStatement stmt = connection.prepareStatement(
+                    GetLabForEvaluationCommand.GET_LAB_SQL)) {
+                stmt.setLong(1, Long.parseLong(evaluation.getSubmissionId()));
+                try (ResultSet rs = stmt.executeQuery()) {
+                    if (rs.next()) {
+                        currentLab = JdbcLabDAO.createLab(rs);
+                    } else {
+                        throw new DAOException("Failed to find lab for submission");
+                    }
+                }
+            }
+            if (currentLab.getHash() != lab.getHash()) {
+                return false;
             }
 
-            if (!record.getScores().isEmpty()) {
+            long evaluationId;
+            try (PreparedStatement stmt = connection.prepareStatement(ADD_EVAL_SQL,
+                    Statement.RETURN_GENERATED_KEYS)) {
+                stmt.setLong(1, Long.parseLong(evaluation.getSubmissionId()));
+                stmt.setTimestamp(2, new Timestamp(evaluation.getStartedAt().getTime()));
+                stmt.setTimestamp(3, new Timestamp(evaluation.getFinishedAt().getTime()));
+                stmt.setInt(4, evaluation.getFinishingStatus().getStatus());
+                stmt.setString(5, evaluation.getLog());
+                int rows = stmt.executeUpdate();
+                checkState(rows == 1, "Failed to add evaluation record");
+                try (ResultSet rs = stmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        evaluationId = rs.getLong(1);
+                    } else {
+                        throw new IllegalStateException("Failed to get evaluation ID");
+                    }
+                }
+            }
+
+            if (!evaluation.getScores().isEmpty()) {
                 try (PreparedStatement stmt = connection.prepareStatement(ADD_GRADE_SQL)) {
-                    for (Score score : record.getScores()) {
-                        stmt.setLong(1, Long.parseLong(record.getId()));
+                    for (Score score : evaluation.getScores()) {
+                        stmt.setLong(1, evaluationId);
                         stmt.setString(2, score.getName());
                         stmt.setDouble(3, score.getValue());
                         stmt.setDouble(4, score.getLimit());
@@ -136,7 +142,7 @@ public final class JdbcEvaluationDAO implements EvaluationDAO {
                     stmt.executeBatch();
                 }
             }
-            return null;
+            return true;
         }
     }
 

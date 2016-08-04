@@ -1,6 +1,8 @@
 package org.lakunu.web.models;
 
-public enum EvaluationStatus {
+import java.io.Serializable;
+
+public enum EvaluationStatus implements Serializable {
     SUCCESS(1),
     FAILED(2);
 

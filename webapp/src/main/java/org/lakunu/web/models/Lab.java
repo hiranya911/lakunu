@@ -3,6 +3,7 @@ package org.lakunu.web.models;
 import com.google.common.base.Strings;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -96,6 +97,14 @@ public final class Lab implements Serializable {
             }
         }
         return false;
+    }
+
+    public int getHash() {
+        if (configuration != null) {
+            return Arrays.hashCode(configuration);
+        } else {
+            return 0;
+        }
     }
 
     public Update newUpdate() {

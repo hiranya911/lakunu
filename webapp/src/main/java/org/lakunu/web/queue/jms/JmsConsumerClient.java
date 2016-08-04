@@ -99,9 +99,13 @@ public final class JmsConsumerClient implements MessageListener, ExceptionListen
             synchronized (state) {
                 logger.info("Attempting to connect to JMS broker");
                 JmsConnection newConnection = connectLoop();
-                if (newConnection != null && state.compareAndSet(State.CONNECTING, State.CONNECTED)) {
-                    connection = newConnection;
-                    logger.info("Established JMS connection");
+                if (newConnection != null) {
+                    if (state.compareAndSet(State.CONNECTING, State.CONNECTED)) {
+                        connection = newConnection;
+                        logger.info("Established JMS connection");
+                    } else {
+                        newConnection.close();
+                    }
                 }
                 currentConnector = null;
             }

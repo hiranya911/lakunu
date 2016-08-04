@@ -1,13 +1,13 @@
 package org.lakunu.web.dao;
 
-import org.lakunu.web.models.EvaluationRecord;
-
-import java.util.Date;
+import org.lakunu.web.models.Evaluation;
+import org.lakunu.web.models.Lab;
+import org.lakunu.web.models.Submission;
 
 public interface EvaluationDAO {
 
-    EvaluationRecord startEvaluation(String submissionId, Date startedAt);
+    Lab getLabForEvaluation(Submission submission);
 
-    void finishEvaluation(EvaluationRecord record);
+    boolean addEvaluation(Evaluation evaluation, Lab lab);
 
 }
