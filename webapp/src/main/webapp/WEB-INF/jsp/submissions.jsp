@@ -28,6 +28,9 @@
             </div>
         </div>
     </c:forEach>
+    <c:if test="${not viewAll}">
+        <a href="/submission/${course.id}/${lab.id}">View All</a>
+    </c:if>
 </div>
 </body>
 </html>

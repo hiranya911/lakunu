@@ -27,7 +27,7 @@
                             <a href="/lab/${course.id}/${lab.id}">View</a>
                             <span class="tab-space">&nbsp;</span>
                         </c:if>
-                        <a href="/submission/${course.id}/${lab.id}">Results</a>
+                        <a href="/submission/${course.id}/${lab.id}?limit=5">Results</a>
                         <span class="tab-space">&nbsp;</span>
                         <c:if test="${fn:contains(labPermissions[lab.id], 's') && lab.published}">
                             <a href="/submit/${course.id}/${lab.id}">Submit</a>

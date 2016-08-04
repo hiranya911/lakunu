@@ -34,10 +34,10 @@ public final class SubmissionService extends AbstractDomainService {
         return daoFactory.getSubmissionDAO().addSubmission(submission);
     }
 
-    public ImmutableList<SubmissionView> getOwnedSubmissions(String courseId, String labId) {
+    public ImmutableList<SubmissionView> getOwnedSubmissions(String courseId, String labId, int limit) {
         checkArgument(!Strings.isNullOrEmpty(courseId), "CourseID is required");
         checkArgument(!Strings.isNullOrEmpty(labId), "LabID is required");
         checkPermissions("submission:getOwned:" + courseId + ":" + labId);
-        return daoFactory.getSubmissionDAO().getOwnedSubmissions(courseId, labId);
+        return daoFactory.getSubmissionDAO().getOwnedSubmissions(courseId, labId, limit);
     }
 }

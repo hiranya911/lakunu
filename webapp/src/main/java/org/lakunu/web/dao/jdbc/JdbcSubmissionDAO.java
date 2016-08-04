@@ -15,6 +15,7 @@ import javax.sql.DataSource;
 
 import java.sql.*;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -50,9 +51,10 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
     }
 
     @Override
-    public ImmutableList<SubmissionView> getOwnedSubmissions(String courseId, String labId) {
+    public ImmutableList<SubmissionView> getOwnedSubmissions(String courseId, String labId,
+                                                             int limit) {
         try {
-            return GetOwnedSubmissionViewsCommand.execute(dataSource, labId);
+            return GetOwnedSubmissionViewsCommand.execute(dataSource, labId, limit);
         } catch (SQLException e) {
             throw new DAOException("Error while retrieving submissions", e);
         }
@@ -147,7 +149,7 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
     private static class GetOwnedSubmissionViewsCommand extends Command<ImmutableList<SubmissionView>> {
 
         private static final String GET_OWNED_SUBMISSIONS_SQL = "SELECT id, user_id, lab_id, submitted_at, " +
-                "submission_type FROM submission WHERE user_id = ? AND lab_id = ?";
+                "submission_type FROM submission WHERE user_id = ? AND lab_id = ? ORDER BY submitted_at DESC";
         private static final String GET_EVALUATIONS_SQL = "SELECT id, submission_id, " +
                 "started_at, finished_at, finishing_status, log FROM evaluation WHERE " +
                 "submission_id IN (%s)";
@@ -155,20 +157,29 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
                 "score_limit FROM grade WHERE evaluation_id IN (%s)";
 
         private final long labId;
+        private final int limit;
 
-        private GetOwnedSubmissionViewsCommand(DataSource dataSource, String labId) {
+        private GetOwnedSubmissionViewsCommand(DataSource dataSource, String labId, int limit) {
             super(dataSource);
             this.labId = Long.parseLong(labId);
+            this.limit = limit;
         }
 
         private static ImmutableList<SubmissionView> execute(DataSource dataSource,
-                                                         String submissionId) throws SQLException {
-            return new GetOwnedSubmissionViewsCommand(dataSource, submissionId).run();
+                                                             String submissionId,
+                                                             int limit) throws SQLException {
+            return new GetOwnedSubmissionViewsCommand(dataSource, submissionId, limit).run();
         }
 
-        private Map<Long,SubmissionView.Builder> getSubmissions(Connection connection) throws SQLException {
-            Map<Long,SubmissionView.Builder> views = new HashMap<>();
-            try (PreparedStatement stmt = connection.prepareStatement(GET_OWNED_SUBMISSIONS_SQL)) {
+        private Map<Long,SubmissionView.Builder> getSubmissions(
+                Connection connection) throws SQLException {
+            Map<Long,SubmissionView.Builder> views = new LinkedHashMap<>();
+
+            String sql = GET_OWNED_SUBMISSIONS_SQL;
+            if (limit >= 0) {
+                sql += (" LIMIT " + limit);
+            }
+            try (PreparedStatement stmt = connection.prepareStatement(sql)) {
                 stmt.setString(1, Security.getCurrentUser());
                 stmt.setLong(2, labId);
                 try (ResultSet rs = stmt.executeQuery()) {

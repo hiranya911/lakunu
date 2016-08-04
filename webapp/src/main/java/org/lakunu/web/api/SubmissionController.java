@@ -10,8 +10,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 @WebServlet("/submission/*")
 public class SubmissionController extends LakunuController {
@@ -34,13 +32,19 @@ public class SubmissionController extends LakunuController {
             return;
         }
 
-        List<SubmissionView> ownedSubmissions = new ArrayList<>(submissionService.getOwnedSubmissions(
-                courseId, labId));
-        ownedSubmissions.sort((o1, o2) -> o2.getSubmittedAt().compareTo(o1.getSubmittedAt()));
-
+        int limit;
+        String limitParam = req.getParameter("limit");
+        if (Strings.isNullOrEmpty(limitParam)) {
+            limit = -1;
+        } else {
+            limit = Integer.parseInt(limitParam);
+        }
+        ImmutableList<SubmissionView> ownedSubmissions = submissionService.getOwnedSubmissions(
+                courseId, labId, limit);
         req.setAttribute("lab", lab);
         req.setAttribute("course", courseService.getCourse(courseId));
-        req.setAttribute("submissions", ImmutableList.copyOf(ownedSubmissions));
+        req.setAttribute("submissions", ownedSubmissions);
+        req.setAttribute("viewAll", limit < 0);
         req.getRequestDispatcher("/WEB-INF/jsp/submissions.jsp").forward(req, resp);
     }
 }
