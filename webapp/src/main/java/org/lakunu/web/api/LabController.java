@@ -24,15 +24,14 @@ public class LabController extends LakunuController {
     @Override
     protected void doGet(HttpServletRequest req,
                          HttpServletResponse resp) throws ServletException, IOException {
-        String pathInfo = req.getPathInfo();
-        if (Strings.isNullOrEmpty(pathInfo)) {
-            resp.sendError(404);
+        UrlPathInfo pathInfo = new UrlPathInfo(req);
+        if (pathInfo.isEmpty()) {
+            resp.sendError(403);
             return;
         }
 
-        // TODO: Improve the path parameter parsing
-        String courseId = pathInfo.substring(1, pathInfo.indexOf('/', 1));
-        String labId = pathInfo.substring(pathInfo.indexOf('/', 1) + 1);
+        String courseId = pathInfo.get(0);
+        String labId = pathInfo.get(1);
         Lab lab = labService.getLab(courseId, labId);
         if (lab == null) {
             resp.sendError(404, "Lab ID does not exist: " + labId);
@@ -54,15 +53,14 @@ public class LabController extends LakunuController {
     @Override
     protected void doPut(HttpServletRequest req,
                          HttpServletResponse resp) throws ServletException, IOException {
-        String pathInfo = req.getPathInfo();
-        if (Strings.isNullOrEmpty(pathInfo)) {
-            resp.sendError(404);
+        UrlPathInfo pathInfo = new UrlPathInfo(req);
+        if (pathInfo.isEmpty()) {
+            resp.sendError(403);
             return;
         }
 
-        // TODO: Improve the path parameter parsing
-        String courseId = pathInfo.substring(1, pathInfo.indexOf('/', 1));
-        String labId = pathInfo.substring(pathInfo.indexOf('/', 1) + 1);
+        String courseId = pathInfo.get(0);
+        String labId = pathInfo.get(1);
         Lab lab = labService.getLab(courseId, labId);
         if (lab == null) {
             resp.sendError(404, "Lab ID does not exist: " + labId);
@@ -117,14 +115,14 @@ public class LabController extends LakunuController {
     @Override
     protected void doPost(HttpServletRequest req,
                           HttpServletResponse resp) throws ServletException, IOException {
-        String pathInfo = req.getPathInfo();
-        if (Strings.isNullOrEmpty(pathInfo)) {
-            resp.sendError(404);
+        UrlPathInfo pathInfo = new UrlPathInfo(req);
+        if (pathInfo.isEmpty()) {
+            resp.sendError(403);
             return;
         }
 
         // TODO: Improve the path parameter parsing
-        String courseId = pathInfo.substring(1);
+        String courseId = pathInfo.get(0);
         String labId = labService.addLab(req.getParameter("labName"),
                 req.getParameter("labDescription"), courseId);
         resp.sendRedirect("/lab/" + courseId + "/" + labId);

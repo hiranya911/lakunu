@@ -1,6 +1,5 @@
 package org.lakunu.web.api;
 
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.apache.shiro.SecurityUtils;
@@ -17,7 +16,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static org.lakunu.web.utils.Security.hasPermission;
 
 @WebServlet("/course/*")
 public class CourseController extends LakunuController {
@@ -25,21 +23,20 @@ public class CourseController extends LakunuController {
     @Override
     protected void doGet(HttpServletRequest req,
                          HttpServletResponse resp) throws ServletException, IOException {
-        String pathInfo = req.getPathInfo();
-        if (Strings.isNullOrEmpty(pathInfo)) {
-            resp.sendError(404);
+        UrlPathInfo pathInfo = new UrlPathInfo(req);
+        if (pathInfo.isEmpty()) {
+            resp.sendError(403);
             return;
         }
 
-        // TODO: Improve the path parameter parsing
-        String courseId = pathInfo.substring(1);
+        String courseId = pathInfo.get(0);
         Course course = courseService.getCourse(courseId);
         if (course == null) {
             resp.sendError(404, "Course ID does not exist: " + courseId);
             return;
         }
         req.setAttribute("course", course);
-        ImmutableList<Lab> labs = courseService.getLabs(courseId);
+        ImmutableList<Lab> labs = courseService.getLabs(course.getId());
         req.setAttribute("courseLabs", labs);
         req.setAttribute("labPermissions", computeLabPermissions(labs));
         req.getRequestDispatcher("/WEB-INF/jsp/course.jsp").forward(req, resp);
