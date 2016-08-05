@@ -2,6 +2,7 @@ package org.lakunu.web.models;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.lakunu.labs.Score;
 
 import java.io.Serializable;
@@ -60,6 +61,10 @@ public class Evaluation implements Serializable {
         return log;
     }
 
+    public String getHtmlSafeLog() {
+        return StringEscapeUtils.escapeHtml4(log);
+    }
+
     public EvaluationStatus getFinishingStatus() {
         return finishingStatus;
     }
@@ -68,8 +73,8 @@ public class Evaluation implements Serializable {
         return scores;
     }
 
-    public double getTotalScore() {
-        return scores.stream().mapToDouble(Score::getValue).sum();
+    public Score getTotalScore() {
+        return Score.total(scores);
     }
 
     public static Builder newBuilder() {

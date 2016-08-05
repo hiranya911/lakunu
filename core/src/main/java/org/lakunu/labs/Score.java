@@ -33,6 +33,14 @@ public final class Score {
         return limit;
     }
 
+    public double getPercentage() {
+        if (limit > 0) {
+            return (value * 100D)/limit;
+        } else {
+            return 0D;
+        }
+    }
+
     public Score add(String name, Score score) {
         checkNotNull(score, "argument must not be null");
         return new Score(name, this.value + score.value, this.limit + score.limit);

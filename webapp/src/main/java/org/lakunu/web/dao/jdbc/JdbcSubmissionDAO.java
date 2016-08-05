@@ -14,7 +14,6 @@ import org.lakunu.web.utils.Security;
 import javax.sql.DataSource;
 
 import java.sql.*;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -152,7 +151,7 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
                 "submission_type FROM submission WHERE user_id = ? AND lab_id = ? ORDER BY submitted_at DESC";
         private static final String GET_EVALUATIONS_SQL = "SELECT id, submission_id, " +
                 "started_at, finished_at, finishing_status, log FROM evaluation WHERE " +
-                "submission_id IN (%s)";
+                "submission_id IN (%s) ORDER BY finished_at DESC";
         private static final String GET_GRADES_SQL = "SELECT id, evaluation_id, label, score, " +
                 "score_limit FROM grade WHERE evaluation_id IN (%s)";
 
@@ -211,7 +210,7 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
 
         private ImmutableList<Evaluation> getEvaluations(Connection connection,
                                                          Long[] submissionIds) throws SQLException {
-            Map<Long,Evaluation.Builder> evaluations = new HashMap<>();
+            Map<Long,Evaluation.Builder> evaluations = new LinkedHashMap<>();
             try (PreparedStatement stmt = connection.prepareStatement(
                     prepareArrayQuery(GET_EVALUATIONS_SQL, submissionIds.length))) {
                 for (int i = 0; i < submissionIds.length; i++) {

@@ -95,12 +95,12 @@ final class JdbcEnqueueWorker implements Runnable {
             }
 
             if (!submissions.isEmpty()) {
-                jobQueue.enqueue(submissions);
                 try (PreparedStatement stmt = connection.prepareStatement(DELETE_JOBS_SQL)) {
                     for (long id : idList) {
                         stmt.setLong(1, id);
                         stmt.addBatch();
                     }
+                    jobQueue.enqueue(submissions);
                     stmt.executeBatch();
                 }
             }
