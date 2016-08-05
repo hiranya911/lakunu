@@ -188,8 +188,8 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
             }
         }
 
-        private Map<Long,SubmissionView.Builder> getSubmissions(
-                Connection connection) throws SQLException {
+        private Map<Long,SubmissionView.Builder> getSubmissions(Connection connection)
+                throws SQLException {
             Map<Long,SubmissionView.Builder> views = new LinkedHashMap<>();
 
             try (PreparedStatement stmt = getStatement(connection)) {
@@ -244,19 +244,10 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         Evaluation.Builder builder = evaluations.get(rs.getLong("evaluation_id"));
-                        if (builder != null) {
-                            String label = rs.getString("label");
-                            double score = rs.getDouble("score");
-                            double limit = rs.getDouble("score_limit");
-                            Score scoreObj;
-                            if (score < 0D && limit == 0D) {
-                                scoreObj = Score.newPenalty(label, score);
-                            } else {
-                                scoreObj = Score.newPoints(label, score, limit);
-                            }
-                            builder.addScore(scoreObj);
-                        }
-
+                        String label = rs.getString("label");
+                        double score = rs.getDouble("score");
+                        double limit = rs.getDouble("score_limit");
+                        builder.addScore(Score.create(label, score, limit));
                     }
                 }
             }
@@ -284,10 +275,9 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
             super(dataSource, Security.getCurrentUser(), labId, limit);
         }
 
-        private static ImmutableList<SubmissionView> execute(DataSource dataSource,
-                                                             String submissionId,
+        private static ImmutableList<SubmissionView> execute(DataSource dataSource, String labId,
                                                              int limit) throws SQLException {
-            return new GetOwnedSubmissionViewsCommand(dataSource, submissionId, limit).run();
+            return new GetOwnedSubmissionViewsCommand(dataSource, labId, limit).run();
         }
     }
 

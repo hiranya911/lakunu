@@ -54,6 +54,14 @@ public final class Score {
         return new Score(name, value, 0D);
     }
 
+    public static Score create(String name, double value, double limit) {
+        if (value <= 0D && limit == 0D) {
+            return newPenalty(name, value);
+        } else {
+            return newPoints(name, value, limit);
+        }
+    }
+
     public static Score fromString(String str) {
         String[] segments = StringUtils.split(str);
         if (segments.length == 4) {
