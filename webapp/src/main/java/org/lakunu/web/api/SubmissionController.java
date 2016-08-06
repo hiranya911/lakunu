@@ -40,7 +40,7 @@ public class SubmissionController extends LakunuController {
             limit = Integer.parseInt(limitParam);
         }
         ImmutableList<SubmissionView> ownedSubmissions = submissionService.getOwnedSubmissions(
-                courseId, labId, limit);
+                lab, limit);
         req.setAttribute("lab", lab);
         req.setAttribute("course", courseService.getCourse(courseId));
         req.setAttribute("submissions", ownedSubmissions);

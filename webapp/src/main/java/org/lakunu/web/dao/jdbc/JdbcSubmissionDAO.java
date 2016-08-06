@@ -5,10 +5,7 @@ import org.lakunu.labs.Score;
 import org.lakunu.labs.utils.LabUtils;
 import org.lakunu.web.dao.DAOException;
 import org.lakunu.web.dao.SubmissionDAO;
-import org.lakunu.web.models.Evaluation;
-import org.lakunu.web.models.EvaluationStatus;
-import org.lakunu.web.models.Submission;
-import org.lakunu.web.models.SubmissionView;
+import org.lakunu.web.models.*;
 import org.lakunu.web.utils.Security;
 
 import javax.sql.DataSource;
@@ -50,10 +47,18 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
     }
 
     @Override
-    public ImmutableList<SubmissionView> getOwnedSubmissions(String courseId, String labId,
-                                                             int limit) {
+    public ImmutableList<SubmissionView> getOwnedSubmissions(Lab lab, int limit) {
         try {
-            return GetOwnedSubmissionViewsCommand.execute(dataSource, labId, limit);
+            return GetOwnedSubmissionViewsCommand.execute(dataSource, lab.getId(), limit);
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving submissions", e);
+        }
+    }
+
+    @Override
+    public ImmutableList<SubmissionView> getAllSubmissions(Lab lab) {
+        try {
+            return GetAllSubmissionViewsCommand.execute(dataSource, lab.getId());
         } catch (SQLException e) {
             throw new DAOException("Error while retrieving submissions", e);
         }
@@ -145,39 +150,32 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
         return String.format(sql, params);
     }
 
-    private static class GetSubmissionViewsCommand extends Command<ImmutableList<SubmissionView>> {
-
+    private static class GetAllSubmissionViewsCommand extends Command<ImmutableList<SubmissionView>> {
         private static final String GET_SUBMISSIONS_SQL = "SELECT id, user_id, lab_id, submitted_at, " +
-                "submission_type FROM submission WHERE user_id = ? AND lab_id = ? ORDER BY submitted_at DESC";
+                "submission_type FROM submission WHERE lab_id = ? ORDER BY submitted_at DESC";
         private static final String GET_EVALUATIONS_SQL = "SELECT id, submission_id, " +
                 "started_at, finished_at, finishing_status, log FROM evaluation WHERE " +
                 "submission_id IN (%s) ORDER BY finished_at DESC";
         private static final String GET_GRADES_SQL = "SELECT id, evaluation_id, label, score, " +
                 "score_limit FROM grade WHERE evaluation_id IN (%s)";
 
-        private final String userId;
-        private final long labId;
-        private final int limit;
+        protected final long labId;
 
-        protected GetSubmissionViewsCommand(DataSource dataSource, String userId, String labId,
-                                         int limit) {
+        protected GetAllSubmissionViewsCommand(DataSource dataSource, String labId) {
             super(dataSource);
-            this.userId = userId;
             this.labId = Long.parseLong(labId);
-            this.limit = limit;
+        }
+
+        public static ImmutableList<SubmissionView> execute(DataSource dataSource,
+                                                            String labId) throws SQLException {
+            return new GetAllSubmissionViewsCommand(dataSource, labId).run();
         }
 
         protected PreparedStatement getStatement(Connection connection) throws SQLException {
-            String sql = GET_SUBMISSIONS_SQL;
-            if (limit >= 0) {
-                sql += (" LIMIT " + limit);
-            }
-
             PreparedStatement stmt = null;
             try {
-                stmt = connection.prepareStatement(sql);
-                stmt.setString(1, userId);
-                stmt.setLong(2, labId);
+                stmt = connection.prepareStatement(GET_SUBMISSIONS_SQL);
+                stmt.setLong(1, labId);
                 return stmt;
             } catch (SQLException e) {
                 if (stmt != null) {
@@ -265,6 +263,43 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
             }
             return views.values().stream().map(SubmissionView.Builder::build)
                     .collect(LabUtils.immutableList());
+        }
+    }
+
+    private static class GetSubmissionViewsCommand extends GetAllSubmissionViewsCommand {
+
+        private static final String GET_SUBMISSIONS_BY_USER_SQL = "SELECT id, user_id, lab_id, " +
+                "submitted_at, submission_type FROM submission WHERE user_id = ? AND lab_id = ? " +
+                "ORDER BY submitted_at DESC";
+
+        private final String userId;
+        private final int limit;
+
+        protected GetSubmissionViewsCommand(DataSource dataSource, String userId, String labId,
+                                         int limit) {
+            super(dataSource, labId);
+            this.userId = userId;
+            this.limit = limit;
+        }
+
+        protected PreparedStatement getStatement(Connection connection) throws SQLException {
+            String sql = GET_SUBMISSIONS_BY_USER_SQL;
+            if (limit >= 0) {
+                sql += (" LIMIT " + limit);
+            }
+
+            PreparedStatement stmt = null;
+            try {
+                stmt = connection.prepareStatement(sql);
+                stmt.setString(1, userId);
+                stmt.setLong(2, labId);
+                return stmt;
+            } catch (SQLException e) {
+                if (stmt != null) {
+                    stmt.close();
+                }
+                throw e;
+            }
         }
     }
 
