@@ -2,7 +2,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%--@elvariable id="course" type="org.lakunu.web.models.Course"--%>
-<%--@elvariable id="courseLabs" type="java.util.List<Lab>"--%>
+<%--@elvariable id="courseLabs" type="java.util.List<org.lakunu.web.models.Lab>"--%>
 <%--@elvariable id="labPermissions" type="java.util.Map<String,String>"--%>
 <c:if test="${not empty labPermissions}">
     <div id="publishResponse"></div>

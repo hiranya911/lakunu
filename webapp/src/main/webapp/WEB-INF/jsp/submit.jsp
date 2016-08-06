@@ -1,5 +1,5 @@
-<%--@elvariable id="lab" type="org.lakunu.web.data.Lab"--%>
-<%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
+<%--@elvariable id="lab" type="org.lakunu.web.models.Lab"--%>
+<%--@elvariable id="course" type="org.lakunu.web.models.Course"--%>
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>

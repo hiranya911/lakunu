@@ -24,10 +24,12 @@ public final class SubmissionService extends AbstractDomainService {
         checkNotNull(lab, "Lab is required");
         checkNotNull(userSubmission, "UserSubmission is required");
         checkPermissions(LabService.SUBMIT_PERMISSION(lab));
+        Date submittedAt = new Date();
+        checkArgument(lab.isOpenForSubmissions(submittedAt), "Lab is not open for submissions");
         Submission submission = Submission.newBuilder()
                 .setLabId(lab.getId())
                 .setUserId(Security.getCurrentUser())
-                .setSubmittedAt(new Date())
+                .setSubmittedAt(submittedAt)
                 .setType(userSubmission.getType())
                 .setData(userSubmission.getData())
                 .build();

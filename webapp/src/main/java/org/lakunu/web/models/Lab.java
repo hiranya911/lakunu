@@ -89,9 +89,13 @@ public final class Lab implements Serializable {
     }
 
     public boolean isOpenForSubmissions() {
+        return isOpenForSubmissions(new Date());
+    }
+
+    public boolean isOpenForSubmissions(Date submittedAt) {
         if (published) {
             if (submissionDeadline != null) {
-                return (submissionDeadline.after(new Date()) || allowLateSubmissions);
+                return (submissionDeadline.after(submittedAt) || allowLateSubmissions);
             } else {
                 return true;
             }

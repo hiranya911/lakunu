@@ -1,5 +1,5 @@
-<%--@elvariable id="lab" type="org.lakunu.web.data.Lab"--%>
-<%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
+<%--@elvariable id="lab" type="org.lakunu.web.models.Lab"--%>
+<%--@elvariable id="course" type="org.lakunu.web.models.Course"--%>
 <%--@elvariable id="submissions" type="java.util.List<org.lakunu.web.models.SubmissionView>"--%>
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -39,7 +39,12 @@
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-primary">
-                    <div class="panel-heading">Submission at: ${sub.submittedAt} <span class="pull-right">(Last score: ${sub.finalScore})</span></div>
+                    <div class="panel-heading">
+                        Submission at: ${sub.submittedAt}
+                        <c:if test="${not empty sub.evaluations}">
+                            <span class="pull-right">(Last score: ${sub.finalScore})</span>
+                        </c:if>
+                    </div>
                     <div class="panel-body">
                         <c:if test="${empty sub.evaluations}">
                             <span class="label label-info">Pending Evaluation</span>

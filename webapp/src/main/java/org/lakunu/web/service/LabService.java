@@ -50,7 +50,7 @@ public final class LabService extends AbstractDomainService {
     }
 
     public Lab publishLab(Lab.PublishSettings publishSettings) {
-        checkNotNull(publishSettings, "PublishSettings are requried");
+        checkNotNull(publishSettings, "PublishSettings are required");
         Lab lab = publishSettings.apply();
         checkArgument(lab.isPublished(), "Publish must be true");
         checkPermissions(PUBLISH_PERMISSION(lab));
