@@ -1,6 +1,5 @@
 package org.lakunu.web.queue.jms;
 
-import org.lakunu.web.dao.DAOException;
 import org.lakunu.web.queue.EvaluationJobQueue;
 import org.lakunu.web.service.EvaluationJobWorker;
 import org.lakunu.web.utils.ConfigProperties;
@@ -61,7 +60,7 @@ public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
             session.commit();
         } catch (JMSException e) {
             rollback(session);
-            throw new DAOException("Error during enqueue", e);
+            throw new RuntimeException("Error during enqueue", e);
         } finally {
             closeConnection(connection);
         }

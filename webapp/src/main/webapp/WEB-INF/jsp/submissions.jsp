@@ -1,5 +1,6 @@
 <%--@elvariable id="lab" type="org.lakunu.web.data.Lab"--%>
 <%--@elvariable id="course" type="org.lakunu.web.data.Course"--%>
+<%--@elvariable id="submissions" type="java.util.List<org.lakunu.web.models.SubmissionView>"--%>
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>
@@ -16,11 +17,29 @@
 <%@ include file="/WEB-INF/include/body_top.html" %>
 <div class="container">
     <h3>${lab.name} Submissions <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
+    <c:if test="${empty submissions}">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-warning">
+                    You don't have any submissions for this lab yet.
+                </div>
+            </div>
+        </div>
+        <c:if test="${lab.openForSubmissions}">
+            <shiro:hasPermission name="lab:submit:${lab.courseId}:${lab.id}">
+                <div class="row">
+                    <div class="col-md-12">
+                        <a href="/submit/${lab.courseId}/${lab.id}">Make Submission</a>
+                    </div>
+                </div>
+            </shiro:hasPermission>
+        </c:if>
+    </c:if>
     <c:forEach items="${submissions}" var="sub">
         <div class="row">
             <div class="col-md-12">
                 <div class="panel panel-primary">
-                    <div class="panel-heading">Submission at: ${sub.submittedAt}</div>
+                    <div class="panel-heading">Submission at: ${sub.submittedAt} <span class="pull-right">(Last score: ${sub.finalScore})</span></div>
                     <div class="panel-body">
                         <c:if test="${empty sub.evaluations}">
                             <span class="label label-info">Pending Evaluation</span>

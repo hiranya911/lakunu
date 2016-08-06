@@ -2,7 +2,6 @@ package org.lakunu.web.service;
 
 import com.google.common.collect.ImmutableList;
 import org.lakunu.labs.Score;
-import org.lakunu.web.dao.DAOException;
 import org.lakunu.web.models.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,7 @@ public abstract class EvaluationJobWorker {
         this.daoFactory = daoFactory;
     }
 
-    public final void evaluate(String submissionId) {
+    public final void evaluate(String submissionId) throws RetryEvaluationException {
         Submission submission = daoFactory.getSubmissionDAO().getSubmission(submissionId);
         if (submission == null) {
             logger.warn("No submission available by ID: {}", submissionId);
@@ -50,7 +49,7 @@ public abstract class EvaluationJobWorker {
             logger.info("Finished evaluating submission: {}", submission.getId());
         } else {
             logger.warn("Failed to save evaluation record. The Lab has been updated.");
-            throw new DAOException("Update to lab detected - Attempt retry");
+            throw new RetryEvaluationException("Update to lab detected - Attempt retry");
         }
     }
 
@@ -100,5 +99,13 @@ public abstract class EvaluationJobWorker {
         public EvaluationResult build() {
             return new EvaluationResult(this);
         }
+    }
+
+    public static class RetryEvaluationException extends Exception {
+
+        public RetryEvaluationException(String message) {
+            super(message);
+        }
+
     }
 }

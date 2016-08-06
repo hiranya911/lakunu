@@ -2,6 +2,7 @@ package org.lakunu.web.models;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import org.lakunu.labs.Score;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -54,6 +55,14 @@ public final class SubmissionView implements Serializable {
 
     public ImmutableList<Evaluation> getEvaluations() {
         return evaluations;
+    }
+
+    public Score getFinalScore() {
+        if (evaluations.isEmpty()) {
+            return Score.newPoints("total", 0D, 0D);
+        } else {
+            return evaluations.get(0).getTotalScore();
+        }
     }
 
     public static Builder newBuilder() {

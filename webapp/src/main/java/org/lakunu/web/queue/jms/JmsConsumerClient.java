@@ -67,6 +67,8 @@ public final class JmsConsumerClient implements MessageListener, ExceptionListen
                 TextMessage text = (TextMessage) message;
                 worker.evaluate(text.getText());
             }
+        } catch (EvaluationJobWorker.RetryEvaluationException e) {
+            throw new RuntimeException(e);
         } catch (Exception e) {
             logger.error("Error while processing message", e);
         }
