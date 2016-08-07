@@ -16,20 +16,53 @@
                 <tr>
                     <th>User</th>
                     <th>Submissions</th>
-                    <th>Last Submission</th>
-                    <th>Last Score</th>
+                    <th>Final Grade</th>
                 </tr>
                 <c:forEach items="${submissions}" var="sub">
                     <tr>
                         <td>${sub.key}</td>
-                        <td>${fn:length(sub.value)}</td>
                         <td>
-                            <c:if test="${not empty sub.value}">
-                                ${sub.value[0].submittedAt}
-                            </c:if>
-                            <c:if test="${empty sub.value}">
-                                None
-                            </c:if>
+                            <ul>
+                                <c:if test="${empty sub.value}">
+                                    <li>No submissions</li>
+                                </c:if>
+                                <c:if test="${fn:length(sub.value) > 0}">
+                                    <li>
+                                        ${sub.value[0].submittedAt}
+                                        <c:if test="${empty sub.value[0].evaluations}">
+                                            <span class="label label-warning">Pending</span>
+                                        </c:if>
+                                        <c:if test="${not empty sub.value[0].evaluations}">
+                                            <span class="label label-success">${sub.value[0].finalScore}</span>
+                                        </c:if>
+                                    </li>
+                                </c:if>
+                                <c:if test="${fn:length(sub.value) > 1}">
+                                    <li>
+                                        ${sub.value[1].submittedAt}
+                                        <c:if test="${empty sub.value[1].evaluations}">
+                                            <span class="label label-warning">Pending</span>
+                                        </c:if>
+                                        <c:if test="${not empty sub.value[1].evaluations}">
+                                            <span class="label label-success">${sub.value[1].finalScore}</span>
+                                        </c:if>
+                                    </li>
+                                </c:if>
+                                <c:if test="${fn:length(sub.value) > 2}">
+                                    <li>
+                                        ${sub.value[2].submittedAt}
+                                        <c:if test="${empty sub.value[2].evaluations}">
+                                            <span class="label label-warning">Pending</span>
+                                        </c:if>
+                                        <c:if test="${not empty sub.value[2].evaluations}">
+                                            <span class="label label-success">${sub.value[2].finalScore}</span>
+                                        </c:if>
+                                    </li>
+                                </c:if>
+                                <c:if test="${fn:length(sub.value) > 3}">
+                                    <li>${fn:length(sub.value) - 3} more</li>
+                                </c:if>
+                            </ul>
                         </td>
                         <td>
                             <c:if test="${not empty sub.value}">
