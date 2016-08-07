@@ -87,7 +87,30 @@
     <shiro:hasPermission name="course:share:${course.id}">
         <div class="row">
             <div class="col-md-12">
-                <p>Share form goes here</p>
+                <div class="panel panel-primary">
+                    <div class="panel-heading">Sharing</div>
+                    <div class="panel-body">
+                        <form role="form" id="shareCourseForm" method="POST" action="">
+                            <input type="hidden" name="_method" value="PUT">
+                            <input type="hidden" name="shareCourse" value="true">
+                            <div class="form-group col-sm-6">
+                                <label for="users">Enter user names (one user per line)</label>
+                                <textarea name="users" id="users" class="form-control input-sm" rows="5" cols="20" required></textarea>
+                            </div>
+                            <div class="form-group col-sm-6">
+                                <div class="radio">
+                                    <label><input type="radio" name="role" value="student" checked>Share as student</label>
+                                </div>
+                                <div class="radio">
+                                    <label><input type="radio" name="role" value="instructor">Share as instructor</label>
+                                </div>
+                            </div>
+                            <div class="form-group col-sm-12">
+                                <button type="submit" form="shareCourseForm" class="btn btn-primary">Share</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
     </shiro:hasPermission>

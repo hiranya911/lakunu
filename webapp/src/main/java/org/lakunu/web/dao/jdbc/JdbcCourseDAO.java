@@ -1,6 +1,7 @@
 package org.lakunu.web.dao.jdbc;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.lakunu.web.dao.CourseDAO;
 import org.lakunu.web.dao.DAOException;
 import org.lakunu.web.models.Course;
@@ -9,6 +10,8 @@ import org.lakunu.web.utils.Security;
 import javax.sql.DataSource;
 
 import java.sql.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -46,6 +49,15 @@ public final class JdbcCourseDAO implements CourseDAO {
             return GetOwnedCoursesCommand.execute(dataSource);
         } catch (SQLException e) {
             throw new DAOException("Error while retrieving courses", e);
+        }
+    }
+
+    @Override
+    public void shareCourse(Course course, ImmutableSet<String> users, int role) {
+        try {
+            ShareCourseCommand.execute(dataSource, course.getId(), users, role);
+        } catch (SQLException e) {
+            throw new DAOException("Error while updating course roles", e);
         }
     }
 
@@ -144,6 +156,59 @@ public final class JdbcCourseDAO implements CourseDAO {
                     return builder.build();
                 }
             }
+        }
+    }
+
+    private static final class ShareCourseCommand extends TxCommand<Void> {
+
+        private static final String GET_CURRENT_USERS_SQL = "SELECT user_id FROM course_user " +
+                "WHERE course_id = ? AND role = ?";
+        private static final String ADD_COURSE_ROLE_SQL = "INSERT INTO course_user (course_id, " +
+                "user_id, role) VALUES (?,?,?)";
+
+        private final long courseId;
+        private final ImmutableSet<String> users;
+        private final int role;
+
+        private ShareCourseCommand(DataSource dataSource, String courseId,
+                                   ImmutableSet<String> users, int role) {
+            super(dataSource);
+            this.courseId = Long.parseLong(courseId);
+            this.users = users;
+            this.role = role;
+        }
+
+        private static void execute(DataSource dataSource, String courseId,
+                                    ImmutableSet<String> users, int role) throws SQLException {
+            new ShareCourseCommand(dataSource, courseId, users, role).run();
+        }
+
+        @Override
+        protected Void doTransaction(Connection connection) throws SQLException {
+            Set<String> currentUsers = new HashSet<>();
+            try (PreparedStatement stmt = connection.prepareStatement(GET_CURRENT_USERS_SQL)) {
+                stmt.setLong(1, courseId);
+                stmt.setInt(2, role);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    while (rs.next()) {
+                        currentUsers.add(rs.getString("user_id"));
+                    }
+                }
+            }
+
+            try (PreparedStatement stmt = connection.prepareStatement(ADD_COURSE_ROLE_SQL)) {
+                for (String user : users) {
+                    if (currentUsers.contains(user)) {
+                        continue;
+                    }
+                    stmt.setLong(1, courseId);
+                    stmt.setString(2, user);
+                    stmt.setInt(3, role);
+                    stmt.addBatch();
+                }
+                stmt.executeUpdate();
+            }
+            return null;
         }
     }
 

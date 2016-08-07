@@ -10,6 +10,8 @@ import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.lakunu.web.service.CourseService;
 import org.lakunu.web.service.LabService;
 
 import javax.sql.DataSource;
@@ -22,9 +24,6 @@ import java.util.Set;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public final class CoursePermissionRealm extends AuthorizingRealm {
-
-    public static final int ROLE_OWNER = 1;
-    public static final int ROLE_INSTRUCTOR = 2;
 
     private DataSource dataSource;
 
@@ -49,12 +48,12 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
             courseRoles.forEach(role -> {
                 String courseId = String.valueOf(role.courseId);
                 switch (role.role) {
-                    case ROLE_OWNER:
+                    case CourseService.ROLE_OWNER:
                         permissions.add("course:*:" + role.courseId);
                         permissions.add(LabService.permission("*", courseId, "*"));
                         permissions.add("submission:*:" + courseId + ":*");
                         break;
-                    case ROLE_INSTRUCTOR:
+                    case CourseService.ROLE_INSTRUCTOR:
                         permissions.add("course:get,getLabs:" + role.courseId);
                         permissions.add(LabService.permission("*", courseId, "*"));
                         break;
@@ -81,6 +80,11 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
 
     public void notifyPermissionChange() {
         clearCachedAuthorizationInfo(SecurityUtils.getSubject().getPrincipals());
+    }
+
+    public void notifyPermissionChange(String user) {
+        SimplePrincipalCollection spc = new SimplePrincipalCollection(user, getName());
+        clearCachedAuthorizationInfo(spc);
     }
 
     @Override
@@ -116,7 +120,7 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                 try (ResultSet rs = stmt.executeQuery()) {
                     while (rs.next()) {
                         long courseId = rs.getLong("id");
-                        courseRoles.add(new CourseRole(courseId, ROLE_OWNER));
+                        courseRoles.add(new CourseRole(courseId, CourseService.ROLE_OWNER));
                     }
                 }
             }

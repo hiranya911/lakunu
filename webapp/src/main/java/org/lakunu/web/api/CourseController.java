@@ -2,6 +2,8 @@ package org.lakunu.web.api;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.lakunu.web.models.Course;
@@ -71,4 +73,34 @@ public class CourseController extends LakunuController {
         resp.sendRedirect("/course/" + courseId);
     }
 
+    @Override
+    protected void doPut(HttpServletRequest req,
+                         HttpServletResponse resp) throws ServletException, IOException {
+        UrlPathInfo pathInfo = new UrlPathInfo(req);
+        if (pathInfo.isEmpty()) {
+            resp.sendError(403);
+            return;
+        }
+
+        String courseId = pathInfo.get(0);
+        Course course = courseService.getCourse(courseId);
+        if (course == null) {
+            resp.sendError(404, "Course ID does not exist: " + courseId);
+            return;
+        }
+
+        if (Boolean.parseBoolean(req.getParameter("shareCourse"))) {
+            int role = Integer.parseInt(req.getParameter("role"));
+            String userText = req.getParameter("users");
+            String[] lines = StringUtils.split(userText, "\r\n");
+            ImmutableSet.Builder<String> users = ImmutableSet.builder();
+            for (String line : lines) {
+                users.add(line.trim());
+            }
+            courseService.shareCourse(course, users.build(), role);
+            logger.info("Shared course with users");
+        } else {
+            resp.sendError(400, "Invalid update operation");
+        }
+    }
 }
