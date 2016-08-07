@@ -2,6 +2,7 @@ package org.lakunu.web.dao.jdbc;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import org.lakunu.web.dao.CourseDAO;
 import org.lakunu.web.dao.DAOException;
 import org.lakunu.web.models.Course;
@@ -196,17 +197,17 @@ public final class JdbcCourseDAO implements CourseDAO {
                 }
             }
 
-            try (PreparedStatement stmt = connection.prepareStatement(ADD_COURSE_ROLE_SQL)) {
-                for (String user : users) {
-                    if (currentUsers.contains(user)) {
-                        continue;
+            Sets.SetView<String> newUsers = Sets.difference(users, currentUsers);
+            if (!newUsers.isEmpty()) {
+                try (PreparedStatement stmt = connection.prepareStatement(ADD_COURSE_ROLE_SQL)) {
+                    for (String user : newUsers) {
+                        stmt.setLong(1, courseId);
+                        stmt.setString(2, user);
+                        stmt.setInt(3, role);
+                        stmt.addBatch();
                     }
-                    stmt.setLong(1, courseId);
-                    stmt.setString(2, user);
-                    stmt.setInt(3, role);
-                    stmt.addBatch();
+                    stmt.executeUpdate();
                 }
-                stmt.executeUpdate();
             }
             return null;
         }

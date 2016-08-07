@@ -90,6 +90,37 @@
                 <div class="panel panel-primary">
                     <div class="panel-heading">Sharing</div>
                     <div class="panel-body">
+                        <script>
+                            $(document).ready(function () {
+                                $('#shareCourseForm').submit(function (e) {
+                                    var postData = $(this).serializeArray();
+                                    $.ajax(
+                                            {
+                                                url: '/course/${course.id}',
+                                                type: 'POST',
+                                                data: postData,
+                                                success: function (data, textStatus, jqXHR) {
+                                                    var updateDiv = $('#shareResponse');
+                                                    updateDiv.text('${course.name} shared successfully.');
+                                                    updateDiv.removeClass();
+                                                    updateDiv.addClass('alert');
+                                                    updateDiv.addClass('alert-success');
+                                                    $('#users').text = '';
+                                                },
+                                                error: function (jqXHR, textStatus, errorThrown) {
+                                                    var updateDiv = $('#shareResponse');
+                                                    updateDiv.text('Failed to share ${course.name}.');
+                                                    updateDiv.removeClass();
+                                                    updateDiv.addClass('alert');
+                                                    updateDiv.addClass('alert-danger');
+                                                }
+                                            });
+                                    e.preventDefault(); //STOP default action
+                                    e.unbind(); //unbind. to stop multiple form submit.
+                                });
+                            });
+                        </script>
+                        <div id="shareResponse"></div>
                         <form role="form" id="shareCourseForm" method="POST" action="">
                             <input type="hidden" name="_method" value="PUT">
                             <input type="hidden" name="shareCourse" value="true">

@@ -8,6 +8,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.subject.Subject;
 import org.lakunu.web.models.Course;
 import org.lakunu.web.models.Lab;
+import org.lakunu.web.service.CourseService;
 import org.lakunu.web.service.LabService;
 
 import javax.servlet.ServletException;
@@ -90,7 +91,14 @@ public class CourseController extends LakunuController {
         }
 
         if (Boolean.parseBoolean(req.getParameter("shareCourse"))) {
-            int role = Integer.parseInt(req.getParameter("role"));
+            int role;
+            if ("student".equals(req.getParameter("role"))) {
+                role = CourseService.ROLE_STUDENT;
+            } else if ("instructor".equals(req.getParameter("role"))) {
+                role = CourseService.ROLE_INSTRUCTOR;
+            } else {
+                throw new IllegalArgumentException("Invalid role");
+            }
             String userText = req.getParameter("users");
             String[] lines = StringUtils.split(userText, "\r\n");
             ImmutableSet.Builder<String> users = ImmutableSet.builder();
