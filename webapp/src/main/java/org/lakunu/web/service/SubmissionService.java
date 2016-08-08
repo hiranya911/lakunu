@@ -1,5 +1,6 @@
 package org.lakunu.web.service;
 
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Submission;
@@ -42,6 +43,13 @@ public final class SubmissionService extends AbstractDomainService {
         checkNotNull(lab, "Lab is required");
         checkPermissions("submission:getOwned:" + lab.getCourseId() + ":" + lab.getId());
         return daoFactory.getSubmissionDAO().getOwnedSubmissions(lab, limit);
+    }
+
+    public ImmutableList<SubmissionView> getSubmissionsByUser(Lab lab, String userId, int limit) {
+        checkNotNull(lab, "Lab is required");
+        checkArgument(!Strings.isNullOrEmpty(userId), "UserID is required");
+        checkPermissions("submission:getByUser:" + lab.getCourseId() + ":" + lab.getId());
+        return daoFactory.getSubmissionDAO().getSubmissionsByUser(lab, userId, limit);
     }
 
     public Map<String,List<SubmissionView>> getAllSubmissions(Lab lab) {

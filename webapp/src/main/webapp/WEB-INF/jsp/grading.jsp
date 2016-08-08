@@ -17,6 +17,7 @@
                     <th>User</th>
                     <th>Submissions</th>
                     <th>Final Grade</th>
+                    <th/>
                 </tr>
                 <c:forEach items="${submissions}" var="sub">
                     <tr>
@@ -72,6 +73,7 @@
                                 0.0
                             </c:if>
                         </td>
+                        <td><a href="?user=${sub.key}&limit=3">View</a></td>
                     </tr>
                 </c:forEach>
             </table>

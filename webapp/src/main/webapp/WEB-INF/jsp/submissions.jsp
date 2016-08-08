@@ -16,7 +16,13 @@
 <body>
 <%@ include file="/WEB-INF/include/body_top.html" %>
 <div class="container">
-    <h3>${lab.name} Submissions <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
+    <c:if test="${empty getByUser}">
+        <h3>${lab.name} Submissions <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
+    </c:if>
+    <c:if test="${not empty getByUser}">
+        <h3>${lab.name} Submissions by ${getByUser} <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
+        <a href="/grading/${course.id}/${lab.id}">Back to Grading ${lab.name}</a>
+    </c:if>
     <c:if test="${empty submissions}">
         <div class="row">
             <div class="col-md-12">
@@ -124,7 +130,12 @@
         </div>
     </c:forEach>
     <c:if test="${not viewAll && not empty submissions}">
-        <a href="/submission/${course.id}/${lab.id}">View All</a>
+        <c:if test="${empty getByUser}">
+            <a href="${requestScope['javax.servlet.forward.request_uri']}">View All</a>
+        </c:if>
+        <c:if test="${not empty getByUser}">
+            <a href="${requestScope['javax.servlet.forward.request_uri']}?user=${getByUser}">View All</a>
+        </c:if>
     </c:if>
 </div>
 </body>
