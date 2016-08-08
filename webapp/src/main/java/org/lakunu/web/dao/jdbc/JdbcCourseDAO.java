@@ -6,6 +6,7 @@ import com.google.common.collect.Sets;
 import org.lakunu.web.dao.CourseDAO;
 import org.lakunu.web.dao.DAOException;
 import org.lakunu.web.models.Course;
+import org.lakunu.web.service.CourseService;
 import org.lakunu.web.utils.Security;
 
 import javax.sql.DataSource;
@@ -68,6 +69,15 @@ public final class JdbcCourseDAO implements CourseDAO {
             ShareCourseCommand.execute(dataSource, course.getId(), users, role);
         } catch (SQLException e) {
             throw new DAOException("Error while updating course roles", e);
+        }
+    }
+
+    @Override
+    public ImmutableList<String> getStudents(Course course) {
+        try {
+            return GetStudentsCommand.execute(dataSource, course);
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving students", e);
         }
     }
 
@@ -243,6 +253,39 @@ public final class JdbcCourseDAO implements CourseDAO {
                 }
             }
             return null;
+        }
+    }
+
+    private static class GetStudentsCommand extends Command<ImmutableList<String>> {
+
+        private static final String GET_STUDENTS_SQL = "SELECT user_id FROM course_user WHERE " +
+                "course_id = ? AND role = ?";
+
+        private final Course course;
+
+        private GetStudentsCommand(DataSource dataSource, Course course) {
+            super(dataSource);
+            this.course = course;
+        }
+
+        private static ImmutableList<String> execute(DataSource dataSource,
+                                                     Course course) throws SQLException {
+            return new GetStudentsCommand(dataSource, course).run();
+        }
+
+        @Override
+        protected ImmutableList<String> doRun(Connection connection) throws SQLException {
+            try (PreparedStatement stmt = connection.prepareStatement(GET_STUDENTS_SQL)) {
+                stmt.setLong(1, Long.parseLong(course.getId()));
+                stmt.setInt(2, CourseService.ROLE_STUDENT);
+                try (ResultSet rs = stmt.executeQuery()) {
+                    ImmutableList.Builder<String> builder = ImmutableList.builder();
+                    while (rs.next()) {
+                        builder.add(rs.getString("user_id"));
+                    }
+                    return builder.build();
+                }
+            }
         }
     }
 

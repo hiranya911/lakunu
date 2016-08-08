@@ -29,6 +29,10 @@
                         </c:if>
                         <a href="/submission/${course.id}/${lab.id}?limit=3">Results</a>
                         <span class="tab-space">&nbsp;</span>
+                        <shiro:hasPermission name="submission:getAll:${course.id}:${lab.id}">
+                            <a href="/grading/${course.id}/${lab.id}">Grade</a>
+                            <span class="tab-space">&nbsp;</span>
+                        </shiro:hasPermission>
                         <c:if test="${fn:contains(labPermissions[lab.id], 's') && lab.published}">
                             <a href="/submit/${course.id}/${lab.id}">Submit</a>
                         </c:if>

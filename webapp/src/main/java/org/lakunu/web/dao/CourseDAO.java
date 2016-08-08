@@ -11,5 +11,6 @@ public interface CourseDAO {
     ImmutableList<Course> getOwnedCourses();
     ImmutableList<Course> getCoursesAsStudent();
     void shareCourse(Course course, ImmutableSet<String> users, int role);
+    ImmutableList<String> getStudents(Course course);
 
 }

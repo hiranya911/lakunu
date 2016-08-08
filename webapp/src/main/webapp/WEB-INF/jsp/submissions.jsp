@@ -1,6 +1,8 @@
 <%--@elvariable id="lab" type="org.lakunu.web.models.Lab"--%>
 <%--@elvariable id="course" type="org.lakunu.web.models.Course"--%>
 <%--@elvariable id="submissions" type="java.util.List<org.lakunu.web.models.SubmissionView>"--%>
+<%--@elvariable id="getByUser" type="java.lang.String"--%>
+<%--@elvariable id="viewAll" type="java.lang.Boolean"--%>
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <html>

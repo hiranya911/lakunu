@@ -2,6 +2,9 @@ package org.lakunu.web.api;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSortedMap;
+import org.lakunu.web.models.Course;
 import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.SubmissionView;
 
@@ -34,14 +37,22 @@ public class GradingController extends LakunuController {
             return;
         }
 
-        req.setAttribute("course", courseService.getCourse(lab.getCourseId()));
+        Course course = courseService.getCourse(lab.getCourseId());
+        req.setAttribute("course", course);
         req.setAttribute("lab", lab);
 
         String userId = req.getParameter("user");
         if (Strings.isNullOrEmpty(userId)) {
             Map<String,List<SubmissionView>> submissions = submissionService
                     .getAllSubmissions(lab);
-            req.setAttribute("submissions", submissions);
+            ImmutableList<String> students = courseService.getStudents(course);
+
+            ImmutableSortedMap.Builder<String,List<SubmissionView>> builder = ImmutableSortedMap.naturalOrder();
+            submissions.forEach(builder::put);
+            students.stream().filter(s -> !submissions.containsKey(s))
+                    .forEach(s -> builder.put(s, ImmutableList.of()));
+
+            req.setAttribute("submissions", builder.build());
             req.getRequestDispatcher("/WEB-INF/jsp/grading.jsp").forward(req, resp);
         } else {
             int limit;

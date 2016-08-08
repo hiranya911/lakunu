@@ -56,6 +56,12 @@ public final class CourseService extends AbstractDomainService {
         return daoFactory.getCourseDAO().getOwnedCourses();
     }
 
+    public ImmutableList<String> getStudents(Course course) {
+        checkNotNull(course, "Course is required");
+        checkPermissions("course:getStudents:" + course.getId());
+        return daoFactory.getCourseDAO().getStudents(course);
+    }
+
     public ImmutableList<Course> getCoursesAsStudent() {
         checkPermissions("course:getAsStudent");
         return daoFactory.getCourseDAO().getCoursesAsStudent();
