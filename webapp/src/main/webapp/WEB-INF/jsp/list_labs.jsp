@@ -12,6 +12,7 @@
             <th>Name</th>
             <th>Description</th>
             <th>Created</th>
+            <th>Ready</th>
             <th></th>
         </tr>
         </thead>
@@ -23,18 +24,31 @@
                     <td><c:out value="${lab.description}"/></td>
                     <td><c:out value="${lab.createdAt}"/></td>
                     <td>
+                        <c:if test="${lab.published}">
+                            Yes
+                        </c:if>
+                        <c:if test="${not lab.published}">
+                            No
+                        </c:if>
+                    </td>
+                    <td>
                         <c:if test="${fn:contains(labPermissions[lab.id], 'u') || fn:contains(labPermissions[lab.id], 'p')}">
                             <a href="/lab/${course.id}/${lab.id}">View</a>
                             <span class="tab-space">&nbsp;</span>
                         </c:if>
                         <a href="/submission/${course.id}/${lab.id}?limit=3">Results</a>
                         <span class="tab-space">&nbsp;</span>
-                        <shiro:hasPermission name="submission:getAll:${course.id}:${lab.id}">
+                        <c:if test="${fn:contains(labPermissions[lab.id], 'g')}">
                             <a href="/grading/${course.id}/${lab.id}">Grade</a>
                             <span class="tab-space">&nbsp;</span>
-                        </shiro:hasPermission>
-                        <c:if test="${fn:contains(labPermissions[lab.id], 's') && lab.published}">
-                            <a href="/submit/${course.id}/${lab.id}">Submit</a>
+                        </c:if>
+                        <c:if test="${fn:contains(labPermissions[lab.id], 's')}">
+                            <c:if test="${lab.published}">
+                                <a href="/submit/${course.id}/${lab.id}">Submit</a>
+                            </c:if>
+                            <c:if test="${not lab.published}">
+                                <span class="text-muted">Submit</span>
+                            </c:if>
                         </c:if>
                     </td>
                 </tr>

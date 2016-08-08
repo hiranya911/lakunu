@@ -45,16 +45,17 @@ public final class SubmissionService extends AbstractDomainService {
         return daoFactory.getSubmissionDAO().getOwnedSubmissions(lab, limit);
     }
 
-    public ImmutableList<SubmissionView> getSubmissionsByUser(Lab lab, String userId, int limit) {
+    public ImmutableList<SubmissionView> getSubmissionsForGrading(Lab lab, String userId,
+                                                                  int limit) {
         checkNotNull(lab, "Lab is required");
         checkArgument(!Strings.isNullOrEmpty(userId), "UserID is required");
-        checkPermissions("submission:getByUser:" + lab.getCourseId() + ":" + lab.getId());
+        checkPermissions(LabService.GRADE_PERMISSION(lab));
         return daoFactory.getSubmissionDAO().getSubmissionsByUser(lab, userId, limit);
     }
 
-    public Map<String,List<SubmissionView>> getAllSubmissions(Lab lab) {
+    public Map<String,List<SubmissionView>> getSubmissionsForGrading(Lab lab) {
         checkNotNull(lab, "Lab is required");
-        checkPermissions("submission:getAll:" + lab.getCourseId() + ":" + lab.getId());
+        checkPermissions(LabService.GRADE_PERMISSION(lab));
         ImmutableList<SubmissionView> submissions = daoFactory.getSubmissionDAO()
                 .getAllSubmissions(lab);
         return submissions.stream().collect(Collectors.groupingBy(SubmissionView::getUserId));

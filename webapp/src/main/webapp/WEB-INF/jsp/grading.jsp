@@ -73,7 +73,11 @@
                                 0.0
                             </c:if>
                         </td>
-                        <td><a href="?user=${sub.key}&limit=3">View</a></td>
+                        <td>
+                            <c:if test="${not empty sub.value}">
+                                <a href="?user=${sub.key}&limit=3">View</a>
+                            </c:if>
+                        </td>
                     </tr>
                 </c:forEach>
             </table>

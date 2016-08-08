@@ -19,28 +19,40 @@
 <%@ include file="/WEB-INF/include/body_top.html" %>
 <div class="container">
     <c:if test="${empty getByUser}">
-        <h3>${lab.name} Submissions <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
+        <h3>My ${lab.name} Submissions <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
     </c:if>
     <c:if test="${not empty getByUser}">
         <h3>${lab.name} Submissions by ${getByUser} <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
         <a href="/grading/${course.id}/${lab.id}">Back to Grading ${lab.name}</a>
+        <p>&nbsp;</p>
     </c:if>
     <c:if test="${empty submissions}">
-        <div class="row">
-            <div class="col-md-12">
-                <div class="alert alert-warning">
-                    You don't have any submissions for this lab yet.
-                </div>
-            </div>
-        </div>
-        <c:if test="${lab.openForSubmissions}">
-            <shiro:hasPermission name="lab:submit:${lab.courseId}:${lab.id}">
-                <div class="row">
-                    <div class="col-md-12">
-                        <a href="/submit/${lab.courseId}/${lab.id}">Make Submission</a>
+        <c:if test="${empty getByUser}">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-warning">
+                        You don't have any submissions for this lab yet.
                     </div>
                 </div>
-            </shiro:hasPermission>
+            </div>
+            <c:if test="${lab.openForSubmissions}">
+                <shiro:hasPermission name="lab:submit:${lab.courseId}:${lab.id}">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <a href="/submit/${lab.courseId}/${lab.id}">Make Submission</a>
+                        </div>
+                    </div>
+                </shiro:hasPermission>
+            </c:if>
+        </c:if>
+        <c:if test="${not empty getByUser}">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="alert alert-warning">
+                        ${getByUser} does not have any submissions for this lab yet.
+                    </div>
+                </div>
+            </div>
         </c:if>
     </c:if>
     <c:forEach items="${submissions}" var="sub">

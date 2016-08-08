@@ -57,6 +57,7 @@
                                         <th>Name</th>
                                         <th>Description</th>
                                         <th>Created</th>
+                                        <th>Instructor</th>
                                         <th/>
                                     </tr>
                                     </thead>
@@ -66,6 +67,7 @@
                                             <td>${course.name}</td>
                                             <td>${course.description}</td>
                                             <td>${course.createdAt}</td>
+                                            <td>${course.owner}</td>
                                             <td><a href="/course/${course.id}">View</a></td>
                                         </tr>
                                     </c:forEach>

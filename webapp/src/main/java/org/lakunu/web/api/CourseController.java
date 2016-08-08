@@ -59,6 +59,9 @@ public class CourseController extends LakunuController {
             if (subject.isPermitted(LabService.SUBMIT_PERMISSION(lab))) {
                 permission += "s";
             }
+            if (subject.isPermitted(LabService.GRADE_PERMISSION(lab))) {
+                permission += "g";
+            }
             if (permission.length() > 0) {
                 permissions.put(lab.getId(), permission);
             }

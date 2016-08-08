@@ -103,7 +103,15 @@ public final class LabService extends AbstractDomainService {
     }
 
     public static String SUBMIT_PERMISSION(Lab lab) {
-        return permission("submit", lab.getCourseId(), lab.getId());
+        return SUBMIT_PERMISSION(lab.getCourseId(), lab.getId());
+    }
+
+    public static String SUBMIT_PERMISSION(String courseId, String labId) {
+        return permission("submit", courseId, labId);
+    }
+
+    public static String GRADE_PERMISSION(Lab lab) {
+        return permission("grade", lab.getCourseId(), lab.getId());
     }
 
 }

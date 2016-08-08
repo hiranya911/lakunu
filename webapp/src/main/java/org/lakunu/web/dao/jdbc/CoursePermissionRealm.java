@@ -58,7 +58,9 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                         permissions.add(LabService.permission("*", courseId, "*"));
                         break;
                     case CourseService.ROLE_STUDENT:
-                        permissions.add("course:get:" + role.courseId);
+                        permissions.add("course:get,getLabs:" + role.courseId);
+                        permissions.add(LabService.GET_PERMISSION(role.courseId, "*"));
+                        permissions.add(LabService.SUBMIT_PERMISSION(role.courseId, "*"));
                         break;
                 }
             });
@@ -143,11 +145,11 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
     }
 
     private static final class CourseRole {
-        private final long courseId;
+        private final String courseId;
         private final int role;
 
         private CourseRole(long courseId, int role) {
-            this.courseId = courseId;
+            this.courseId = String.valueOf(courseId);
             this.role = role;
         }
 
