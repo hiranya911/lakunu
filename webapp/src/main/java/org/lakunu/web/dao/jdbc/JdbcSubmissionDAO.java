@@ -49,7 +49,16 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
     @Override
     public ImmutableList<SubmissionView> getOwnedSubmissions(Lab lab, int limit) {
         try {
-            return GetOwnedSubmissionViewsCommand.execute(dataSource, lab.getId(), limit);
+            return GetOwnedSubmissionsCommand.execute(dataSource, lab.getId(), limit);
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving submissions", e);
+        }
+    }
+
+    @Override
+    public ImmutableList<SubmissionView> getSubmissionsByUser(Lab lab, String userId, int limit) {
+        try {
+            return GetSubmissionsByUserCommand.execute(dataSource, userId, lab.getId(), limit);
         } catch (SQLException e) {
             throw new DAOException("Error while retrieving submissions", e);
         }
@@ -58,7 +67,7 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
     @Override
     public ImmutableList<SubmissionView> getAllSubmissions(Lab lab) {
         try {
-            return GetAllSubmissionViewsCommand.execute(dataSource, lab.getId());
+            return GetAllSubmissionsCommand.execute(dataSource, lab.getId());
         } catch (SQLException e) {
             throw new DAOException("Error while retrieving submissions", e);
         }
@@ -150,7 +159,7 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
         return String.format(sql, params);
     }
 
-    private static class GetAllSubmissionViewsCommand extends Command<ImmutableList<SubmissionView>> {
+    private static class GetAllSubmissionsCommand extends Command<ImmutableList<SubmissionView>> {
         private static final String GET_SUBMISSIONS_SQL = "SELECT id, user_id, lab_id, submitted_at, " +
                 "submission_type FROM submission WHERE lab_id = ? ORDER BY submitted_at DESC";
         private static final String GET_EVALUATIONS_SQL = "SELECT id, submission_id, " +
@@ -161,14 +170,14 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
 
         protected final long labId;
 
-        protected GetAllSubmissionViewsCommand(DataSource dataSource, String labId) {
+        protected GetAllSubmissionsCommand(DataSource dataSource, String labId) {
             super(dataSource);
             this.labId = Long.parseLong(labId);
         }
 
-        public static ImmutableList<SubmissionView> execute(DataSource dataSource,
+        private static ImmutableList<SubmissionView> execute(DataSource dataSource,
                                                             String labId) throws SQLException {
-            return new GetAllSubmissionViewsCommand(dataSource, labId).run();
+            return new GetAllSubmissionsCommand(dataSource, labId).run();
         }
 
         protected PreparedStatement getStatement(Connection connection) throws SQLException {
@@ -266,7 +275,7 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
         }
     }
 
-    private static class GetSubmissionViewsCommand extends GetAllSubmissionViewsCommand {
+    private static class GetSubmissionsByUserCommand extends GetAllSubmissionsCommand {
 
         private static final String GET_SUBMISSIONS_BY_USER_SQL = "SELECT id, user_id, lab_id, " +
                 "submitted_at, submission_type FROM submission WHERE user_id = ? AND lab_id = ? " +
@@ -275,11 +284,16 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
         private final String userId;
         private final int limit;
 
-        protected GetSubmissionViewsCommand(DataSource dataSource, String userId, String labId,
-                                         int limit) {
+        protected GetSubmissionsByUserCommand(DataSource dataSource, String userId, String labId,
+                                              int limit) {
             super(dataSource, labId);
             this.userId = userId;
             this.limit = limit;
+        }
+
+        private static ImmutableList<SubmissionView> execute(DataSource dataSource, String userId,
+                                                      String labId, int limit) throws SQLException {
+            return new GetSubmissionsByUserCommand(dataSource, userId, labId, limit).run();
         }
 
         protected PreparedStatement getStatement(Connection connection) throws SQLException {
@@ -303,15 +317,15 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
         }
     }
 
-    private static class GetOwnedSubmissionViewsCommand extends GetSubmissionViewsCommand {
+    private static class GetOwnedSubmissionsCommand extends GetSubmissionsByUserCommand {
 
-        private GetOwnedSubmissionViewsCommand(DataSource dataSource, String labId, int limit) {
+        private GetOwnedSubmissionsCommand(DataSource dataSource, String labId, int limit) {
             super(dataSource, Security.getCurrentUser(), labId, limit);
         }
 
         private static ImmutableList<SubmissionView> execute(DataSource dataSource, String labId,
                                                              int limit) throws SQLException {
-            return new GetOwnedSubmissionViewsCommand(dataSource, labId, limit).run();
+            return new GetOwnedSubmissionsCommand(dataSource, labId, limit).run();
         }
     }
 
