@@ -56,6 +56,11 @@ public final class CourseService extends AbstractDomainService {
         return daoFactory.getCourseDAO().getOwnedCourses();
     }
 
+    public ImmutableList<Course> getCoursesAsStudent() {
+        checkPermissions("course:getAsStudent");
+        return daoFactory.getCourseDAO().getCoursesAsStudent();
+    }
+
     public void shareCourse(Course course, ImmutableSet<String> users, int role) {
         checkNotNull(course, "Course is required");
         checkNotNull(users, "Users list is required");

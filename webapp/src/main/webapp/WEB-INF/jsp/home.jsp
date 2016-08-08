@@ -42,6 +42,40 @@
                     </div>
                 </div>
             </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">Courses I'm Taking (Student)</div>
+                        <div class="panel-body">
+                            <c:if test="${empty studentCourses}">
+                                <p>No courses to display</p>
+                            </c:if>
+                            <c:if test="${not empty studentCourses}">
+                                <table class="table table-striped">
+                                    <thead class="thead-inverse">
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Description</th>
+                                        <th>Created</th>
+                                        <th/>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <c:forEach items="${studentCourses}" var="course">
+                                        <tr>
+                                            <td>${course.name}</td>
+                                            <td>${course.description}</td>
+                                            <td>${course.createdAt}</td>
+                                            <td><a href="/course/${course.id}">View</a></td>
+                                        </tr>
+                                    </c:forEach>
+                                    </tbody>
+                                </table>
+                            </c:if>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </body>
 </html>

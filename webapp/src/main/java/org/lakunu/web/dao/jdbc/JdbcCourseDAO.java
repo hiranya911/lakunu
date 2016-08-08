@@ -54,6 +54,15 @@ public final class JdbcCourseDAO implements CourseDAO {
     }
 
     @Override
+    public ImmutableList<Course> getCoursesAsStudent() {
+        try {
+            return GetCoursesAsStudentCommand.execute(dataSource);
+        } catch (SQLException e) {
+            throw new DAOException("Error while retrieving courses", e);
+        }
+    }
+
+    @Override
     public void shareCourse(Course course, ImmutableSet<String> users, int role) {
         try {
             ShareCourseCommand.execute(dataSource, course.getId(), users, role);
@@ -132,12 +141,12 @@ public final class JdbcCourseDAO implements CourseDAO {
         }
     }
 
-    private static final class GetOwnedCoursesCommand extends Command<ImmutableList<Course>> {
+    private static class GetOwnedCoursesCommand extends Command<ImmutableList<Course>> {
 
         private static final String GET_OWNED_COURSES_SQL = "SELECT id, name, description, " +
                 "owner, created_at FROM course WHERE owner = ?";
 
-        private GetOwnedCoursesCommand(DataSource dataSource) {
+        protected GetOwnedCoursesCommand(DataSource dataSource) {
             super(dataSource);
         }
 
@@ -147,7 +156,7 @@ public final class JdbcCourseDAO implements CourseDAO {
 
         @Override
         protected ImmutableList<Course> doRun(Connection connection) throws SQLException {
-            try (PreparedStatement stmt = connection.prepareStatement(GET_OWNED_COURSES_SQL)) {
+            try (PreparedStatement stmt = connection.prepareStatement(getSQL())) {
                 stmt.setString(1, Security.getCurrentUser());
                 try (ResultSet rs = stmt.executeQuery()) {
                     ImmutableList.Builder<Course> builder = ImmutableList.builder();
@@ -157,6 +166,30 @@ public final class JdbcCourseDAO implements CourseDAO {
                     return builder.build();
                 }
             }
+        }
+
+        protected String getSQL() {
+            return GET_OWNED_COURSES_SQL;
+        }
+    }
+
+    private static final class GetCoursesAsStudentCommand extends GetOwnedCoursesCommand {
+
+        private static final String GET_COURSES_AS_STUDENT_SQL = "SELECT id, name, description, " +
+                "owner, created_at FROM course WHERE id IN (SELECT course_id from course_user " +
+                "WHERE user_id = ?)";
+
+        private GetCoursesAsStudentCommand(DataSource dataSource) {
+            super(dataSource);
+        }
+
+        private static ImmutableList<Course> execute(DataSource dataSource) throws SQLException {
+            return new GetCoursesAsStudentCommand(dataSource).run();
+        }
+
+        @Override
+        protected String getSQL() {
+            return GET_COURSES_AS_STUDENT_SQL;
         }
     }
 

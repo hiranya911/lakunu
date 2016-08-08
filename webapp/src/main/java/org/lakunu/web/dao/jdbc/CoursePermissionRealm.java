@@ -57,6 +57,9 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                         permissions.add("course:get,getLabs:" + role.courseId);
                         permissions.add(LabService.permission("*", courseId, "*"));
                         break;
+                    case CourseService.ROLE_STUDENT:
+                        permissions.add("course:get:" + role.courseId);
+                        break;
                 }
             });
             SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();

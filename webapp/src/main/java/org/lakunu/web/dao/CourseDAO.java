@@ -9,6 +9,7 @@ public interface CourseDAO {
     String addCourse(Course course);
     Course getCourse(String courseId);
     ImmutableList<Course> getOwnedCourses();
+    ImmutableList<Course> getCoursesAsStudent();
     void shareCourse(Course course, ImmutableSet<String> users, int role);
 
 }
