@@ -61,6 +61,7 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                         permissions.add("course:get,getLabs:" + role.courseId);
                         permissions.add(LabService.GET_PERMISSION(role.courseId, "*"));
                         permissions.add(LabService.SUBMIT_PERMISSION(role.courseId, "*"));
+                        permissions.add("submission:getOwned:" + courseId + ":*");
                         break;
                 }
             });
@@ -157,7 +158,7 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
         public boolean equals(Object obj) {
             if (obj instanceof CourseRole) {
                 CourseRole other = (CourseRole) obj;
-                return this.courseId == other.courseId && this.role == other.role;
+                return this.courseId.equals(other.courseId) && this.role == other.role;
             }
             return false;
         }

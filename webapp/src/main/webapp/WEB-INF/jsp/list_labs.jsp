@@ -36,12 +36,6 @@
                             <a href="/lab/${course.id}/${lab.id}">View</a>
                             <span class="tab-space">&nbsp;</span>
                         </c:if>
-                        <a href="/submission/${course.id}/${lab.id}?limit=3">Results</a>
-                        <span class="tab-space">&nbsp;</span>
-                        <c:if test="${fn:contains(labPermissions[lab.id], 'g')}">
-                            <a href="/grading/${course.id}/${lab.id}">Grade</a>
-                            <span class="tab-space">&nbsp;</span>
-                        </c:if>
                         <c:if test="${fn:contains(labPermissions[lab.id], 's')}">
                             <c:if test="${lab.published}">
                                 <a href="/submit/${course.id}/${lab.id}">Submit</a>
@@ -49,6 +43,12 @@
                             <c:if test="${not lab.published}">
                                 <span class="text-muted">Submit</span>
                             </c:if>
+                            <span class="tab-space">&nbsp;</span>
+                        </c:if>
+                        <a href="/submission/${course.id}/${lab.id}?limit=3">Results</a>
+                        <span class="tab-space">&nbsp;</span>
+                        <c:if test="${fn:contains(labPermissions[lab.id], 'g')}">
+                            <a href="/grading/${course.id}/${lab.id}">Grade</a>
                         </c:if>
                     </td>
                 </tr>

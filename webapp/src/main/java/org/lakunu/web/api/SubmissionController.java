@@ -44,7 +44,7 @@ public class SubmissionController extends LakunuController {
         req.setAttribute("lab", lab);
         req.setAttribute("course", courseService.getCourse(courseId));
         req.setAttribute("submissions", ownedSubmissions);
-        req.setAttribute("viewAll", limit < 0);
+        req.setAttribute("viewAll", limit < 0 || ownedSubmissions.size() < limit);
         req.getRequestDispatcher("/WEB-INF/jsp/submissions.jsp").forward(req, resp);
     }
 }
