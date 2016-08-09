@@ -160,11 +160,14 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
     }
 
     private static class GetAllSubmissionsCommand extends Command<ImmutableList<SubmissionView>> {
+
         private static final String GET_SUBMISSIONS_SQL = "SELECT id, user_id, lab_id, submitted_at, " +
                 "submission_type FROM submission WHERE lab_id = ? ORDER BY submitted_at DESC";
+
         private static final String GET_EVALUATIONS_SQL = "SELECT id, submission_id, " +
                 "started_at, finished_at, finishing_status, log FROM evaluation WHERE " +
                 "submission_id IN (%s) ORDER BY finished_at DESC";
+
         private static final String GET_GRADES_SQL = "SELECT id, evaluation_id, label, score, " +
                 "score_limit FROM grade WHERE evaluation_id IN (%s)";
 

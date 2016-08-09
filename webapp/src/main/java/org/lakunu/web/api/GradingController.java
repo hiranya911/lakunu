@@ -43,27 +43,15 @@ public class GradingController extends LakunuController {
         }
 
         Course course = courseService.getCourse(lab.getCourseId());
+        if (Boolean.parseBoolean(req.getParameter("export"))) {
+            exportGrades(course, lab, resp);
+            return;
+        }
+
         req.setAttribute("course", course);
         req.setAttribute("lab", lab);
-
         String userId = req.getParameter("user");
-        if (Boolean.parseBoolean(req.getParameter("export"))) {
-            logger.info("Exporting grades");
-            ImmutableList<String> students = courseService.getStudents(course);
-            ImmutableSortedMap<String,Double> grades = submissionService.exportGrades(lab, students);
-            resp.setContentType("text/csv");
-            String fileName = String.format("lakunu_lab%s_%s.csv", lab.getId(),
-                    EXPORT_DATE_FORMAT.format(new Date()));
-            resp.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"",
-                    fileName));
-            OutputStream outputStream = resp.getOutputStream();
-            for (Map.Entry<String,Double> entry : grades.entrySet()) {
-                IOUtils.write(String.format("%s, %.2f\n", entry.getKey(), entry.getValue()),
-                        outputStream);
-            }
-            outputStream.flush();
-            outputStream.close();
-        } else if (Strings.isNullOrEmpty(userId)) {
+        if (Strings.isNullOrEmpty(userId)) {
             ImmutableList<String> students = courseService.getStudents(course);
             Map<String, List<SubmissionView>> submissions = submissionService
                     .getSubmissionsForGrading(lab);
@@ -90,5 +78,22 @@ public class GradingController extends LakunuController {
             req.setAttribute("viewAll", limit < 0 || submissions.size() < limit);
             req.getRequestDispatcher("/WEB-INF/jsp/submissions.jsp").forward(req, resp);
         }
+    }
+
+    private void exportGrades(Course course, Lab lab, HttpServletResponse resp) throws IOException {
+        ImmutableList<String> students = courseService.getStudents(course);
+        ImmutableSortedMap<String,Double> grades = submissionService.exportGrades(lab, students);
+        resp.setContentType("text/csv");
+        String fileName = String.format("lakunu_lab%s_%s.csv", lab.getId(),
+                EXPORT_DATE_FORMAT.format(new Date()));
+        resp.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"",
+                fileName));
+        OutputStream outputStream = resp.getOutputStream();
+        for (Map.Entry<String,Double> entry : grades.entrySet()) {
+            IOUtils.write(String.format("%s, %.2f\n", entry.getKey(), entry.getValue()),
+                    outputStream);
+        }
+        outputStream.flush();
+        outputStream.close();
     }
 }
