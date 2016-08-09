@@ -83,6 +83,11 @@
             </table>
         </div>
     </div>
+    <div class="row">
+        <a type="button" class="btn btn-primary" href="/grading/${course.id}/${lab.id}?export=true">
+            Download CSV <span class="glyphicon glyphicon-download"></span>
+        </a>
+    </div>
 </div>
 </body>
 </html>

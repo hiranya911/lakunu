@@ -2,6 +2,7 @@ package org.lakunu.web.service;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSortedMap;
 import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Submission;
 import org.lakunu.web.models.SubmissionView;
@@ -59,5 +60,20 @@ public final class SubmissionService extends AbstractDomainService {
         ImmutableList<SubmissionView> submissions = daoFactory.getSubmissionDAO()
                 .getAllSubmissions(lab);
         return submissions.stream().collect(Collectors.groupingBy(SubmissionView::getUserId));
+    }
+
+    public ImmutableSortedMap<String,Double> exportGrades(Lab lab, ImmutableList<String> users) {
+        checkNotNull(users, "Users list is required");
+        Map<String,List<SubmissionView>> submissions = getSubmissionsForGrading(lab);
+        ImmutableSortedMap.Builder<String,Double> result = ImmutableSortedMap.naturalOrder();
+        users.forEach(user -> {
+            List<SubmissionView> userSubmissions = submissions.getOrDefault(user, ImmutableList.of());
+            if (userSubmissions.isEmpty()) {
+                result.put(user, 0D);
+            } else {
+                result.put(user, userSubmissions.get(0).getFinalScore().getValue());
+            }
+        });
+        return result.build();
     }
 }

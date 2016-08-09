@@ -3,6 +3,7 @@ package org.lakunu.web.api;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import org.apache.commons.io.IOUtils;
 import org.lakunu.web.models.Course;
 import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.SubmissionView;
@@ -12,11 +13,16 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
 @WebServlet("/grading/*")
 public class GradingController extends LakunuController {
+
+    private static final SimpleDateFormat EXPORT_DATE_FORMAT = new SimpleDateFormat("yyyyMMddHHmmss");
 
     @Override
     protected void doGet(HttpServletRequest req,
@@ -41,12 +47,28 @@ public class GradingController extends LakunuController {
         req.setAttribute("lab", lab);
 
         String userId = req.getParameter("user");
-        if (Strings.isNullOrEmpty(userId)) {
-            Map<String,List<SubmissionView>> submissions = submissionService
-                    .getSubmissionsForGrading(lab);
+        if (Boolean.parseBoolean(req.getParameter("export"))) {
+            logger.info("Exporting grades");
             ImmutableList<String> students = courseService.getStudents(course);
+            ImmutableSortedMap<String,Double> grades = submissionService.exportGrades(lab, students);
+            resp.setContentType("text/csv");
+            String fileName = String.format("lakunu_lab%s_%s.csv", lab.getId(),
+                    EXPORT_DATE_FORMAT.format(new Date()));
+            resp.setHeader("Content-Disposition", String.format("attachment; filename=\"%s\"",
+                    fileName));
+            OutputStream outputStream = resp.getOutputStream();
+            for (Map.Entry<String,Double> entry : grades.entrySet()) {
+                IOUtils.write(String.format("%s, %.2f\n", entry.getKey(), entry.getValue()),
+                        outputStream);
+            }
+            outputStream.flush();
+            outputStream.close();
+        } else if (Strings.isNullOrEmpty(userId)) {
+            ImmutableList<String> students = courseService.getStudents(course);
+            Map<String, List<SubmissionView>> submissions = submissionService
+                    .getSubmissionsForGrading(lab);
 
-            ImmutableSortedMap.Builder<String,List<SubmissionView>> builder = ImmutableSortedMap.naturalOrder();
+            ImmutableSortedMap.Builder<String, List<SubmissionView>> builder = ImmutableSortedMap.naturalOrder();
             submissions.forEach(builder::put);
             students.stream().filter(s -> !submissions.containsKey(s))
                     .forEach(s -> builder.put(s, ImmutableList.of()));
