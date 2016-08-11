@@ -28,10 +28,10 @@
                             type: 'POST',
                             data: postData,
                             success: function (data, textStatus, jqXHR) {
-                                alert('Submission requeued successfully');
+                                $('#enqueueSuccess').modal();
                             },
                             error: function (jqXHR, textStatus, errorThrown) {
-                                alert('Submission requeue failed');
+                                $('#enqueueFailed').modal();
                             }
                         });
                 e.preventDefault(); //STOP default action
@@ -152,6 +152,38 @@
     <c:if test="${not viewAll && not empty submissions}">
         <a href="${requestScope['javax.servlet.forward.request_uri']}?user=${getByUser}">View All</a>
     </c:if>
+    <div id="enqueueSuccess" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Grading Alert</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Successfully re-enqueued submission</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="enqueueFailed" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Grading Alert</h4>
+                </div>
+                <div class="modal-body">
+                    <p>Failed to re-enqueue submission</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 </body>
 </html>

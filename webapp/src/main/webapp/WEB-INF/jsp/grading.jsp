@@ -1,3 +1,6 @@
+<%--@elvariable id="lab" type="org.lakunu.web.models.Lab"--%>
+<%--@elvariable id="course" type="org.lakunu.web.models.Course"--%>
+<%--@elvariable id="submissions" type="java.util.Map<String,java.util.List<org.lakunu.web.models.SubmissionView>>"--%>
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
@@ -17,7 +20,7 @@
                     <th>User</th>
                     <th>Submissions</th>
                     <th>Final Grade</th>
-                    <th/>
+                    <th></th>
                 </tr>
                 <c:forEach items="${submissions}" var="sub">
                     <tr>
