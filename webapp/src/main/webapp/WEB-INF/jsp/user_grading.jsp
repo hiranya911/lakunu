@@ -1,6 +1,7 @@
 <%--@elvariable id="lab" type="org.lakunu.web.models.Lab"--%>
 <%--@elvariable id="course" type="org.lakunu.web.models.Course"--%>
 <%--@elvariable id="submissions" type="java.util.List<org.lakunu.web.models.SubmissionView>"--%>
+<%--@elvariable id="getByUser" type="java.lang.String"--%>
 <%--@elvariable id="viewAll" type="java.lang.Boolean"--%>
 <%@ taglib prefix="shiro" uri="http://shiro.apache.org/tags" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -17,24 +18,17 @@
 <body>
 <%@ include file="/WEB-INF/include/body_top.html" %>
 <div class="container">
-    <h3>My ${lab.name} Submissions <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
+    <h3>${lab.name} Submissions by ${getByUser} <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
+    <a href="/grading/${course.id}/${lab.id}">Back to Grading ${lab.name}</a>
+    <p>&nbsp;</p>
     <c:if test="${empty submissions}">
         <div class="row">
             <div class="col-md-12">
                 <div class="alert alert-warning">
-                    You don't have any submissions for this lab yet.
+                        ${getByUser} does not have any submissions for this lab yet.
                 </div>
             </div>
         </div>
-        <c:if test="${lab.openForSubmissions}">
-            <shiro:hasPermission name="lab:submit:${lab.courseId}:${lab.id}">
-                <div class="row">
-                    <div class="col-md-12">
-                        <a href="/submit/${lab.courseId}/${lab.id}">Make Submission</a>
-                    </div>
-                </div>
-            </shiro:hasPermission>
-        </c:if>
     </c:if>
     <c:forEach items="${submissions}" var="sub">
         <div class="row">
@@ -125,7 +119,7 @@
         </div>
     </c:forEach>
     <c:if test="${not viewAll && not empty submissions}">
-        <a href="${requestScope['javax.servlet.forward.request_uri']}">View All</a>
+        <a href="${requestScope['javax.servlet.forward.request_uri']}?user=${getByUser}">View All</a>
     </c:if>
 </div>
 </body>

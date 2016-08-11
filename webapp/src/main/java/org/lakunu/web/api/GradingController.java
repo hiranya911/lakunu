@@ -76,7 +76,7 @@ public class GradingController extends LakunuController {
             req.setAttribute("getByUser", userId);
             req.setAttribute("submissions", submissions);
             req.setAttribute("viewAll", limit < 0 || submissions.size() < limit);
-            req.getRequestDispatcher("/WEB-INF/jsp/submissions.jsp").forward(req, resp);
+            req.getRequestDispatcher("/WEB-INF/jsp/user_grading.jsp").forward(req, resp);
         }
     }
 
