@@ -12,6 +12,7 @@ import javax.sql.DataSource;
 
 import java.sql.*;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -73,6 +74,15 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
         }
     }
 
+    @Override
+    public void enqueueSubmissions(ImmutableList<String> submissionIds) {
+        try {
+            EnqueueSubmissionsCommand.execute(dataSource, submissionIds);
+        } catch (SQLException e) {
+            throw new DAOException("Error while enqueueing submissions", e);
+        }
+    }
+
     private static final class AddSubmissionCommand extends TxCommand<String> {
 
         private static final String ADD_SUBMISSION_SQL = "INSERT INTO submission (user_id, " +
@@ -119,6 +129,39 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
                 checkState(rows == 1, "Failed to enqueue the submission");
             }
             return String.valueOf(submissionId);
+        }
+    }
+
+    private static final class EnqueueSubmissionsCommand extends Command<Void> {
+
+        private final ImmutableList<Long> submissionIds;
+
+        private EnqueueSubmissionsCommand(DataSource dataSource, List<String> submissionIds) {
+            super(dataSource);
+            this.submissionIds = submissionIds.stream().map(Long::parseLong)
+                    .collect(LabUtils.immutableList());
+        }
+
+        private static void execute(DataSource dataSource,
+                                    List<String> submissionIds) throws SQLException {
+            new EnqueueSubmissionsCommand(dataSource, submissionIds).run();
+        }
+
+        @Override
+        protected Void doRun(Connection connection) throws SQLException {
+            if (submissionIds.isEmpty()) {
+                return null;
+            }
+
+            try (PreparedStatement stmt = connection.prepareStatement(
+                    AddSubmissionCommand.ENQUEUE_SUBMISSION_SQL)) {
+                for (long id : submissionIds) {
+                    stmt.setLong(1, id);
+                    stmt.addBatch();
+                }
+                stmt.executeBatch();
+            }
+            return null;
         }
     }
 

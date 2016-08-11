@@ -5,6 +5,8 @@ import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Submission;
 import org.lakunu.web.models.SubmissionView;
 
+import java.util.List;
+
 public interface SubmissionDAO {
 
     String addSubmission(Submission submission);
@@ -12,5 +14,6 @@ public interface SubmissionDAO {
     ImmutableList<SubmissionView> getSubmissionsByUser(Lab lab, String userId, int limit);
     ImmutableList<SubmissionView> getAllSubmissions(Lab lab);
     Submission getSubmission(String submissionId);
+    void enqueueSubmissions(ImmutableList<String> submissionIds);
 
 }

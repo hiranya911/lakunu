@@ -18,6 +18,27 @@
 <body>
 <%@ include file="/WEB-INF/include/body_top.html" %>
 <div class="container">
+    <script>
+        $(document).ready(function () {
+            $('.requeue-form').submit(function (e) {
+                var postData = $(this).serializeArray();
+                $.ajax(
+                        {
+                            url: '/grading/${course.id}/${lab.id}',
+                            type: 'POST',
+                            data: postData,
+                            success: function (data, textStatus, jqXHR) {
+                                alert('Submission requeued successfully');
+                            },
+                            error: function (jqXHR, textStatus, errorThrown) {
+                                alert('Submission requeue failed');
+                            }
+                        });
+                e.preventDefault(); //STOP default action
+                e.unbind(); //unbind. to stop multiple form submit.
+            });
+        });
+    </script>
     <h3>${lab.name} Submissions by ${getByUser} <small><a href="/course/${lab.courseId}">(Back to ${course.name})</a></small></h3>
     <a href="/grading/${course.id}/${lab.id}">Back to Grading ${lab.name}</a>
     <p>&nbsp;</p>
@@ -113,6 +134,16 @@
                                 </tr>
                             </table>
                         </c:forEach>
+                        <c:if test="${not empty sub.evaluations}">
+                            <form role="form" method="POST" action="" class="requeue-form">
+                                <input type="hidden" name="_method" value="PUT"/>
+                                <input type="hidden" name="enqueue" value="true"/>
+                                <input type="hidden" name="submission" value="${sub.id}"/>
+                                <input type="hidden" name="labId" value="${lab.id}"/>
+                                <input type="hidden" name="courseId" value="${course.id}"/>
+                                <button class="btn btn-primary" type="submit">Requeue</button>
+                            </form>
+                        </c:if>
                     </div>
                 </div>
             </div>

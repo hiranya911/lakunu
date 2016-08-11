@@ -3,6 +3,7 @@ package org.lakunu.web.service;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Submission;
 import org.lakunu.web.models.SubmissionView;
@@ -38,6 +39,18 @@ public final class SubmissionService extends AbstractDomainService {
                 .setData(userSubmission.getData())
                 .build();
         return daoFactory.getSubmissionDAO().addSubmission(submission);
+    }
+
+    public void enqueueSubmission(Lab lab, String submissionId) {
+        checkNotNull(lab, "Lab is required");
+        checkArgument(!Strings.isNullOrEmpty(submissionId), "SubmissionID is required");
+        checkPermissions("submission:enqueue:" + lab.getCourseId() + ":" + lab.getId());
+
+        SubmissionDAO submissionDAO = daoFactory.getSubmissionDAO();
+        Submission submission = submissionDAO.getSubmission(submissionId);
+        checkNotNull(submission, "Invalid submission ID");
+        checkArgument(lab.getId().equals(submission.getLabId()), "Invalid lab for submission");
+        submissionDAO.enqueueSubmissions(ImmutableList.of(submission.getId()));
     }
 
     public ImmutableList<SubmissionView> getOwnedSubmissions(Lab lab, int limit) {

@@ -80,6 +80,24 @@ public class GradingController extends LakunuController {
         }
     }
 
+    @Override
+    protected void doPut(HttpServletRequest req,
+                         HttpServletResponse resp) throws ServletException, IOException {
+        if (Boolean.parseBoolean(req.getParameter("enqueue"))) {
+            String courseId = req.getParameter("courseId");
+            String labId = req.getParameter("labId");
+            Lab lab = labService.getLab(courseId, labId);
+            if (lab == null) {
+                resp.sendError(404, "Invalid lab or course");
+                return;
+            }
+            String submissionId = req.getParameter("submission");
+            submissionService.enqueueSubmission(lab, submissionId);
+        } else {
+            resp.sendError(400, "Invalid update operation");
+        }
+    }
+
     private void exportGrades(Course course, Lab lab, HttpServletResponse resp) throws IOException {
         ImmutableList<String> students = courseService.getStudents(course);
         ImmutableSortedMap<String,Double> grades = submissionService.exportGrades(lab, students);
