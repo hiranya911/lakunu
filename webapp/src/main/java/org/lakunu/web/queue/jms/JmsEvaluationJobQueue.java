@@ -1,5 +1,6 @@
 package org.lakunu.web.queue.jms;
 
+import com.google.common.collect.ImmutableList;
 import org.lakunu.web.queue.EvaluationJobQueue;
 import org.lakunu.web.service.EvaluationJobWorker;
 import org.lakunu.web.utils.ConfigProperties;
@@ -11,6 +12,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.List;
 
 public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
@@ -61,6 +63,30 @@ public final class JmsEvaluationJobQueue implements EvaluationJobQueue {
         } catch (JMSException e) {
             rollback(session);
             throw new RuntimeException("Error during enqueue", e);
+        } finally {
+            closeConnection(connection);
+        }
+    }
+
+    @Override
+    public ImmutableList<String> getPendingSubmissions() {
+        QueueConnection connection = null;
+        Session session;
+        try {
+            connection = connectionFactory.createQueueConnection();
+            session = connection.createQueueSession(false, Session.AUTO_ACKNOWLEDGE);
+            QueueBrowser browser = session.createBrowser(queue);
+            ImmutableList.Builder<String> submissions = ImmutableList.builder();
+            Enumeration messages = browser.getEnumeration();
+            while (messages.hasMoreElements()) {
+                Object message = messages.nextElement();
+                if (message instanceof TextMessage) {
+                    submissions.add(((TextMessage) message).getText());
+                }
+            }
+            return submissions.build();
+        } catch (JMSException e) {
+            throw new RuntimeException("Error during query", e);
         } finally {
             closeConnection(connection);
         }

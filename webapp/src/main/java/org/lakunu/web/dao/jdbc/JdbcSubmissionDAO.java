@@ -24,7 +24,7 @@ public final class JdbcSubmissionDAO implements SubmissionDAO {
 
     private final DataSource dataSource;
 
-    public JdbcSubmissionDAO(DataSource dataSource) {
+    JdbcSubmissionDAO(DataSource dataSource) {
         checkNotNull(dataSource, "DataSource is required");
         this.dataSource = dataSource;
     }

@@ -17,7 +17,7 @@ public final class JdbcEvaluationDAO implements EvaluationDAO {
 
     private final DataSource dataSource;
 
-    public JdbcEvaluationDAO(DataSource dataSource) {
+    JdbcEvaluationDAO(DataSource dataSource) {
         checkNotNull(dataSource, "DataSource is required");
         this.dataSource = dataSource;
     }

@@ -28,7 +28,7 @@ final class JdbcEnqueueWorker implements Runnable {
 
     private boolean proceed;
 
-    public JdbcEnqueueWorker(DataSource dataSource, EvaluationJobQueue jobQueue) {
+    JdbcEnqueueWorker(DataSource dataSource, EvaluationJobQueue jobQueue) {
         this.dataSource = dataSource;
         checkNotNull(jobQueue, "JobQueue is required");
         this.jobQueue = jobQueue;
@@ -62,10 +62,10 @@ final class JdbcEnqueueWorker implements Runnable {
         logger.info("Enqueue worker terminated");
     }
 
-    private static class EnqueueCommand extends TxCommand<Integer> {
+    public static class EnqueueCommand extends TxCommand<Integer> {
 
-        private static final String LOCK_SQL = "SELECT * FROM job_queue_lock FOR UPDATE";
-        private static final String SELECT_JOBS_SQL = "SELECT id, submission_id from job_queue";
+        public static final String LOCK_SQL = "SELECT * FROM job_queue_lock FOR UPDATE";
+        public static final String SELECT_JOBS_SQL = "SELECT id, submission_id from job_queue";
         private static final String DELETE_JOBS_SQL = "DELETE FROM job_queue WHERE id = ?";
 
         private final EvaluationJobQueue jobQueue;
@@ -77,6 +77,10 @@ final class JdbcEnqueueWorker implements Runnable {
 
         @Override
         protected Integer doTransaction(Connection connection) throws SQLException {
+            // Ensure that only one enqueue worker is running at a time. We use a separate
+            // lock table to prevent enqueue workers from locking the job_queue table for
+            // inserts. The enqueue operation is fairly expensive due to the communication
+            // that needs to occur with the JMS broker.
             try (PreparedStatement stmt = connection.prepareStatement(LOCK_SQL)) {
                 stmt.executeQuery();
             }

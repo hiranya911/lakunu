@@ -22,7 +22,7 @@ public final class JdbcCourseDAO implements CourseDAO {
 
     private final DataSource dataSource;
 
-    public JdbcCourseDAO(DataSource dataSource) {
+    JdbcCourseDAO(DataSource dataSource) {
         checkNotNull(dataSource, "DataSource is required");
         this.dataSource = dataSource;
     }

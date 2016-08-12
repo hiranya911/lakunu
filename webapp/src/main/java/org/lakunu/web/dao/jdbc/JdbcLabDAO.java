@@ -16,7 +16,7 @@ public final class JdbcLabDAO implements LabDAO {
 
     private final DataSource dataSource;
 
-    public JdbcLabDAO(DataSource dataSource) {
+    JdbcLabDAO(DataSource dataSource) {
         checkNotNull(dataSource, "DataSource is required");
         this.dataSource = dataSource;
     }
