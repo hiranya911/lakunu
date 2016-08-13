@@ -3,6 +3,7 @@ package org.lakunu.web.service;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
+import org.apache.shiro.authz.AuthorizationException;
 import org.lakunu.web.dao.SubmissionDAO;
 import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Submission;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.lakunu.web.utils.Security.checkPermissions;
+import static org.lakunu.web.utils.Security.hasPermission;
 
 public final class SubmissionService extends AbstractDomainService {
 
@@ -44,8 +46,7 @@ public final class SubmissionService extends AbstractDomainService {
     public void enqueueSubmission(Lab lab, String submissionId) {
         checkNotNull(lab, "Lab is required");
         checkArgument(!Strings.isNullOrEmpty(submissionId), "SubmissionID is required");
-        checkPermissions("submission:enqueue:" + lab.getCourseId() + ":" + lab.getId());
-
+        checkPermissions(LabService.ENQUEUE_SUBMISSION_PERMISSION(lab));
         SubmissionDAO submissionDAO = daoFactory.getSubmissionDAO();
         Submission submission = submissionDAO.getSubmission(submissionId);
         checkNotNull(submission, "Invalid submission ID");
@@ -55,8 +56,23 @@ public final class SubmissionService extends AbstractDomainService {
 
     public ImmutableList<SubmissionView> getOwnedSubmissions(Lab lab, int limit) {
         checkNotNull(lab, "Lab is required");
-        checkPermissions("submission:getOwned:" + lab.getCourseId() + ":" + lab.getId());
+        checkPermissions(LabService.GET_OWNED_SUBMISSIONS_PERMISSION(lab));
         return daoFactory.getSubmissionDAO().getOwnedSubmissions(lab, limit);
+    }
+
+    public Submission getSubmission(Lab lab, String submissionId) {
+        checkNotNull(lab, "Lab is required");
+        checkArgument(!Strings.isNullOrEmpty(submissionId), "SubmissionID is required");
+        Submission submission = daoFactory.getSubmissionDAO().getSubmission(submissionId);
+        if (hasPermission(LabService.GET_SUBMISSION_PERMISSION(lab))) {
+            return submission;
+        } else if (hasPermission(LabService.GET_OWNED_SUBMISSIONS_PERMISSION(lab))) {
+            checkArgument(submission.getUserId().equals(Security.getCurrentUser()),
+                    "Operation not permitted");
+            return submission;
+        } else {
+            throw new AuthorizationException("Operation not permitted");
+        }
     }
 
     public ImmutableList<SubmissionView> getSubmissionsForGrading(Lab lab, String userId,

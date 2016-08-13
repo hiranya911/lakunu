@@ -51,7 +51,6 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                     case CourseService.ROLE_OWNER:
                         permissions.add("course:*:" + role.courseId);
                         permissions.add(LabService.permission("*", courseId, "*"));
-                        permissions.add("submission:*:" + courseId + ":*");
                         break;
                     case CourseService.ROLE_INSTRUCTOR:
                         permissions.add("course:get,getLabs:" + role.courseId);
@@ -59,9 +58,7 @@ public final class CoursePermissionRealm extends AuthorizingRealm {
                         break;
                     case CourseService.ROLE_STUDENT:
                         permissions.add("course:get,getLabs:" + role.courseId);
-                        permissions.add(LabService.GET_PERMISSION(role.courseId, "*"));
-                        permissions.add(LabService.SUBMIT_PERMISSION(role.courseId, "*"));
-                        permissions.add("submission:getOwned:" + courseId + ":*");
+                        permissions.add(LabService.permission("get,submit,getOwnedSubmissions", courseId, "*"));
                         break;
                 }
             });
