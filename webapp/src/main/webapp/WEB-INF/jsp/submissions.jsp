@@ -42,6 +42,9 @@
                 <div class="panel panel-primary">
                     <div class="panel-heading">
                         Submission at: ${sub.submittedAt}
+                        <a class="btn btn-info" data-toggle="tooltip" title="Download Submission" href="/submission/${course.id}/${lab.id}/${sub.id}?download=true">
+                            <span class="glyphicon glyphicon-download"></span>
+                        </a>
                         <c:if test="${not empty sub.evaluations}">
                             <span class="pull-right">(Last score: ${sub.finalScore})</span>
                         </c:if>
@@ -127,6 +130,11 @@
     <c:if test="${not viewAll && not empty submissions}">
         <a href="${requestScope['javax.servlet.forward.request_uri']}">View All</a>
     </c:if>
+    <script>
+        $(document).ready(function(){
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
 </div>
 </body>
 </html>
