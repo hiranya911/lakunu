@@ -4,6 +4,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.mgt.RealmSecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.lakunu.web.dao.jdbc.CoursePermissionRealm;
+import org.lakunu.web.service.permissions.Permission;
 
 import java.util.Collection;
 import java.util.List;
@@ -14,6 +15,13 @@ public class Security {
     public static void checkPermissions(String... permissions) {
         Subject subject = SecurityUtils.getSubject();
         subject.checkPermissions(permissions);
+    }
+
+    public static void checkPermissions(Permission... permissions) {
+        Subject subject = SecurityUtils.getSubject();
+        for (Permission p : permissions) {
+            subject.checkPermission(p.toString());
+        }
     }
 
     public static boolean hasPermission(String permission) {

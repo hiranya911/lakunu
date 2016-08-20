@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.lakunu.web.models.Lab;
 import org.lakunu.web.models.Course;
+import org.lakunu.web.service.permissions.CoursePermission;
 import org.lakunu.web.utils.Security;
 
 import java.util.Date;
@@ -32,7 +33,7 @@ public final class CourseService extends AbstractDomainService {
         checkArgument(name.length() <= 128, "name is too long");
         checkArgument(!Strings.isNullOrEmpty(description), "description is required");
         checkArgument(description.length() <= 512, "description is too long");
-        checkPermissions("course:add");
+        checkPermissions(CoursePermission.ADD);
 
         Course course = Course.newBuilder()
                 .setName(name)
@@ -47,23 +48,23 @@ public final class CourseService extends AbstractDomainService {
 
     public Course getCourse(String courseId) {
         checkArgument(!Strings.isNullOrEmpty(courseId), "CourseID is required");
-        checkPermissions("course:get:" + courseId);
+        checkPermissions(CoursePermission.GET(courseId));
         return daoFactory.getCourseDAO().getCourse(courseId);
     }
 
     public ImmutableList<Course> getOwnedCourses() {
-        checkPermissions("course:getOwned");
+        checkPermissions(CoursePermission.GET_OWNED_COURSES);
         return daoFactory.getCourseDAO().getOwnedCourses();
     }
 
     public ImmutableList<String> getStudents(Course course) {
         checkNotNull(course, "Course is required");
-        checkPermissions("course:getStudents:" + course.getId());
+        checkPermissions(CoursePermission.GET_STUDENTS(course.getId()));
         return daoFactory.getCourseDAO().getStudents(course);
     }
 
     public ImmutableList<Course> getCoursesAsStudent() {
-        checkPermissions("course:getAsStudent");
+        checkPermissions(CoursePermission.GET_COURSES_AS_STUDENT);
         return daoFactory.getCourseDAO().getCoursesAsStudent();
     }
 
@@ -71,13 +72,13 @@ public final class CourseService extends AbstractDomainService {
         checkNotNull(course, "Course is required");
         checkNotNull(users, "Users list is required");
         checkArgument(COURSE_ROLES.contains(role), "Unsupported role");
-        checkPermissions("course:share:" + course.getId());
+        checkPermissions(CoursePermission.SHARE(course.getId()));
         daoFactory.getCourseDAO().shareCourse(course, users, role);
     }
 
-    public ImmutableList<Lab> getLabs(String courseId) {
-        checkArgument(!Strings.isNullOrEmpty(courseId), "CourseID is required");
-        checkPermissions("course:getLabs:" + courseId);
-        return daoFactory.getLabDAO().getLabs(courseId);
+    public ImmutableList<Lab> getLabs(Course course) {
+        checkNotNull(course, "Course is required");
+        checkPermissions(CoursePermission.GET_LABS(course.getId()));
+        return daoFactory.getLabDAO().getLabs(course.getId());
     }
 }
